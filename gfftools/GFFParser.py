@@ -99,7 +99,7 @@ def GFFParse(ga_file):
     """
     Parsing GFF/GTF file based on feature relationship.
     """
-
+    child_map = defaultdict(list)
     ga_handle = utils._open_file(ga_file)
 
     for rec in ga_handle:
@@ -121,16 +121,16 @@ def GFFParse(ga_file):
 	        continue 
         
         # extract fields  
-        gff_info = dict()
-        gff_info["is_gff3"] = ftype
         if parts[1]:
-            tags["source"].append(parts[1])
-        if parts[5]:
-            tags["score"].append(parts[5])
+            tags["source"] = parts[1]
         if parts[7]:
-            tags["phase"].append(parts[7])
+            tags["phase"] = parts[7]
+
+        gff_info = dict()
         gff_info['info'] = dict(tags)
+        gff_info["is_gff3"] = ftype
         gff_info['chr'] = parts[0]
+
         if parts[3] and parts[4]:
             gff_info['location'] = [int(parts[3]) ,
                         int(parts[4])]
@@ -152,13 +152,24 @@ def GFFParse(ga_file):
                         break
                 rec_category = 'child'
             elif gff_info['id']:
-                rec_category = 'Parent'
+                rec_category = 'parent'
             else:
                 rec_category = 'record'
 
-        #TODO infer the parent child relationship
-    ga_handle.close()
+            # depends on the record category organize the features
+            if rec_category == 'child':
+                for p in gff_info['info']['Parent']:
+                    # create the data structure based on source and feature id 
+                    child_map[(gff_info['chr'], gff_info['info']['source'], p)].append(
+                                            dict( type = gff_info['type'], 
+                                            location =  gff_info['location'], 
+                                            strand = gff_info['strand'], 
+                                            ID = gff_info['id'],
+                                            is_gff3 = gff_info['is_gff3']))
+        #sys.exit(-1)
     
+    ga_handle.close()
+    print child_map
     #return 
 
 def __main__():
