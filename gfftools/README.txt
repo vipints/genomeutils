@@ -10,7 +10,7 @@ Copyright (C)
 
     2009-2012 
     Friedrich Miescher Laboratory of the Max Planck Society, Tuebingen, Germany. 
-    2011-2013
+    2012-2013
     Memorial Sloan-Kettering Cancer Center, New York City, USA. 
 
         This program is free software; you can redistribute it and/or modify
