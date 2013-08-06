@@ -79,6 +79,12 @@ def _spec_features_keywd(gff_parts):
             break
         except KeyError:
             pass
+    for g_id in ["gene_id", "geneid", "geneId", "name", "gene_name", "genename"]:
+        try:
+            gff_parts["info"]["GParent"] = gff_parts["info"][g_id]
+            break
+        except KeyError:
+            pass
     ## TODO key words
     for flat_name in ["Transcript", "CDS"]:
         if gff_parts["info"].has_key(flat_name):
@@ -100,6 +106,8 @@ def GFFParse(ga_file):
     Parsing GFF/GTF file based on feature relationship.
     """
     child_map = defaultdict(list)
+    parent_map = dict()
+
     ga_handle = utils._open_file(ga_file)
 
     for rec in ga_handle:
@@ -165,12 +173,41 @@ def GFFParse(ga_file):
                                             location =  gff_info['location'], 
                                             strand = gff_info['strand'], 
                                             ID = gff_info['id'],
-                                            is_gff3 = gff_info['is_gff3']))
-        #sys.exit(-1)
-    
+                                            is_gff3 = gff_info['is_gff3'],
+                                            gene_id = gff_info['info'].get('GParent', '') 
+                                            ))
+            elif rec_category == 'parent':
+                parent_map[(gff_info['chr'], gff_info['info']['source'], gff_info['id'])] = dict( 
+                                            type = gff_info['type'], 
+                                            location = gff_info['location'],
+                                            strand = gff_info['strand'],
+                                            is_gff3 = gff_info['is_gff3'], 
+                                            name = tags.get('Name', [''])[0])
+            elif rec_category == 'record':
+                #TODO how to handle plain records?
+                c = 1 
     ga_handle.close()
-    print child_map
-    #return 
+    
+    # depends on file type create parent feature  
+    if not ftype:
+        _create_missing_feature_type(parent_map, child_map)    
+
+def _create_missing_feature_type(p_feat, c_feat):
+    """
+    GFF/GTF file defines olny child features. This function tries to create the parent feature 
+    from the information provided in the attribute column. 
+
+    example: 
+    chr21   hg19_knownGene  exon    9690071 9690100 0.000000        +       .       gene_id "uc002zkg.1"; transcript_id "uc002zkg.1"; 
+    chr21   hg19_knownGene  exon    9692178 9692207 0.000000        +       .       gene_id "uc021wgt.1"; transcript_id "uc021wgt.1"; 
+    chr21   hg19_knownGene  exon    9711935 9712038 0.000000        +       .       gene_id "uc011abu.2"; transcript_id "uc011abu.2"; 
+
+    This function gets the parsed feature annotations. 
+    """
+    
+    for fid, det in c_feat.items():
+        print fid
+        break 
 
 def __main__():
     """
@@ -183,6 +220,6 @@ def __main__():
         sys.exit(-1)
     
     GFFParse(gff_file)
-    
+
 if __name__=='__main__':
     __main__()
