@@ -9,6 +9,57 @@ import sys
 import gzip 
 import bz2
 
+def init_gene():
+    """
+    Initializing the gene structure
+    """
+    gene_det=dict(  id = '',
+                    anno_id = [],
+                    confgenes_id = [],
+                    name = '',
+                    source = '',
+                    gene_info = {},
+                    alias = '',
+                    name2 = [],
+                    strand = '',
+                    chr = '',
+                    chr_num = [],
+                    paralogs = [],
+                    start = '',
+                    stop = '',
+                    transcripts = [],
+                    transcript_info = [],
+                    transcript_status = [],
+                    transcript_valid = [],
+                    exons = [],
+                    exons_confirmed = [],
+                    cds_exons = [],
+                    utr5_exons = [],
+                    utr3_exons = [],
+                    tis = [],
+                    tis_conf = [],
+                    tis_info = [],
+                    cdsStop = [],
+                    cdsStop_conf = [],
+                    cdsStop_info = [],
+                    tss = [],
+                    tss_info = [],
+                    tss_conf = [],
+                    cleave = [],
+                    cleave_info = [],
+                    cleave_conf = [],
+                    polya = [],
+                    polya_info = [],
+                    polya_conf = [],
+                    is_alt = [],
+                    is_alt_spliced = 0,
+                    is_valid = [],
+                    transcript_complete = [],
+                    is_complete = [],
+                    is_correctly_gff3_referenced = '',
+                    splicegraph = [] )
+    return gene_det
+
 def _open_file(fname):
     """
     Open the file (supports .gz .bz2) and returns the handler
