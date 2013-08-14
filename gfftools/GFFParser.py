@@ -72,7 +72,6 @@ def _spec_features_keywd(gff_parts):
     """
     Specify the feature key word according to the GFF specifications
     """
-
     for t_id in ["transcript_id", "transcriptId", "proteinId"]:
         try:
             gff_parts["info"]["Parent"] = gff_parts["info"][t_id]
@@ -136,7 +135,7 @@ def GFFParse(ga_file):
 
         gff_info = dict()
         gff_info['info'] = dict(tags)
-        gff_info["is_gff3"] = ftype
+        #gff_info["is_gff3"] = ftype
         gff_info['chr'] = parts[0]
 
         if parts[3] and parts[4]:
@@ -173,7 +172,6 @@ def GFFParse(ga_file):
                                             location =  gff_info['location'], 
                                             strand = gff_info['strand'], 
                                             ID = gff_info['id'],
-                                            is_gff3 = gff_info['is_gff3'],
                                             gene_id = gff_info['info'].get('GParent', '') 
                                             ))
             elif rec_category == 'parent':
@@ -181,7 +179,6 @@ def GFFParse(ga_file):
                                             type = gff_info['type'], 
                                             location = gff_info['location'],
                                             strand = gff_info['strand'],
-                                            is_gff3 = gff_info['is_gff3'], 
                                             name = tags.get('Name', [''])[0])
             elif rec_category == 'record':
                 #TODO how to handle plain records?
@@ -190,12 +187,61 @@ def GFFParse(ga_file):
     
     # depends on file type create parent feature  
     if not ftype:
-        _create_missing_feature_type(parent_map, child_map)    
+        parent_map, child_map = _create_missing_feature_type(parent_map, child_map)    
+    
+    _format_gene_models(parent_map, child_map) 
+
+    
+def _format_gene_models(parent_nf_map, child_nf_map): 
+    """
+    Genarate GeneObject based on the parsed file contents
+
+    parent_map: parent features with source and chromosome information 
+    child_map: transctipt and exon information are encoded 
+    """
+    
+    gene_cnt = 1 
+    for pkey, pdet in parent_nf_map.items():
+        # infer the gene start and stop if not there in the 
+        if not pdet.get('location', []):
+            GNS, GNE = [], []
+            # multiple number of transcripts 
+            for L1 in child_nf_map[pkey]:
+                GNS.append(L1.get('location', [])[0]) 
+                GNE.append(L1.get('location', [])[1]) 
+            GNS.sort()
+            GNE.sort()
+            pdet['location'] = [GNS[0], GNE[-1]]
+
+        #print pkey
+        #print pdet 
+        
+        gene = utils.init_gene()
+        
+        gene['id'] = gene_cnt
+        gene['chr'] = pkey[0]
+        gene['name'] = pkey[-1]
+        gene['source'] = pkey[1]
+        gene['start'] = pdet.get('location', [])[0]
+        gene['stop'] = pdet.get('location', [])[1]
+        gene['strand'] = pdet.get('strand', '')
+        
+        if len(child_nf_map[pkey]) > 1:
+            gene['is_alt_spliced'] = 1
+            gene['is_alt'] = 1
+
+        for L1 in child_nf_map[pkey]:
+            gene['transcripts'].append(L1.get('ID', ''))
+
+            for L2 in child_nf_map[(pkey[0], pkey[1], L1.get('ID', ''))]:
+                print L2 
+        #break
+
 
 def _create_missing_feature_type(p_feat, c_feat):
     """
-    GFF/GTF file defines olny child features. This function tries to create the parent feature 
-    from the information provided in the attribute column. 
+    GFF/GTF file defines only child features. This function tries to create 
+    the parent feature from the information provided in the attribute column. 
 
     example: 
     chr21   hg19_knownGene  exon    9690071 9690100 0.000000        +       .       gene_id "uc002zkg.1"; transcript_id "uc002zkg.1"; 
@@ -205,9 +251,51 @@ def _create_missing_feature_type(p_feat, c_feat):
     This function gets the parsed feature annotations. 
     """
     
+    child_n_map = defaultdict(list)
     for fid, det in c_feat.items():
-        print fid
-        break 
+        # get the details from grand child  
+        GID = STRD = None
+        SPOS, EPOS = [], [] 
+        TYP = dict()
+        for gchild in det:
+            GID = gchild.get('gene_id', [''])[0] 
+            SPOS.append(gchild.get('location', [])[0]) 
+            EPOS.append(gchild.get('location', [])[1]) 
+            STRD = gchild.get('strand', '')
+            TYP[gchild.get('type', '')] = 1
+        SPOS.sort() 
+        EPOS.sort()
+        
+        # infer transcript type
+        transcript_type = 'transcript'
+        transcript_type = 'mRNA' if TYP.get('CDS', '') or TYP.get('cds', '') else transcript_type
+        
+        # gene id and transcript id are same
+        if GID == fid[-1]:
+            transcript_id = 'Transcript:' + str(GID)
+            GID = 'Gene:' + str(GID)
+        
+        # level -1 feature type 
+        p_feat[(fid[0], fid[1], GID)] = dict( type = 'gene',
+                                            location = [], ## infer location based on multiple transcripts  
+                                            strand = STRD,
+                                            name = GID )
+        # level -2 feature type 
+        child_n_map[(fid[0], fid[1], GID)].append(
+                                            dict( type = transcript_type,
+                                            location =  [SPOS[0], EPOS[-1]], 
+                                            strand = STRD, 
+                                            ID = transcript_id,
+                                            gene_id = '' ))
+        # reorganizing the grand child
+        for gchild in det:
+            child_n_map[(fid[0], fid[1], transcript_id)].append(
+                                            dict( type = gchild.get('type', ''),
+                                            location =  gchild.get('location'),
+                                            strand = gchild.get('strand'), 
+                                            ID = gchild.get('ID'),
+                                            gene_id = '' ))
+    return p_feat, child_n_map 
 
 def __main__():
     """
