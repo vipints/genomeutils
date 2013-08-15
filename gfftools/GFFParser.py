@@ -199,9 +199,13 @@ def _format_gene_models(parent_nf_map, child_nf_map):
     parent_map: parent features with source and chromosome information 
     child_map: transctipt and exon information are encoded 
     """
-    
+
     gene_cnt = 1 
+
     for pkey, pdet in parent_nf_map.items():
+        # considering only gene features 
+        if not re.search(r'gene', pdet.get('type', '')):
+            continue 
         # infer the gene start and stop if not there in the 
         if not pdet.get('location', []):
             GNS, GNE = [], []
@@ -213,10 +217,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             GNE.sort()
             pdet['location'] = [GNS[0], GNE[-1]]
 
-        #print pkey
-        #print pdet 
-        
-        gene = utils.init_gene()
+        gene = utils.init_gene_GP()
         
         gene['id'] = gene_cnt
         gene['chr'] = pkey[0]
@@ -229,14 +230,120 @@ def _format_gene_models(parent_nf_map, child_nf_map):
         if len(child_nf_map[pkey]) > 1:
             gene['is_alt_spliced'] = 1
             gene['is_alt'] = 1
+        
+        # complete sub-feature for all transcripts 
+        dim = len(child_nf_map[pkey])
+        TRS = np.zeros((dim,), dtype=np.object)
+        TR_TYP = np.zeros((dim,), dtype=np.object)
+        EXON = np.zeros((dim,), dtype=np.object)
+        UTR5 = np.zeros((dim,), dtype=np.object)
+        UTR3 = np.zeros((dim,), dtype=np.object)
+        CDS = np.zeros((dim,), dtype=np.object)
+        TISc = np.zeros((dim,), dtype=np.object)
+        TSSc = np.zeros((dim,), dtype=np.object)
+        CLV = np.zeros((dim,), dtype=np.object)
+        CSTOP = np.zeros((dim,), dtype=np.object)
 
-        for L1 in child_nf_map[pkey]:
-            gene['transcripts'].append(L1.get('ID', ''))
+        # fetching corresponding transcripts 
+        for xq, Lv1 in enumerate(child_nf_map[pkey]):
 
-            for L2 in child_nf_map[(pkey[0], pkey[1], L1.get('ID', ''))]:
-                print L2 
-        #break
+            TID = Lv1.get('ID', '')
+            TRS[xq]= np.array(TID)
+            TYPE = Lv1.get('type', '')
+            TR_TYP[xq] = np.array('')
+            TR_TYP[xq] = np.array(TYPE) if TYPE else TR_TYP[xq]
 
+            # fetching different sub-features 
+            child_feat = defaultdict(list)
+            for Lv2 in child_nf_map[(pkey[0], pkey[1], TID)]:
+                E_TYP = Lv2.get('type', '')
+                child_feat[E_TYP].append(Lv2.get('location'))
+            
+            # make exon coordinate from cds and utr regions 
+            if not child_feat.get('exon'):  
+                if child_feat.get('CDS'):
+                    exon_cod = utils.make_Exon_cod( gene['strand'], 
+                                NonetoemptyList(child_feat.get('five_prime_UTR')), 
+                                NonetoemptyList(child_feat.get('CDS')),
+                                NonetoemptyList(child_feat.get('three_prime_UTR')))
+                    child_feat['exon'] = exon_cod 
+            if not child_feat.get('exon'):continue # without sub-features it is hard to go further 
+
+            # make general ascending order of coordinates 
+            if gene['strand'] == '-':
+                for etype, excod in child_feat.items():
+                    if len(excod) > 1:
+                        if excod[0][0] > excod[-1][0]:
+                            excod.reverse()
+                            child_feat[etype] = excod
+
+            # transcript signal sites 
+            TIS, cdsStop, TSS, cleave = [], [], [], []
+            cds_status, exon_status, utr_status = 0, 0, 0
+
+            if child_feat.get('exon'):
+                TSS = [child_feat.get('exon')[-1][1]]
+                TSS = [child_feat.get('exon')[0][0]] if gene['strand'] == '+' else TSS 
+                cleave = [child_feat.get('exon')[0][0]]
+                cleave = [child_feat.get('exon')[-1][1]] if gene['strand'] == '+' else cleave
+                exon_status = 1
+
+            if child_feat.get('CDS'):
+                if gene['strand'] == '+': 
+                    TIS = [child_feat.get('CDS')[0][0]]
+                    cdsStop = [child_feat.get('CDS')[-1][1]-3]
+                else:
+                    TIS = [child_feat.get('CDS')[-1][1]]
+                    cdsStop = [child_feat.get('CDS')[0][0]+3]
+                cds_status = 1 
+            
+            # sub-feature status 
+            if child_feat.get('three_prime_UTR') or child_feat.get('five_prime_UTR'):
+                utr_status =1 
+            
+            if utr_status == cds_status == exon_status == 1: 
+                gene['transcript_status'].append(1)
+            else:
+                gene['transcript_status'].append(0)
+            
+            # add sub-feature # make array for export to different out
+            EXON[xq] = np.array(child_feat.get('exon'))
+            UTR5[xq] = np.array(NonetoemptyList(child_feat.get('five_prime_UTR')))
+            UTR3[xq] = np.array(NonetoemptyList(child_feat.get('three_prime_UTR')))
+            CDS[xq] = np.array(NonetoemptyList(child_feat.get('CDS')))
+            TISc[xq] = np.array(TIS)
+            CSTOP[xq] = np.array(cdsStop)
+            TSSc[xq] = np.array(TSS)
+            CLV[xq] = np.array(cleave)
+
+            """
+            """
+        # add sub-features to the parent gene feature
+        gene['transcripts'] = TRS 
+        gene['exons'] = EXON
+        gene['utr5_exons'] = UTR5 
+        gene['utr3_exons'] = UTR3 
+        gene['cds_exons'] = CDS 
+        gene['transcript_type'] = TR_TYP
+        gene['tis'] = TISc
+        gene['cdsStop'] = CSTOP
+        gene['tss'] = TSSc
+        gene['cleave'] = CLV
+        
+        gene['gene_info'] = dict( ID = pkey[-1], 
+                                Name = pdet.get('name'), 
+                                Source = pkey[1]) 
+
+        gene_cnt += 1 
+
+    #TODO write the gene contents to a matlab struct array format
+    #sio.savemat("out.mat", mdict = dict(genes = genes_mat), format='5', oned_as = 'row')
+
+def NonetoemptyList(XS):
+    """
+    Convert a None type to empty list 
+    """
+    return [] if XS is None else XS 
 
 def _create_missing_feature_type(p_feat, c_feat):
     """
