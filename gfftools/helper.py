@@ -9,11 +9,28 @@ import sys
 import gzip 
 import bz2
 
-def init_gene():
+def init_gene_DE():
     """
-    Initializing the gene structure
+    Initializing the gene structure for DE
     """
-    gene_det=dict(  id = '',
+    gene_det = dict(    chr = '', 
+                        exons = [], 
+                        gene_info = {}, 
+                        id = '', 
+                        is_alt_spliced = 0, 
+                        name = '', 
+                        source = '', 
+                        start = '', 
+                        stop = '', 
+                        strand = '', 
+                        transcripts = [])
+    return gene_det
+
+def init_gene_GP():
+    """
+    Initializing the gene structure for GP 
+    """
+    gene_det = dict(  id = '',
                     anno_id = [],
                     confgenes_id = [],
                     name = '',
@@ -28,6 +45,7 @@ def init_gene():
                     start = '',
                     stop = '',
                     transcripts = [],
+                    transcript_type = [],
                     transcript_info = [],
                     transcript_status = [],
                     transcript_valid = [],
@@ -161,8 +179,9 @@ def buildUTR(cc, ec, strand):
                 utr3.append(ex)
     return utr5, utr3
 
-def createExon(strand_p, five_p_utr, cds_cod, three_p_utr):
-    """Create exon cordinates from UTR's and CDS region
+def make_Exon_cod(strand_p, five_p_utr, cds_cod, three_p_utr):
+    """
+    Create exon cordinates from UTR's and CDS region
     """
     exon_pos = []
     if strand_p == '+':        
