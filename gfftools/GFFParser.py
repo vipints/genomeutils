@@ -2,7 +2,7 @@
 """
 Extract genome annotation from a GFF (a tab delimited format for storing sequence features and annotations) file.
 
-Usage: GFFParser.py in.gff3  
+Usage: GFFParser.py in.gff3 out.mat 
 
 Requirements: 
     Numpy :- http://numpy.org/ 
@@ -27,7 +27,6 @@ def _attribute_tags(col9):
     """ 
     Split the key-value terms from the attribute column
     """
-    
     info = defaultdict(list)
     is_gff = False
     
@@ -189,9 +188,11 @@ def GFFParse(ga_file):
     if not ftype:
         parent_map, child_map = _create_missing_feature_type(parent_map, child_map)    
     
-    # connecting parent child relations 
-    _format_gene_models(parent_map, child_map) 
+    # connecting parent child relations  
+    # // essentially the parent child features are here from any type of GTF/GFF2/GFF3 file
+    gene_mat = _format_gene_models(parent_map, child_map) 
 
+    return gene_mat 
     
 def _format_gene_models(parent_nf_map, child_nf_map): 
     """
@@ -200,7 +201,6 @@ def _format_gene_models(parent_nf_map, child_nf_map):
     parent_map: parent features with source and chromosome information 
     child_map: transctipt and exon information are encoded 
     """
-
     g_cnt = 0 
     gene = np.zeros((len(parent_nf_map),), dtype = utils.init_gene_GP())
 
@@ -365,11 +365,9 @@ def _format_gene_models(parent_nf_map, child_nf_map):
         gene[g_cnt]['is_complete'] = []
         gene[g_cnt]['is_correctly_gff3_referenced'] = ''
         gene[g_cnt]['splicegraph'] = []
-
         g_cnt += 1 
 
-    #write the gene annotations to a matlab struct array format
-    sio.savemat("out.mat", mdict = dict(new = gene), format='5', oned_as = 'row')
+    return gene 
 
 def NonetoemptyList(XS):
     """
@@ -389,7 +387,6 @@ def _create_missing_feature_type(p_feat, c_feat):
 
     This function gets the parsed feature annotations. 
     """
-    
     child_n_map = defaultdict(list)
     for fid, det in c_feat.items():
         # get the details from grand child  
@@ -442,11 +439,18 @@ def __main__():
     """
     try:
         gff_file = sys.argv[1]
+        out_mat = sys.argv[2]
     except:
         print __doc__
         sys.exit(-1)
     
-    GFFParse(gff_file)
+    gene_struct = GFFParse(gff_file)
 
-if __name__=='__main__':
+    # write the gene annotations to a matlab struct array format
+    sio.savemat(out_mat, 
+                    mdict = dict(genes = gene_struct), 
+                    format = '5', 
+                    oned_as = 'row')
+
+if __name__ == '__main__':
     __main__()
