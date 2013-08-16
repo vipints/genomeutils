@@ -189,6 +189,7 @@ def GFFParse(ga_file):
     if not ftype:
         parent_map, child_map = _create_missing_feature_type(parent_map, child_map)    
     
+    # connecting parent child relations 
     _format_gene_models(parent_map, child_map) 
 
     
@@ -200,9 +201,11 @@ def _format_gene_models(parent_nf_map, child_nf_map):
     child_map: transctipt and exon information are encoded 
     """
 
-    gene_cnt = 1 
+    g_cnt = 0 
+    gene = np.zeros((len(parent_nf_map),), dtype = utils.init_gene_GP())
 
     for pkey, pdet in parent_nf_map.items():
+
         # considering only gene features 
         if not re.search(r'gene', pdet.get('type', '')):
             continue 
@@ -216,21 +219,21 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             GNS.sort()
             GNE.sort()
             pdet['location'] = [GNS[0], GNE[-1]]
+        orient = pdet.get('strand', '')
 
-        gene = utils.init_gene_GP()
+        gene[g_cnt]['id'] = g_cnt +1 
+        gene[g_cnt]['chr'] = pkey[0]
+        gene[g_cnt]['source'] = pkey[1]
+        gene[g_cnt]['name'] = pkey[-1]
+        gene[g_cnt]['start'] = pdet.get('location', [])[0]
+        gene[g_cnt]['stop'] = pdet.get('location', [])[1]
+        gene[g_cnt]['strand'] = orient  
         
-        gene['id'] = gene_cnt
-        gene['chr'] = pkey[0]
-        gene['name'] = pkey[-1]
-        gene['source'] = pkey[1]
-        gene['start'] = pdet.get('location', [])[0]
-        gene['stop'] = pdet.get('location', [])[1]
-        gene['strand'] = pdet.get('strand', '')
-        
+        # default value 
+        gene[g_cnt]['is_alt_spliced'] = gene[g_cnt]['is_alt'] = 0
         if len(child_nf_map[pkey]) > 1:
-            gene['is_alt_spliced'] = 1
-            gene['is_alt'] = 1
-        
+            gene[g_cnt]['is_alt_spliced'] = gene[g_cnt]['is_alt'] = 1
+
         # complete sub-feature for all transcripts 
         dim = len(child_nf_map[pkey])
         TRS = np.zeros((dim,), dtype=np.object)
@@ -243,12 +246,14 @@ def _format_gene_models(parent_nf_map, child_nf_map):
         TSSc = np.zeros((dim,), dtype=np.object)
         CLV = np.zeros((dim,), dtype=np.object)
         CSTOP = np.zeros((dim,), dtype=np.object)
+        TSTAT = np.zeros((dim,), dtype=np.object)
 
         # fetching corresponding transcripts 
         for xq, Lv1 in enumerate(child_nf_map[pkey]):
 
             TID = Lv1.get('ID', '')
             TRS[xq]= np.array(TID)
+
             TYPE = Lv1.get('type', '')
             TR_TYP[xq] = np.array('')
             TR_TYP[xq] = np.array(TYPE) if TYPE else TR_TYP[xq]
@@ -262,7 +267,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             # make exon coordinate from cds and utr regions 
             if not child_feat.get('exon'):  
                 if child_feat.get('CDS'):
-                    exon_cod = utils.make_Exon_cod( gene['strand'], 
+                    exon_cod = utils.make_Exon_cod( orient, 
                                 NonetoemptyList(child_feat.get('five_prime_UTR')), 
                                 NonetoemptyList(child_feat.get('CDS')),
                                 NonetoemptyList(child_feat.get('three_prime_UTR')))
@@ -270,7 +275,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             if not child_feat.get('exon'):continue # without sub-features it is hard to go further 
 
             # make general ascending order of coordinates 
-            if gene['strand'] == '-':
+            if orient == '-':
                 for etype, excod in child_feat.items():
                     if len(excod) > 1:
                         if excod[0][0] > excod[-1][0]:
@@ -283,30 +288,33 @@ def _format_gene_models(parent_nf_map, child_nf_map):
 
             if child_feat.get('exon'):
                 TSS = [child_feat.get('exon')[-1][1]]
-                TSS = [child_feat.get('exon')[0][0]] if gene['strand'] == '+' else TSS 
+                TSS = [child_feat.get('exon')[0][0]] if orient == '+' else TSS 
                 cleave = [child_feat.get('exon')[0][0]]
-                cleave = [child_feat.get('exon')[-1][1]] if gene['strand'] == '+' else cleave
+                cleave = [child_feat.get('exon')[-1][1]] if orient == '+' else cleave
                 exon_status = 1
 
             if child_feat.get('CDS'):
-                if gene['strand'] == '+': 
+                if orient == '+': 
                     TIS = [child_feat.get('CDS')[0][0]]
                     cdsStop = [child_feat.get('CDS')[-1][1]-3]
                 else:
                     TIS = [child_feat.get('CDS')[-1][1]]
                     cdsStop = [child_feat.get('CDS')[0][0]+3]
                 cds_status = 1 
+                # cds phase calculation 
+                child_feat['CDS'] = utils.add_CDS_phase(orient, child_feat.get('CDS'))
             
             # sub-feature status 
             if child_feat.get('three_prime_UTR') or child_feat.get('five_prime_UTR'):
                 utr_status =1 
             
             if utr_status == cds_status == exon_status == 1: 
-                gene['transcript_status'].append(1)
+                t_status = 1
             else:
-                gene['transcript_status'].append(0)
+                t_status = 0
             
             # add sub-feature # make array for export to different out
+            TSTAT[xq] = t_status
             EXON[xq] = np.array(child_feat.get('exon'))
             UTR5[xq] = np.array(NonetoemptyList(child_feat.get('five_prime_UTR')))
             UTR3[xq] = np.array(NonetoemptyList(child_feat.get('three_prime_UTR')))
@@ -315,29 +323,53 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             CSTOP[xq] = np.array(cdsStop)
             TSSc[xq] = np.array(TSS)
             CLV[xq] = np.array(cleave)
-
-            """
-            """
+            
         # add sub-features to the parent gene feature
-        gene['transcripts'] = TRS 
-        gene['exons'] = EXON
-        gene['utr5_exons'] = UTR5 
-        gene['utr3_exons'] = UTR3 
-        gene['cds_exons'] = CDS 
-        gene['transcript_type'] = TR_TYP
-        gene['tis'] = TISc
-        gene['cdsStop'] = CSTOP
-        gene['tss'] = TSSc
-        gene['cleave'] = CLV
+        gene[g_cnt]['transcript_status'] = TSTAT
+        gene[g_cnt]['transcripts'] = TRS 
+        gene[g_cnt]['exons'] = EXON
+        gene[g_cnt]['utr5_exons'] = UTR5 
+        gene[g_cnt]['cds_exons'] = CDS 
+        gene[g_cnt]['utr3_exons'] = UTR3 
+        gene[g_cnt]['transcript_type'] = TR_TYP
+        gene[g_cnt]['tis'] = TISc
+        gene[g_cnt]['cdsStop'] = CSTOP
+        gene[g_cnt]['tss'] = TSSc
+        gene[g_cnt]['cleave'] = CLV
         
-        gene['gene_info'] = dict( ID = pkey[-1], 
+        gene[g_cnt]['gene_info'] = dict( ID = pkey[-1], 
                                 Name = pdet.get('name'), 
                                 Source = pkey[1]) 
+        # few empty fields // TODO fill this:
+        gene[g_cnt]['anno_id'] = []
+        gene[g_cnt]['confgenes_id'] = []
+        gene[g_cnt]['alias'] = ''
+        gene[g_cnt]['name2'] = []
+        gene[g_cnt]['chr_num'] = []
+        gene[g_cnt]['paralogs'] = []
+        gene[g_cnt]['transcript_info'] = []
+        gene[g_cnt]['transcript_valid'] = []
+        gene[g_cnt]['exons_confirmed'] = []
+        gene[g_cnt]['tis_conf'] = []
+        gene[g_cnt]['tis_info'] = []
+        gene[g_cnt]['cdsStop_conf'] = []
+        gene[g_cnt]['cdsStop_info'] = []
+        gene[g_cnt]['tss_info'] = []
+        gene[g_cnt]['tss_conf'] = []
+        gene[g_cnt]['cleave_info'] = []
+        gene[g_cnt]['cleave_conf'] = []
+        gene[g_cnt]['polya_info'] = []
+        gene[g_cnt]['polya_conf'] = []
+        gene[g_cnt]['is_valid'] = []
+        gene[g_cnt]['transcript_complete'] = []
+        gene[g_cnt]['is_complete'] = []
+        gene[g_cnt]['is_correctly_gff3_referenced'] = ''
+        gene[g_cnt]['splicegraph'] = []
 
-        gene_cnt += 1 
+        g_cnt += 1 
 
-    #TODO write the gene contents to a matlab struct array format
-    #sio.savemat("out.mat", mdict = dict(genes = genes_mat), format='5', oned_as = 'row')
+    #write the gene annotations to a matlab struct array format
+    sio.savemat("out.mat", mdict = dict(new = gene), format='5', oned_as = 'row')
 
 def NonetoemptyList(XS):
     """
