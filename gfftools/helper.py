@@ -8,74 +8,77 @@ import re
 import sys 
 import gzip 
 import bz2
+import numpy 
 
 def init_gene_DE():
     """
     Initializing the gene structure for DE
     """
-    gene_det = dict(    chr = '', 
-                        exons = [], 
-                        gene_info = {}, 
-                        id = '', 
-                        is_alt_spliced = 0, 
-                        name = '', 
-                        source = '', 
-                        start = '', 
-                        stop = '', 
-                        strand = '', 
-                        transcripts = [])
+    gene_det = [('chr', 'S15'), 
+                    ('exons', numpy.dtype),
+                    ('gene_info', numpy.dtype),
+                    ('id', 'f8'), 
+                    ('is_alt_spliced', 'f8'), 
+                    ('name', 'S25'),
+                    ('source', 'S25'),
+                    ('start', 'f8'),
+                    ('stop', 'f8'), 
+                    ('strand', 'S2'), 
+                    ('transcripts', numpy.dtype)]
+
     return gene_det
 
 def init_gene_GP():
     """
     Initializing the gene structure for GP 
     """
-    gene_det = dict(  id = '',
-                    anno_id = [],
-                    confgenes_id = [],
-                    name = '',
-                    source = '',
-                    gene_info = {},
-                    alias = '',
-                    name2 = [],
-                    strand = '',
-                    chr = '',
-                    chr_num = [],
-                    paralogs = [],
-                    start = '',
-                    stop = '',
-                    transcripts = [],
-                    transcript_type = [],
-                    transcript_info = [],
-                    transcript_status = [],
-                    transcript_valid = [],
-                    exons = [],
-                    exons_confirmed = [],
-                    cds_exons = [],
-                    utr5_exons = [],
-                    utr3_exons = [],
-                    tis = [],
-                    tis_conf = [],
-                    tis_info = [],
-                    cdsStop = [],
-                    cdsStop_conf = [],
-                    cdsStop_info = [],
-                    tss = [],
-                    tss_info = [],
-                    tss_conf = [],
-                    cleave = [],
-                    cleave_info = [],
-                    cleave_conf = [],
-                    polya = [],
-                    polya_info = [],
-                    polya_conf = [],
-                    is_alt = [],
-                    is_alt_spliced = 0,
-                    is_valid = [],
-                    transcript_complete = [],
-                    is_complete = [],
-                    is_correctly_gff3_referenced = '',
-                    splicegraph = [] )
+    gene_det = [('id', 'f8'), 
+            ('anno_id', numpy.dtype), 
+            ('confgenes_id', numpy.dtype),
+            ('name', 'S25'),
+            ('source', 'S25'),
+            ('gene_info', numpy.dtype),
+            ('alias', 'S15'),
+            ('name2', numpy.dtype),
+            ('strand', 'S2'), 
+            ('chr', 'S15'), 
+            ('chr_num', numpy.dtype),
+            ('paralogs', numpy.dtype),
+            ('start', 'f8'),
+            ('stop', 'f8'), 
+            ('transcripts', numpy.dtype),
+            ('transcript_type', numpy.dtype),
+            ('transcript_info', numpy.dtype),
+            ('transcript_status', numpy.dtype),
+            ('transcript_valid', numpy.dtype),
+            ('exons', numpy.dtype),
+            ('exons_confirmed', numpy.dtype),
+            ('cds_exons', numpy.dtype),
+            ('utr5_exons', numpy.dtype),
+            ('utr3_exons', numpy.dtype),
+            ('tis', numpy.dtype),
+            ('tis_conf', numpy.dtype),
+            ('tis_info', numpy.dtype),
+            ('cdsStop', numpy.dtype),
+            ('cdsStop_conf', numpy.dtype),
+            ('cdsStop_info', numpy.dtype),
+            ('tss', numpy.dtype),
+            ('tss_info', numpy.dtype),
+            ('tss_conf', numpy.dtype),
+            ('cleave', numpy.dtype),
+            ('cleave_info', numpy.dtype),
+            ('cleave_conf', numpy.dtype),
+            ('polya', numpy.dtype),
+            ('polya_info', numpy.dtype),
+            ('polya_conf', numpy.dtype),
+            ('is_alt', 'f8'), 
+            ('is_alt_spliced', 'f8'), 
+            ('is_valid',  numpy.dtype),
+            ('transcript_complete', numpy.dtype),
+            ('is_complete', numpy.dtype),
+            ('is_correctly_gff3_referenced', 'S5'),
+            ('splicegraph', numpy.dtype) ]
+
     return gene_det
 
 def _open_file(fname):
@@ -93,7 +96,7 @@ def _open_file(fname):
         sys.exit(error)
     return FH
 
-def addCDSphase(strand, cds):
+def add_CDS_phase(strand, cds):
     """
     Calculate CDS phase and add to the CDS exons
     """
