@@ -1,0 +1,31 @@
+--UNDER CONSTRUCTION--
+signal_labels: extract genomic signal sequence with flanking regions. 
+
+Extract the genomic signal sequence like Transcription Start Site [TSS], 
+Translational Initiation Site [TIS] and splice sites [donor, acceptor] 
+signals with flanking genomic regions from the genome annotation in GTF/GFF 
+and genome sequence in FASTA format.
+
+The number of signal labels are extracted randomly from each chromosome, 
+User has the flexibility for selection of different number of positive and 
+negative signal labels. The flanking region length can be adjusted according
+to the experiment setup. The result file with extracted positive and negative 
+labels are written in FASTA format. 
+
+-------
+LICENSE
+-------
+Copyright (C) 
+
+    2013 Memorial Sloan-Kettering Cancer Center, New York City, USA. 
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+-------
+CONTACT
+-------
+    vipin [at] cbio.mskcc.org
+
