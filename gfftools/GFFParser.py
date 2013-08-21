@@ -25,7 +25,7 @@ import helper as utils
 
 def _attribute_tags(col9):
     """ 
-    Split the key-value terms from the attribute column
+    Split the key-value tags from the attribute column, it takes column number 9 from GTF/GFF file 
     """
     info = defaultdict(list)
     is_gff = False
@@ -99,9 +99,9 @@ def _spec_features_keywd(gff_parts):
             break
     return gff_parts
 
-def GFFParse(ga_file):
+def Parse(ga_file):
     """
-    Parsing GFF/GTF file based on feature relationship.
+    Parsing GFF/GTF file based on feature relationship, it takes the input file.
     """
     child_map = defaultdict(list)
     parent_map = dict()
@@ -407,9 +407,9 @@ def _create_missing_feature_type(p_feat, c_feat):
         transcript_type = 'mRNA' if TYP.get('CDS', '') or TYP.get('cds', '') else transcript_type
         
         # gene id and transcript id are same
-        if GID == fid[-1]:
+        transcript_id = fid[-1]
+        if GID == transcript_id:
             transcript_id = 'Transcript:' + str(GID)
-            GID = 'Gene:' + str(GID)
         
         # level -1 feature type 
         p_feat[(fid[0], fid[1], GID)] = dict( type = 'gene',
@@ -444,7 +444,7 @@ def __main__():
         print __doc__
         sys.exit(-1)
     
-    gene_struct = GFFParse(gff_file)
+    gene_struct = Parse(gff_file)
 
     # write the gene annotations to a matlab struct array format
     sio.savemat(out_mat, 
