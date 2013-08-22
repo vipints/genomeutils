@@ -51,7 +51,7 @@ def _attribute_tags(col9):
         key_vals = [at.split('=') for at in atbs]
     elif gtf_pat.match(atbs[0]): # gtf pattern
         for at in atbs:
-            key_vals.append(at.strip().split(" "))
+            key_vals.append(at.strip().split(" ",1))
     else:
         # to handle attribute column has only single value 
         key_vals.append(['ID', atbs[0]])
