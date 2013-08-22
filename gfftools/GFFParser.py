@@ -2,8 +2,6 @@
 """
 Extract genome annotation from a GFF (a tab delimited format for storing sequence features and annotations) file.
 
-Usage: GFFParser.py in.gff3 out.mat 
-
 Requirements: 
     Numpy :- http://numpy.org/ 
     Scipy :- http://scipy.org/ 
@@ -449,24 +447,30 @@ def _create_missing_feature_type(p_feat, c_feat):
                                             gene_id = '' ))
     return p_feat, child_n_map 
 
-def __main__():
-    """
-    extract genome feature information main factory  
-    """
-    try:
-        gff_file = sys.argv[1]
-        out_mat = sys.argv[2]
-    except:
-        print __doc__
-        sys.exit(-1)
-    
-    gene_struct = Parse(gff_file)
 
-    # write the gene annotations to a matlab struct array format
-    sio.savemat(out_mat, 
-                    mdict = dict(genes = gene_struct), 
-                    format = '5', 
-                    oned_as = 'row')
+## General instruction to use the above functions:
+## Usage: GFFParser.py in.gff3 out.mat 
+##    """
+##    extract genome feature information main factory  
+##    """
 
-if __name__ == '__main__':
-    __main__()
+## -- Provide input and result file names --
+
+##    try:
+##        gff_file = sys.argv[1]
+##        out_mat = sys.argv[2]
+##    except:
+##        print __doc__
+##        sys.exit(-1)
+
+## -- Parse the file accoring to the type and returns the genes informations --
+
+##    gene_struct = Parse(gff_file)
+
+## -- Write the gene annotations to a matlab struct array format --
+
+##    sio.savemat(out_mat, 
+##                    mdict = dict(genes = gene_struct), 
+##                    format = '5', 
+##                    oned_as = 'row')
+########------------------------------------------------------#######
