@@ -294,7 +294,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
                     if child_feat.get('CDS')[0][0] - child_feat.get('stop_codon')[0][1] == 1:
                         child_feat['CDS'][0] = [child_feat.get('stop_codon')[0][0], child_feat.get('CDS')[0][1]]
                     else:
-                        child_feat['CDS'].insert(0, child_feat.get['stop_codon'][0])
+                        child_feat['CDS'].insert(0, child_feat.get('stop_codon')[0])
 
             # transcript signal sites 
             TIS, cdsStop, TSS, cleave = [], [], [], []
