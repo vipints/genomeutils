@@ -258,6 +258,8 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             TR_TYP[xq] = np.array('')
             TR_TYP[xq] = np.array(TYPE) if TYPE else TR_TYP[xq]
 
+            orient = Lv1.get('strand', '')
+
             # fetching different sub-features 
             child_feat = defaultdict(list)
             for Lv2 in child_nf_map[(pkey[0], pkey[1], TID)]:
@@ -272,7 +274,8 @@ def _format_gene_models(parent_nf_map, child_nf_map):
                                 NonetoemptyList(child_feat.get('CDS')),
                                 NonetoemptyList(child_feat.get('three_prime_UTR')))
                     child_feat['exon'] = exon_cod 
-            if not child_feat.get('exon'):continue # without sub-features it is hard to go further 
+                else: # TODO only UTR's
+                    continue
 
             # make general ascending order of coordinates 
             if orient == '-':
@@ -281,6 +284,19 @@ def _format_gene_models(parent_nf_map, child_nf_map):
                         if excod[0][0] > excod[-1][0]:
                             excod.reverse()
                             child_feat[etype] = excod
+
+            # stop_codon are seperated from CDS, add the coordinates based on strand
+            if child_feat.get('stop_codon'):
+                if orient == '+':
+                    if child_feat.get('stop_codon')[0][0] - child_feat.get('CDS')[-1][1] == 1:
+                        child_feat['CDS'][-1] = [child_feat.get('CDS')[-1][0], child_feat.get('stop_codon')[0][1]]
+                    else:
+                        child_feat['CDS'].append(child_feat.get('stop_codon')[0])
+                elif orient == '-':
+                    if child_feat.get('CDS')[0][0] - child_feat.get('stop_codon')[0][1] == 1:
+                        child_feat['CDS'][0] = [child_feat.get('stop_codon')[0][0], child_feat.get('CDS')[0][1]]
+                    else:
+                        child_feat['CDS'].insert(0, child_feat.get['stop_codon'][0])
 
             # transcript signal sites 
             TIS, cdsStop, TSS, cleave = [], [], [], []
