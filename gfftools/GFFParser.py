@@ -250,7 +250,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
         for xq, Lv1 in enumerate(child_nf_map[pkey]):
 
             TID = Lv1.get('ID', '')
-            TRS[xq]= np.array(TID)
+            TRS[xq]= np.array([TID])
 
             TYPE = Lv1.get('type', '')
             TR_TYP[xq] = np.array('')
