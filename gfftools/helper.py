@@ -14,10 +14,10 @@ def init_gene_DE():
     """
     Initializing the gene structure for DE
     """
-    gene_det = [('chr', 'S15'), 
+    gene_det = [('id', 'f8'), 
+                    ('chr', 'S15'), 
                     ('exons', numpy.dtype),
                     ('gene_info', numpy.dtype),
-                    ('id', 'f8'), 
                     ('is_alt_spliced', 'f8'), 
                     ('name', 'S25'),
                     ('source', 'S25'),
