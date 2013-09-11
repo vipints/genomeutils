@@ -272,8 +272,11 @@ def _format_gene_models(parent_nf_map, child_nf_map):
                                 NonetoemptyList(child_feat.get('CDS')),
                                 NonetoemptyList(child_feat.get('three_prime_UTR')))
                     child_feat['exon'] = exon_cod 
-                else: # TODO only UTR's
-                    continue
+                else: 
+                    # searching through keys to find a pattern describing exon feature 
+                    ex_key_pattern = [k for k in child_feat if k.endswith("exon")]
+                    child_feat['exon'] = child_feat[ex_key_pattern[0]]
+                    # TODO only UTR's
 
             # make general ascending order of coordinates 
             if orient == '-':
@@ -329,7 +332,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
             
             # add sub-feature # make array for export to different out
             TSTAT[xq] = t_status
-            EXON[xq] = np.array(child_feat.get('exon'))
+            EXON[xq] = np.array(child_feat.get('exon'), np.float64)
             UTR5[xq] = np.array(NonetoemptyList(child_feat.get('five_prime_UTR')))
             UTR3[xq] = np.array(NonetoemptyList(child_feat.get('three_prime_UTR')))
             CDS[xq] = np.array(NonetoemptyList(child_feat.get('CDS')))
@@ -380,6 +383,13 @@ def _format_gene_models(parent_nf_map, child_nf_map):
         gene[g_cnt]['is_correctly_gff3_referenced'] = ''
         gene[g_cnt]['splicegraph'] = []
         g_cnt += 1 
+
+    ## deleting empty gene records from the main array
+    for XP, ens in enumerate(gene):
+        if ens[0]==0:
+            break
+    XQC = range(XP, len(gene)+1)
+    gene = np.delete(gene, XQC)
 
     return gene 
 
