@@ -41,17 +41,17 @@ def __main__():
         sys.exit(-1)
 
     # look for a fasta index file in the base folder 
-    for fa_index_file in os.listdir(os.path.dirname(os.path.realpath(faname))):
-        if fa_index_file.endswith(".fai"):
-            break
-    print fa_index_file
+    #for fa_index_file in os.listdir(os.path.dirname(os.path.realpath(faname))):
+    #    if fa_index_file.endswith(".fai"):
+    #        break
+    #print fa_index_file
 
-    contigs = dict()
-    faih = helper._open_file(os.path.dirname(os.path.realpath(faname)) + '/' + fa_index_file)
-    for chr in faih:
-        chr = chr.strip().split('\t')
-        contigs[chr[0]] = 1
-    print 'selected super contigs'
+    #contigs = dict()
+    #faih = helper._open_file(os.path.dirname(os.path.realpath(faname)) + '/' + fa_index_file)
+    #for chr in faih:
+    #    chr = chr.strip().split('\t')
+    #    contigs[chr[0]] = 1
+    #print 'selected super contigs'
 
     # extract genome annotation from gtf/gff file 
     anno_file_content = GFFParser.Parse(gfname)
@@ -59,41 +59,43 @@ def __main__():
     
     # genomic signals
     for signal in ['splice', 'TIS', 'TSS']:
-        # TODO check the consensus of regions extracted from the following code
 
-        gtf_db, feature_cnt = get_label_regions(anno_file_content, contigs, signal)
-        print 'extracted feature regions'
+        gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
+        print 'extracted', feature_cnt, signal, 'signal regions'
 
-        posLabel = select_labels(gtf_db, feature_cnt, label_cnt=4000) # number of labels 
-        print 'selected random labels' 
+        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=4) # number of labels 
+        print 'selecting', COUNT, 'random', signal, 'labels'
 
         if signal == 'splice':
+            
             true_ss_seq_fetch(faname, posLabel, boundary=100) # flanking nucleotides 
             print 'fetched don/acc plus signal lables'
-
             false_ss_seq_fetch(faname, posLabel, boundary=100)
             print 'fetched don/acc minus signal lables'
-        else:
-            #TODO one set random labels are fine for both plus and minus labels 
-            pos_seq_fetch(faname, posLabel, signal, boundary=100)
-            print 'fetched ' ,signal, ' plus signal lables'
-            
-            min_seq_fetch(faname, posLabel, signal, boundary=100)
-            print 'fetched ' ,signal, ' minus signal lables'
 
-            break 
+        break 
+
+    #    # TODO check the consensus of regions extracted from the following code
+
+    #    else:
+    #        #TODO one set random labels are fine for both plus and minus labels 
+    #        pos_seq_fetch(faname, posLabel, signal, boundary=100)
+    #        print 'fetched ' ,signal, ' plus signal lables'
+    #        
+    #        min_seq_fetch(faname, posLabel, signal, boundary=100)
+    #        print 'fetched ' ,signal, ' minus signal lables'
         
 
-def get_label_regions(gtf_content, chrom, signal):
+def get_label_regions(gtf_content, signal):
     """
-    get labels location from the annotation
+    get signal sequence location from the annotation
     """
     feat_cnt = 0
     anno_db = defaultdict(list) 
     
     for feature in gtf_content: # gene list in numpy format 
-        if not feature['chr'] in chrom:
-            continue
+        #if not feature['chr'] in chrom:
+        #    continue
 
         mod_anno_db = dict()
         if signal == 'TSS':
@@ -108,8 +110,8 @@ def get_label_regions(gtf_content, chrom, signal):
                     mod_anno_db[ftid[0]] = (feature['tis'][xp],
                                 feature['strand'])
         elif signal == 'splice':
-            for xp, ftid in enumerate(feature['transcripts']):
-                if len(feature['exons'][xp]) > 2: 
+            for xp, ftid in enumerate(feature['transcripts']): # considering each transcript of a gene
+                if len(feature['exons'][xp]) > 2: # spliced transcript 
                     id_cnt = 1
                     for ex in feature['exons'][xp][1:-1]:
                         feat_cnt += 1
@@ -131,7 +133,6 @@ def false_ss_seq_fetch(fnam, Label, boundary):
 
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) 
-
     don_min_fh = open(out_path + "/don_sig_minus_label.fa", 'w')
     acc_min_fh = open(out_path + "/acc_sig_minus_label.fa", 'w')
 
@@ -140,8 +141,8 @@ def false_ss_seq_fetch(fnam, Label, boundary):
             for fLabel in Label[rec.id]:
                 for fid, loc in fLabel.items():
                     if loc[-1]=='+':
-                        acc_t_seq = rec.seq[(loc[0]-boundary)-2:(loc[0]+boundary)-2]
-
+                        acc_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+                        # index for negative sites 
                         idx = [xq.start() for xq in re.finditer(re.escape('AG'), str(acc_t_seq).upper())]
                         if boundary-1 in idx:
                             idx.remove(boundary-1)
@@ -149,23 +150,23 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             continue 
 
                         for xp in idx:
-                            rloc_min = (loc[0]-boundary)+xp
+                            rloc_min = (int(loc[0])-boundary)+xp
                             acc_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
                             if len(acc_mot_seq) != 2*boundary:
                                 continue
                             if not acc_mot_seq:
                                 continue
-                            if 'N' in acc_mot_seq:
+                            if 'N' in acc_mot_seq.upper():
                                 continue
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
 
-                            fseq_acc = SeqRecord(acc_mot_seq, id=fid, description='-ve label')
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
                             break
                         ##
-                        don_t_seq = rec.seq[(loc[1]-boundary)+1:(loc[1]+boundary)+1]
-
+                        don_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+                        # indexing the negative sites 
                         idx = [xq.start() for xq in re.finditer(re.escape('GT'), str(don_t_seq).upper())]
                         if boundary-1 in idx:
                             idx.remove(boundary-1)
@@ -173,27 +174,26 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             continue
 
                         for xj in idx:
-                            rloc_pos = (loc[1]-boundary)+xj
+                            rloc_pos = (int(loc[1])-boundary)+xj
                             don_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
                     
                             if len(don_mot_seq) != 2*boundary:
                                 continue 
                             if not don_mot_seq:
                                 continue
-                            if 'N' in don_mot_seq:
+                            if 'N' in don_mot_seq.upper():
                                 continue
 
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
 
-                            fseq_don = SeqRecord(don_mot_seq, id=fid, description='-ve label')
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='-ve label')
                             don_min_fh.write(fseq_don.format("fasta"))
                             break
 
                     elif loc[-1]=="-":
-
                         ## 
-                        don_t_seq = rec.seq[(loc[0]-boundary)-2:(loc[0]+boundary)-2]
+                        don_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
                         idx = [xq.start() for xq in re.finditer(re.escape('AC'), str(don_t_seq).upper())]
                     
                         if boundary-1 in idx:
@@ -202,7 +202,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             continue
 
                         for xp in idx:
-                            rloc_min = (loc[0]-boundary)+xp
+                            rloc_min = (int(loc[0])-boundary)+xp
                             don_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
                             don_mot_seq = don_mot_seq.reverse_complement()
                         
@@ -210,22 +210,19 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                                 continue 
                             if not don_mot_seq:
                                 continue
-                            if 'N' in don_mot_seq:
+                            if 'N' in don_mot_seq.upper():
                                 continue
 
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
 
-                            fseq_don = SeqRecord(don_mot_seq, id=fid, description='-ve label')
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='-ve label')
                             don_min_fh.write(fseq_don.format("fasta"))
-
                             #print don_mot_seq[0:10]
                             #print don_mot_seq[9:11]
-                            break ## single label from one location 
-
-
+                            break
                         ## 
-                        acc_t_seq = rec.seq[(loc[1]-boundary)+1:(loc[1]+boundary)+1]
+                        acc_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
                         idx = [xq.start() for xq in re.finditer(re.escape('CT'), str(acc_t_seq).upper())]
 
                         if boundary-1 in idx:
@@ -234,7 +231,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             continue
 
                         for xk in idx:
-                            rloc_pos = (loc[1]-boundary)+xk
+                            rloc_pos = (int(loc[1])-boundary)+xk
                             acc_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
                             acc_mot_seq = acc_mot_seq.reverse_complement()
                     
@@ -242,18 +239,16 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                                 continue
                             if not acc_mot_seq:
                                 continue
-                            if 'N' in acc_mot_seq:
+                            if 'N' in acc_mot_seq.upper():
                                 continue
 
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
 
-                            fseq_acc = SeqRecord(acc_mot_seq, id=fid, description='-ve label')
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
-
                             break ## single label 
-
-
+            
     foh.close()
     don_min_fh.close()
     acc_min_fh.close()
@@ -272,7 +267,7 @@ def min_seq_fetch(fnam, Label, signal, boundary):
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
-            for fid, loc in Lsub_feat.items():
+                for fid, loc in Lsub_feat.items():
                 #try: ## random coordinate from mRNA regions particulary trying to exclude the real ones.
                     for ndr in range(4):
                         rloc = random.randint(loc[0]+boundary,loc[0]-boundary)
@@ -317,57 +312,61 @@ def true_ss_seq_fetch(fnam, Label, boundary):
             for Lfeat in Label[rec.id]:
                 for fid, loc in Lfeat.items():
                     if loc[-1] == '+': 
-                        acc_mot_seq = rec.seq[(loc[0]-boundary)-2:(loc[0]+boundary)-2]
+                        acc_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
                         if len(acc_mot_seq) != 2*boundary:
                             continue
                         if not acc_mot_seq:
                             continue
-                        if 'N' in acc_mot_seq:
+                        if 'N' in acc_mot_seq.upper():
                             continue
                         if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                             continue 
-                        
-                        fseq_acc = SeqRecord(acc_mot_seq, id=fid, description='+ve label')
+
+                        fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
                         acc_pos_fh.write(fseq_acc.format("fasta"))
 
-                        don_mot_seq = rec.seq[(loc[1]-boundary)+1:(loc[1]+boundary)+1]
+                        don_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
                         if len(don_mot_seq) != 2*boundary:
                             continue 
                         if not don_mot_seq:
                             continue
-                        if 'N' in don_mot_seq:
+                        if 'N' in don_mot_seq.upper():
                             continue
                         if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                             continue 
 
-                        fseq_don = SeqRecord(don_mot_seq, id=fid, description='+ve label')
+                        fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
                         don_pos_fh.write(fseq_don.format("fasta"))
 
                     elif loc[-1] == '-':
-                        don_mot_seq = rec.seq[(loc[0]-boundary)-2:(loc[0]+boundary)-2]
+                        don_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+                        don_mot_seq = don_mot_seq.reverse_complement()
+
                         if len(don_mot_seq) != 2*boundary:
                             continue 
                         if not don_mot_seq:
                             continue
-                        if 'N' in don_mot_seq:
+                        if 'N' in don_mot_seq.upper():
                             continue
                         if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                             continue 
 
-                        fseq_don = SeqRecord(don_mot_seq, id=fid, description='+ve label')
+                        fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
                         don_pos_fh.write(fseq_don.format("fasta"))
 
-                        acc_mot_seq = rec.seq[(loc[1]-boundary)+1:(loc[1]+boundary)+1]
+                        acc_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+                        acc_mot_seq = acc_mot_seq.reverse_complement()
+
                         if len(acc_mot_seq) != 2*boundary:
                             continue
                         if not acc_mot_seq:
                             continue
-                        if 'N' in acc_mot_seq:
+                        if 'N' in acc_mot_seq.upper():
                             continue
                         if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                             continue 
 
-                        fseq_acc = SeqRecord(acc_mot_seq, id=fid, description='+ve label')
+                        fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
                         acc_pos_fh.write(fseq_acc.format("fasta"))
 
     don_pos_fh.close()
@@ -407,9 +406,10 @@ def pos_seq_fetch(fnam, Label, signal, boundary):
 
 def select_labels(feat_db, feat_count, label_cnt):
     """
-    Random sampling to select lables
+    Random sampling to select signal lables
     """
     assert label_cnt <= feat_count, 'Number of features annotated ' + str(feat_count)
+
     try:
         accept_prob = (1.0*label_cnt)/feat_count
     except:
@@ -419,9 +419,9 @@ def select_labels(feat_db, feat_count, label_cnt):
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
             break
-        print '     recursive ..', counter
-    print counter, '    Labels returning'
-    return LSet
+        print '    recursive ...', counter
+
+    return LSet, counter
 
 def recursive_fn(f_db, lb_cnt, apt_prob):
     """
