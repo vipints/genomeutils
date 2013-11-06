@@ -58,32 +58,37 @@ def __main__():
     print 'processed annotation file'
     
     # genomic signals
-    for signal in ['splice', 'TIS', 'TSS']:
+    for signal in ['splice', 'TSS', 'TIS']:
+        signal = 'TSS'
 
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
 
-        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=4) # number of labels 
+        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=1) # number of labels 
         print 'selecting', COUNT, 'random', signal, 'labels'
 
         if signal == 'splice':
             
             true_ss_seq_fetch(faname, posLabel, boundary=100) # flanking nucleotides 
             print 'fetched don/acc plus signal lables'
+
             false_ss_seq_fetch(faname, posLabel, boundary=100)
             print 'fetched don/acc minus signal lables'
+        else:
+            
+            pos_seq_fetch(faname, posLabel, signal, boundary=100)
+            print 'fetched', signal, 'plus signal lables'
+
+            min_seq_fetch(faname, posLabel, signal, boundary=100)
+            print 'fetched', signal, 'minus signal lables'
 
         break 
 
+    # TODO TIS feature generation step need to added 
     #    # TODO check the consensus of regions extracted from the following code
-
     #    else:
     #        #TODO one set random labels are fine for both plus and minus labels 
-    #        pos_seq_fetch(faname, posLabel, signal, boundary=100)
-    #        print 'fetched ' ,signal, ' plus signal lables'
-    #        
-    #        min_seq_fetch(faname, posLabel, signal, boundary=100)
-    #        print 'fetched ' ,signal, ' minus signal lables'
+    #TODO with reference to splice signals the TIS and TSS minus signal should follow the consensus region with true negative site in the sequence. 
         
 
 def get_label_regions(gtf_content, signal):
@@ -255,10 +260,8 @@ def false_ss_seq_fetch(fnam, Label, boundary):
 
 def min_seq_fetch(fnam, Label, signal, boundary):
     """
-    fetch the signal sequence from the genome sequence
+    fetch the minus signal sequence label
     """
-
-    #TODO with reference to splice signals the TIS and TSS minus signal should follow the consensus region with true negative site in the sequence. 
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) ## result to respective dir 
@@ -268,31 +271,26 @@ def min_seq_fetch(fnam, Label, signal, boundary):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-                #try: ## random coordinate from mRNA regions particulary trying to exclude the real ones.
-                    for ndr in range(4):
-                        rloc = random.randint(loc[0]+boundary,loc[0]-boundary)
-                        motif_seq = rec.seq[rloc-boundary:rloc+boundary]
 
-                        if len(motif_seq) != 2*boundary:
+                    for ndr in range(4):
+
+                        rloc = random.randint(int(loc[0])-boundary,int(loc[0])+boundary)
+                        if rloc == int(loc[0]):
                             continue
+
+                        motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+                        print motif_seq
+
+                        #if len(motif_seq) != 2*boundary:
+                        #    continue
                         if not motif_seq:
                             continue
-                        if 'N' in motif_seq:
+                        if 'N' in motif_seq.upper():
                             continue
 
-                        fseq = SeqRecord(motif_seq, id=fid+'_'+str(ndr), description='-ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                         out_min_fh.write(fseq.format("fasta"))
-                #except:
-                #    rloc = random.randint(loc[0],loc[1])
-                #    motif_seq = rec.seq[rloc-boundary:rloc+boundary]
-                #    if not motif_seq:
-                #        continue
-                #    if 'N' in motif_seq:
-                #        continue
-                #    if len(motif_seq)!=400: 
-                #        continue
-                #    fseq = SeqRecord(motif_seq, id=fid, description='-ve label')
-                #    out_min_fh.write(fseq.format("fasta"))
+
     out_min_fh.close()
     foh.close()
 
@@ -375,7 +373,7 @@ def true_ss_seq_fetch(fnam, Label, boundary):
 
 def pos_seq_fetch(fnam, Label, signal, boundary):
     """
-    fetch the signal sequence from the genome sequence  
+    fetch the plus signal sequence 
     """
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
@@ -386,19 +384,20 @@ def pos_seq_fetch(fnam, Label, signal, boundary):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
+                    
+                    motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
 
-                    motif_seq = rec.seq[loc[0]-boundary:loc[0]+boundary]
                     if loc[-1] == '-': ## start codon position varies according to the strand
                         motif_seq = motif_seq.reverse_complement()
 
-                    if len(motif_seq) != 2*boundary: 
-                        continue
+                    #if len(motif_seq) != 2*boundary: 
+                    #    continue
                     if not motif_seq:
                         continue
-                    if 'N' in motif_seq:
+                    if 'N' in motif_seq.upper():
                         continue
 
-                    fseq = SeqRecord(motif_seq, id=fid, description='+ve label')
+                    fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                     out_pos_fh.write(fseq.format("fasta"))
 
     out_pos_fh.close()
