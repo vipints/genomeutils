@@ -59,12 +59,12 @@ def __main__():
     
     # genomic signals
     for signal in ['splice', 'TSS', 'TIS']:
-        signal = 'TSS'
+        signal = "TSS"
 
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
 
-        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=1) # number of labels 
+        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=4000) # number of labels 
         print 'selecting', COUNT, 'random', signal, 'labels'
 
         if signal == 'splice':
@@ -76,10 +76,10 @@ def __main__():
             print 'fetched don/acc minus signal lables'
         else:
             
-            pos_seq_fetch(faname, posLabel, signal, boundary=100)
+            pos_seq_fetch(faname, posLabel, signal, boundary=200)
             print 'fetched', signal, 'plus signal lables'
 
-            min_seq_fetch(faname, posLabel, signal, boundary=100)
+            min_seq_fetch(faname, posLabel, signal, boundary=200)
             print 'fetched', signal, 'minus signal lables'
 
         break 
@@ -138,8 +138,10 @@ def false_ss_seq_fetch(fnam, Label, boundary):
 
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) 
-    don_min_fh = open(out_path + "/don_sig_minus_label.fa", 'w')
-    acc_min_fh = open(out_path + "/acc_sig_minus_label.fa", 'w')
+    #don_min_fh = open(out_path + "/don_sig_minus_label.fa", 'w')
+    #acc_min_fh = open(out_path + "/acc_sig_minus_label.fa", 'w')
+    don_min_fh = open("don_sig_minus_label.fa", 'w')
+    acc_min_fh = open("acc_sig_minus_label.fa", 'w')
 
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
@@ -265,7 +267,8 @@ def min_seq_fetch(fnam, Label, signal, boundary):
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) ## result to respective dir 
-    out_min_fh = open(out_path + "/" + signal + "_sig_minus_label.fa", 'w')
+    #out_min_fh = open(out_path + "/" + signal + "_sig_minus_label.fa", 'w')
+    out_min_fh = open(signal+"_sig_minus_label.fa", 'w')
 
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
@@ -279,7 +282,6 @@ def min_seq_fetch(fnam, Label, signal, boundary):
                             continue
 
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
-                        print motif_seq
 
                         #if len(motif_seq) != 2*boundary:
                         #    continue
@@ -302,8 +304,10 @@ def true_ss_seq_fetch(fnam, Label, boundary):
 
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
-    don_pos_fh = open(out_path + "/don_sig_plus_label.fa", 'w')
-    acc_pos_fh = open(out_path + "/acc_sig_plus_label.fa", 'w')
+    #don_pos_fh = open(out_path + "/don_sig_plus_label.fa", 'w')
+    #acc_pos_fh = open(out_path + "/acc_sig_plus_label.fa", 'w')
+    don_pos_fh = open("don_sig_plus_label.fa", 'w')
+    acc_pos_fh = open("acc_sig_plus_label.fa", 'w')
 
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
@@ -378,7 +382,8 @@ def pos_seq_fetch(fnam, Label, signal, boundary):
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
-    out_pos_fh = open(out_path + "/" + signal + "_sig_plus_label.fa", 'w')
+    #out_pos_fh = open(out_path + "/" + signal + "_sig_plus_label.fa", 'w')
+    out_pos_fh = open(signal+"_sig_plus_label.fa", 'w')
 
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
