@@ -11,7 +11,7 @@ Requirements:
 import os, sys, re
 import collections
 from Bio import SeqIO
-from common_util import _open_file
+from helper import _open_file
 
 def feature_table(chr_id, source, orient, genes, transcripts, cds, exons, unk):
     """
