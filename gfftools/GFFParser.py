@@ -134,6 +134,7 @@ def Parse(ga_file):
         gff_info['info'] = dict(tags)
         #gff_info["is_gff3"] = ftype
         gff_info['chr'] = parts[0]
+        gff_info['score'] = parts[5]
 
         if parts[3] and parts[4]:
             gff_info['location'] = [int(parts[3]) ,
@@ -168,6 +169,7 @@ def Parse(ga_file):
                                             dict( type = gff_info['type'], 
                                             location =  gff_info['location'], 
                                             strand = gff_info['strand'], 
+                                            score = gff_info['score'], 
                                             ID = gff_info['id'],
                                             gene_id = gff_info['info'].get('GParent', '') 
                                             ))
@@ -176,6 +178,7 @@ def Parse(ga_file):
                                             type = gff_info['type'], 
                                             location = gff_info['location'],
                                             strand = gff_info['strand'],
+                                            score = gff_info['score'], 
                                             name = tags.get('Name', [''])[0])
             elif rec_category == 'record':
                 #TODO how to handle plain records?
@@ -226,6 +229,7 @@ def _format_gene_models(parent_nf_map, child_nf_map):
         gene[g_cnt]['start'] = pdet.get('location', [])[0]
         gene[g_cnt]['stop'] = pdet.get('location', [])[1]
         gene[g_cnt]['strand'] = orient  
+        gene[g_cnt]['score'] = pdet.get('score','')
         
         # default value 
         gene[g_cnt]['is_alt_spliced'] = gene[g_cnt]['is_alt'] = 0
@@ -418,7 +422,7 @@ def _create_missing_feature_type(p_feat, c_feat):
     child_n_map = defaultdict(list)
     for fid, det in c_feat.items():
         # get the details from grand child  
-        GID = STRD = None
+        GID = STRD = SCR = None
         SPOS, EPOS = [], [] 
         TYP = dict()
         for gchild in det:
@@ -426,6 +430,7 @@ def _create_missing_feature_type(p_feat, c_feat):
             SPOS.append(gchild.get('location', [])[0]) 
             EPOS.append(gchild.get('location', [])[1]) 
             STRD = gchild.get('strand', '')
+            SCR = gchild.get('score', '')
             TYP[gchild.get('type', '')] = 1
         SPOS.sort() 
         EPOS.sort()
@@ -449,6 +454,7 @@ def _create_missing_feature_type(p_feat, c_feat):
                                             dict( type = transcript_type,
                                             location =  [SPOS[0], EPOS[-1]], 
                                             strand = STRD, 
+                                            score = SCR, 
                                             ID = transcript_id,
                                             gene_id = '' ))
         # reorganizing the grand child
@@ -458,6 +464,7 @@ def _create_missing_feature_type(p_feat, c_feat):
                                             location =  gchild.get('location'),
                                             strand = gchild.get('strand'), 
                                             ID = gchild.get('ID'),
+                                            score = gchild.get('score'),
                                             gene_id = '' ))
     return p_feat, child_n_map 
 
