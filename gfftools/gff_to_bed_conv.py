@@ -32,20 +32,18 @@ def writeBED(tinfo):
                     rel_stop = int(ex_cod[1])
             
             if exon_len:
-                # TODO fix the score value from GFF return instead of default '.' 
                 out_print = [ent1['chr'],
                             str(rel_start),
                             str(rel_stop),
                             tid[0],
-                            '.', 
+                            ent1['score'][0], 
                             ent1['strand'], 
                             str(rel_start),
                             str(rel_stop),
                             '0',
                             str(exon_cnt),
                             exon_len,
-                            exon_cod
-                            ]
+                            exon_cod]
                 print '\t'.join(out_print)  
     
 def __main__():
