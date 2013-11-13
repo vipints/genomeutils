@@ -13,10 +13,11 @@ of the annotated genome signal region. Extracted labels are stored in the
 base folder of input file with signal specific names. 
 ex: TSS [tss_sig_{minus|plus}_label.fa]
 
-Usage: python generate_genome_seq_labels.py in.fasta.(gz) in.gtf.(gz)
+Usage: python generate_genome_seq_labels.py in.fasta.(gz|bz2) in.gtf.(gz|bz2)
 
 Requirements:
     BioPython:- http://biopython.org 
+    gfftools:- https://github.com/vipints/genomeutils/tree/master/gfftools
 """
 
 import re
@@ -40,57 +41,98 @@ def __main__():
         print __doc__
         sys.exit(-1)
 
-    # look for a fasta index file in the base folder 
-    #for fa_index_file in os.listdir(os.path.dirname(os.path.realpath(faname))):
-    #    if fa_index_file.endswith(".fai"):
-    #        break
-    #print fa_index_file
-
-    #contigs = dict()
-    #faih = helper._open_file(os.path.dirname(os.path.realpath(faname)) + '/' + fa_index_file)
-    #for chr in faih:
-    #    chr = chr.strip().split('\t')
-    #    contigs[chr[0]] = 1
-    #print 'selected super contigs'
-
     # extract genome annotation from gtf/gff file 
     anno_file_content = GFFParser.Parse(gfname)
     print 'processed annotation file'
     
     # genomic signals
-    for signal in ['splice', 'TSS', 'TIS']:
-        signal = "TSS"
+    #for signal in ['splice', 'tss', 'tis']: # don/acc - Transcription - Translation 
+    for signal in ['tis']: # don/acc - Transcription - Translation 
 
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
 
-        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=4000) # number of labels 
+        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt=1) # number of labels 
         print 'selecting', COUNT, 'random', signal, 'labels'
 
         if signal == 'splice':
-            
             true_ss_seq_fetch(faname, posLabel, boundary=100) # flanking nucleotides 
             print 'fetched don/acc plus signal lables'
 
             false_ss_seq_fetch(faname, posLabel, boundary=100)
             print 'fetched don/acc minus signal lables'
-        else:
-            
-            pos_seq_fetch(faname, posLabel, signal, boundary=200)
+        elif signal == 'tis':
+            true_tis_seq_fetch(faname, posLabel, signal, boundary=200)
             print 'fetched', signal, 'plus signal lables'
 
-            min_seq_fetch(faname, posLabel, signal, boundary=200)
-            print 'fetched', signal, 'minus signal lables'
+        else:
+            plus_seq_fetch(faname, posLabel, signal, boundary=200)
+            print 'fetched', signal, 'plus signal lables'
 
-        break 
+            minus_seq_fetch(faname, posLabel, signal, boundary=200)
+            print 'fetched', signal, 'minus signal lables'
+        
+        #TODO remove the extra features 
 
     # TODO TIS feature generation step need to added 
     #    # TODO check the consensus of regions extracted from the following code
-    #    else:
-    #        #TODO one set random labels are fine for both plus and minus labels 
     #TODO with reference to splice signals the TIS and TSS minus signal should follow the consensus region with true negative site in the sequence. 
-        
 
+
+def true_tis_seq_fetch(fnam, Label, signal, boundary):
+    """
+    fetch the plus TIS signal sequence 
+    """
+
+    foh = helper._open_file(fnam)
+
+    real_fnam = os.path.realpath(fnam)
+    out_path = os.path.dirname(real_fnam)
+    #out_pos_fh = open(out_path + "/" + signal + "_sig_plus_label.fa", 'w')
+    out_pos_fh = open(signal+"_sig_plus_label.fa", 'w')
+
+    for rec in SeqIO.parse(foh, "fasta"):
+        if rec.id in Label:
+            for Lsub_feat in Label[rec.id]:
+                for fid, loc in Lsub_feat.items():
+                    
+                    if loc[-1] == '+': 
+                        motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+
+                        if not motif_seq:
+                            continue
+                        if 'N' in motif_seq.upper():
+                            continue
+                        if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
+                            continue
+
+                        fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        out_pos_fh.write(fseq.format("fasta"))
+
+                    elif loc[-1] == '-': 
+                        motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+                        #motif_seq = motif_seq.reverse_complement()
+                    
+                        #print motif_seq.upper()
+
+                        #print  str(motif_seq[boundary-1:boundary+2]).upper() 
+
+                    #!= 'AG':
+                    sys.exit(-1)
+
+                    #if len(motif_seq) != 2*boundary: 
+                    #    continue
+                    if not motif_seq:
+                        continue
+                    if 'N' in motif_seq.upper():
+                        continue
+
+                    fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                    out_pos_fh.write(fseq.format("fasta"))
+
+    out_pos_fh.close()
+    foh.close()
+        
 def get_label_regions(gtf_content, signal):
     """
     get signal sequence location from the annotation
@@ -98,17 +140,15 @@ def get_label_regions(gtf_content, signal):
     feat_cnt = 0
     anno_db = defaultdict(list) 
     
-    for feature in gtf_content: # gene list in numpy format 
-        #if not feature['chr'] in chrom:
-        #    continue
+    for feature in gtf_content: # gene list in numpy array format 
 
         mod_anno_db = dict()
-        if signal == 'TSS':
+        if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
                 feat_cnt += 1
                 mod_anno_db[ftid[0]] = (feature['tss'][xp], 
                                 feature['strand'])
-        elif signal == 'TIS':
+        elif signal == 'tis':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
                     feat_cnt += 1
@@ -255,14 +295,13 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
                             break ## single label 
-            
     foh.close()
     don_min_fh.close()
     acc_min_fh.close()
 
-def min_seq_fetch(fnam, Label, signal, boundary):
+def minus_seq_fetch(fnam, Label, signal, boundary):
     """
-    fetch the minus signal sequence label
+    fetch the minus TSS signal sequence label
     """
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
@@ -370,16 +409,16 @@ def true_ss_seq_fetch(fnam, Label, boundary):
 
                         fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
                         acc_pos_fh.write(fseq_acc.format("fasta"))
-
     don_pos_fh.close()
     acc_pos_fh.close()
     foh.close()
 
-def pos_seq_fetch(fnam, Label, signal, boundary):
+def plus_seq_fetch(fnam, Label, signal, boundary):
     """
-    fetch the plus signal sequence 
+    fetch the plus TSS signal sequence 
     """
     foh = helper._open_file(fnam)
+
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + signal + "_sig_plus_label.fa", 'w')
