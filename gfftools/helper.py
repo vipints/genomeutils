@@ -41,6 +41,7 @@ def init_gene_GP():
             ('alias', 'S15'),
             ('name2', numpy.dtype),
             ('strand', 'S2'), 
+            ('score', 'S15'), 
             ('chr', 'S15'), 
             ('chr_num', numpy.dtype),
             ('paralogs', numpy.dtype),
