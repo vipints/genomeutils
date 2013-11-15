@@ -42,9 +42,11 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 2 # number of labels 
+    label_cnt = 2000 # number of labels 
     sp_boundary = 100 # flanking region nucleotides to the splice site 
     t_boundary = 200 # flanking region nucleotides to TIS and TSS 
+    #base_path = ''
+    # FIXME required input variables including the result path   
 
     # extract genome annotation from gtf/gff type file 
     anno_file_content = GFFParser.Parse(gfname)
@@ -52,7 +54,7 @@ def __main__():
     
     # genomic signals : don/acc - Transcription - Translation 
     for signal in ['splice', 'tss', 'tis']: # 
-        
+       
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
 
@@ -79,8 +81,95 @@ def __main__():
 
             minus_tss_seq_fetch(faname, posLabel, t_boundary)
             print 'fetched', signal, 'minus signal lables'
+
+        # remove the extra labels fetched from the previous step 
+
+        #FIXME the number of positive and negative labels for training  
+        #TODO add the other required result path for creating out files
+        plus_cnt=1000
+        plus_label_cleanup([signal], plus_cnt)
+        minus_cnt=3000
+        minus_label_cleanup([signal], minus_cnt)
+
+        # signal data processing over 
+        print signal, 'signal data processing completed'
+
+
+def minus_label_cleanup(sig_type, minus_label_cnt):
+    """
+    clean up the result file with the correct number of fetched signal labels
+    """
+    #out_path = os.path.dirname(base_path) 
+    sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
+
+    for signal in sig_type:
+        #fasta_out_minus = open(out_path + "/"+ signal + "_sig_minus_label.bkp", 'w')
+        fasta_out_minus = open(signal + "_sig_minus_label.bkp", 'w')
+        cnt = 0 
+    
+        #minus_hd = open(out_path + "/" + signal +"_sig_minus_label.fa", "rU")
+        minus_hd = open(signal +"_sig_minus_label.fa", "rU")
+        for rec in SeqIO.parse(minus_hd, 'fasta'):
+            if not rec.seq:
+                continue
+            SeqIO.write([rec], fasta_out_minus, "fasta")
+            cnt += 1
+            if cnt == minus_label_cnt:
+                break
+        minus_hd.close()
+        fasta_out_minus.close()
+        # replacing with new file 
+        #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
+        os.system('mv ' + signal + '_sig_minus_label.bkp '+ signal + "_sig_minus_label.fa")
+
+        cnt = 0 
+        # double checking the count  
+        #minus_hd = open(out_path + "/" + signal + "_sig_minus_label.fa", "rU")
+        minus_hd = open(signal + "_sig_minus_label.fa", "rU")
+        for rec in SeqIO.parse(minus_hd, 'fasta'):
+            if not rec.seq:
+                continue
+            cnt += 1
+        minus_hd.close()
+        print '-', cnt, signal
+
+def plus_label_cleanup(sig_type, plus_label_cnt):
+    """
+    clean up the result file with the correct number of fetched signal labels
+    """
+    #out_path = os.path.dirname(base_path) 
+    sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
+
+    for signal in sig_type:
+        #fasta_out_plus = open(out_path + "/" + signal +"_sig_plus_label.bkp", 'w')
+        fasta_out_plus = open(signal +"_sig_plus_label.bkp", 'w')
+    
+        cnt = 0 
+        #plus_hd = open(out_path + "/"+ signal + "_sig_plus_label.fa", "rU")
+        plus_hd = open(signal + "_sig_plus_label.fa", "rU")
+        for rec in SeqIO.parse(plus_hd, 'fasta'):
+            if not rec.seq:
+                continue
+            SeqIO.write([rec], fasta_out_plus, "fasta")
+            cnt += 1
+            if cnt == plus_label_cnt:
+                break
+        plus_hd.close()
+        fasta_out_plus.close()
+        # replacing with new file 
+        #os.system('mv ' + out_path + '/' + signal +'_sig_plus_label.bkp '+ out_path + "/"+ signal + "_sig_plus_label.fa")
+        os.system('mv ' + signal +'_sig_plus_label.bkp '+ signal + "_sig_plus_label.fa")
         
-        #TODO remove the extra features 
+        cnt = 0 
+        # double checking the count  
+        #plus_hd = open(out_path + "/" + signal + "_sig_plus_label.fa", "rU")
+        plus_hd = open(signal + "_sig_plus_label.fa", "rU")
+        for rec in SeqIO.parse(plus_hd, 'fasta'):
+            if not rec.seq:
+                continue
+            cnt += 1
+        plus_hd.close()
+        print '+', cnt, signal 
 
 def false_tis_seq_fetch(fnam, Label, boundary):
     """
