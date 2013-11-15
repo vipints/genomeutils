@@ -63,7 +63,7 @@ def __main__():
             print 'fetched don/acc minus signal lables'
 
         elif signal == 'tis':
-            true_tis_seq_fetch(faname, posLabel, signal, boundary=200)
+            #true_tis_seq_fetch(faname, posLabel, signal, boundary=200)
             print 'fetched', signal, 'plus signal lables'
 
             false_tis_seq_fetch(faname, posLabel, signal, boundary=200)
@@ -78,7 +78,6 @@ def __main__():
         
         #TODO remove the extra features 
 
-    # TODO TIS feature generation step need to added 
     #    # TODO check the consensus of regions extracted from the following code
     #TODO with reference to splice signals the TIS and TSS minus signal should follow the consensus region with true negative site in the sequence. 
 
@@ -138,10 +137,19 @@ def false_tis_seq_fetch(fnam, Label, signal, boundary):
                         # TODO limit to max 2 false labels from one feature, it will be applied to the splice signal regions too  
                         for xp in idx:
                             rloc_min = (int(loc[0])-boundary)+xp
-                            motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
+                            motif_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)]
                             motif_seq = motif_seq.reverse_complement()
 
-                            print motif_seq.upper()
+                            if not motif_seq:
+                                continue
+                            if 'N' in motif_seq.upper():
+                                continue
+                            if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
+                                continue
+
+                            fseq = SeqRecord(motif_seq.upper(), id=fid, description='-ve label')
+                            out_min_fh.write(fseq.format("fasta"))
+
     out_min_fh.close()
     foh.close()
 
