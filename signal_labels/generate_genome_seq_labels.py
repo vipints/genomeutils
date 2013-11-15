@@ -109,7 +109,7 @@ def false_tis_seq_fetch(fnam, Label, boundary):
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
                         # get the false labels for randomly selected region or the available ones   
-                        for xp in idx:
+                        for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+xp
                             motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
@@ -121,7 +121,7 @@ def false_tis_seq_fetch(fnam, Label, boundary):
                             if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                                 continue
                             # result to fasta out
-                            fseq = SeqRecord(motif_seq.upper(), id=fid, description='-ve label')
+                            fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             out_min_fh.write(fseq.format("fasta"))
 
                     elif loc[-1] == '-': 
@@ -137,7 +137,7 @@ def false_tis_seq_fetch(fnam, Label, boundary):
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
                         # get the false labels for randomly selected region or the available ones   
-                        for xp in idx:
+                        for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+xp
                             motif_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)]
@@ -150,7 +150,7 @@ def false_tis_seq_fetch(fnam, Label, boundary):
                             if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                                 continue
                             # result to fasta out
-                            fseq = SeqRecord(motif_seq.upper(), id=fid, description='-ve label')
+                            fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             out_min_fh.write(fseq.format("fasta"))
     out_min_fh.close()
     foh.close()
@@ -267,7 +267,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
-                        for xp in idx:
+                        for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+xp
                             acc_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
@@ -281,7 +281,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
                             # write to fasta out 
-                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='-ve label')
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
                         
                         # donor splice site signal 
@@ -296,7 +296,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
-                        for xj in idx:
+                        for ndr, xj in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_pos = (int(loc[1])-boundary)+xj
                             don_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
@@ -310,7 +310,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
                             # write to fasta out 
-                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='-ve label')
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             don_min_fh.write(fseq_don.format("fasta"))
 
                     elif loc[-1]=="-":
@@ -326,7 +326,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
-                        for xp in idx:
+                        for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+xp
                             don_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
@@ -341,7 +341,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
                             # write to fasta out 
-                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='-ve label')
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             don_min_fh.write(fseq_don.format("fasta"))
                         
                         # acceptor splice signal site 
@@ -356,7 +356,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
-                        for xk in idx:
+                        for ndr, xk in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_pos = (int(loc[1])-boundary)+xk
                             acc_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
@@ -371,7 +371,7 @@ def false_ss_seq_fetch(fnam, Label, boundary):
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
                             # write to fasta out 
-                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='-ve label')
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
     foh.close()
     don_min_fh.close()
