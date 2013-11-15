@@ -61,9 +61,13 @@ def __main__():
 
             false_ss_seq_fetch(faname, posLabel, boundary=100)
             print 'fetched don/acc minus signal lables'
+
         elif signal == 'tis':
             true_tis_seq_fetch(faname, posLabel, signal, boundary=200)
             print 'fetched', signal, 'plus signal lables'
+
+            false_tis_seq_fetch(faname, posLabel, signal, boundary=200)
+            print 'fetched', signal, 'minus signal lables'
 
         else:
             plus_seq_fetch(faname, posLabel, signal, boundary=200)
@@ -78,6 +82,68 @@ def __main__():
     #    # TODO check the consensus of regions extracted from the following code
     #TODO with reference to splice signals the TIS and TSS minus signal should follow the consensus region with true negative site in the sequence. 
 
+
+def false_tis_seq_fetch(fnam, Label, signal, boundary):
+    """
+    fetch the minus TIS signal sequence
+    """
+    foh = helper._open_file(fnam)
+    real_fnam = os.path.realpath(fnam)
+    out_path = os.path.dirname(real_fnam)
+    #out_pos_fh = open(out_path + "/" + signal + "_sig_plus_label.fa", 'w')
+    out_min_fh = open(signal+"_sig_minus_label.fa", 'w')
+    for rec in SeqIO.parse(foh, "fasta"):
+        if rec.id in Label:
+            for Lsub_feat in Label[rec.id]:
+                for fid, loc in Lsub_feat.items():
+                    if loc[-1] == '+': 
+                        motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+
+                        # get index for negative signal label sequence site 
+                        idx = [xq.start() for xq in re.finditer(re.escape('ATG'), str(motif_seq).upper())]
+                        # sanity check for selected false sites
+                        if boundary-1 in idx:
+                            idx.remove(boundary-1)
+                        if not idx:
+                            continue 
+
+                        # get the false labels with the remaining sites 
+                        # TODO limit to max 2 false labels from one feature 
+                        for xp in idx:
+                            rloc_min = (int(loc[0])-boundary)+xp
+                            motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
+                            
+                            if not motif_seq:
+                                continue
+                            if 'N' in motif_seq.upper():
+                                continue
+                            if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
+                                continue
+                        
+                            fseq = SeqRecord(motif_seq.upper(), id=fid, description='-ve label')
+                            out_min_fh.write(fseq.format("fasta"))
+
+                    elif loc[-1] == '-': 
+                        motif_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-1]
+
+                        # get index for negative signal label sequence site 
+                        idx = [xq.start() for xq in re.finditer(re.escape('CAT'), str(motif_seq).upper())]
+                        # sanity check for selected false sites
+                        if boundary-1 in idx:
+                            idx.remove(boundary-1)
+                        if not idx:
+                            continue 
+
+                        # get the false labels with the remaining sites 
+                        # TODO limit to max 2 false labels from one feature, it will be applied to the splice signal regions too  
+                        for xp in idx:
+                            rloc_min = (int(loc[0])-boundary)+xp
+                            motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
+                            motif_seq = motif_seq.reverse_complement()
+
+                            print motif_seq.upper()
+    out_min_fh.close()
+    foh.close()
 
 def true_tis_seq_fetch(fnam, Label, signal, boundary):
     """
@@ -95,7 +161,6 @@ def true_tis_seq_fetch(fnam, Label, signal, boundary):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-                    
                     if loc[-1] == '+': 
                         motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
 
@@ -110,26 +175,20 @@ def true_tis_seq_fetch(fnam, Label, signal, boundary):
                         out_pos_fh.write(fseq.format("fasta"))
 
                     elif loc[-1] == '-': 
-                        motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
-                        #motif_seq = motif_seq.reverse_complement()
-                    
-                        #print motif_seq.upper()
+                        motif_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-1]
+                        motif_seq = motif_seq.reverse_complement()
+                        
+                        #if len(motif_seq) != 2*boundary: 
+                        #    continue
+                        if not motif_seq:
+                            continue
+                        if 'N' in motif_seq.upper():
+                            continue
+                        if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
+                            continue
 
-                        #print  str(motif_seq[boundary-1:boundary+2]).upper() 
-
-                    #!= 'AG':
-                    sys.exit(-1)
-
-                    #if len(motif_seq) != 2*boundary: 
-                    #    continue
-                    if not motif_seq:
-                        continue
-                    if 'N' in motif_seq.upper():
-                        continue
-
-                    fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
-                    out_pos_fh.write(fseq.format("fasta"))
-
+                        fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        out_pos_fh.write(fseq.format("fasta"))
     out_pos_fh.close()
     foh.close()
         
