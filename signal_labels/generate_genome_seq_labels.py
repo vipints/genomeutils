@@ -53,7 +53,7 @@ def __main__():
     print 'processed annotation file'
     
     # genomic signals : don/acc - Transcription - Translation 
-    for signal in ['splice', 'tss', 'tis']: # 
+    for signal in ['cleave', 'splice', 'tss', 'tis']: 
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
@@ -75,17 +75,18 @@ def __main__():
             false_tis_seq_fetch(faname, posLabel, t_boundary)
             print 'fetched', signal, 'minus signal lables'
 
-        else:
-            plus_tss_seq_fetch(faname, posLabel, t_boundary)
+        elif signal in ["tss", "cleave"]:
+            plus_tss_seq_fetch(signal, faname, posLabel, t_boundary)
             print 'fetched', signal, 'plus signal lables'
 
-            minus_tss_seq_fetch(faname, posLabel, t_boundary)
+            minus_tss_seq_fetch(signal, faname, posLabel, t_boundary)
             print 'fetched', signal, 'minus signal lables'
 
         # remove the extra labels fetched from the previous step 
 
         #FIXME the number of positive and negative labels for training  
         #TODO add the other required result path for creating out files
+
         plus_cnt=1000
         plus_label_cleanup([signal], plus_cnt)
         minus_cnt=3000
@@ -309,6 +310,11 @@ def get_label_regions(gtf_content, signal):
                     feat_cnt += 1
                     mod_anno_db[ftid[0]] = (feature['tis'][xp],
                                 feature['strand'])
+        elif signal == 'cleave':
+            for xp, ftid in enumerate(feature['transcripts']):
+                feat_cnt += 1
+                mod_anno_db[ftid[0]] = (feature['cleave'][xp], 
+                                feature['strand'])
         elif signal == 'splice':
             # going through each transcripts annotated 
             for xp, ftid in enumerate(feature['transcripts']):
@@ -466,15 +472,15 @@ def false_ss_seq_fetch(fnam, Label, boundary):
     don_min_fh.close()
     acc_min_fh.close()
 
-def minus_tss_seq_fetch(fnam, Label, boundary):
+def minus_tss_seq_fetch(signal, fnam, Label, boundary):
     """
-    fetch the minus TSS signal sequence label
+    fetch the minus TSS, cleave signal sequence label
     """
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) ## result to fasta base dir 
     #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
-    out_min_fh = open("tss_sig_minus_label.fa", 'w')
+    out_min_fh = open(signal + "_sig_minus_label.fa", 'w')
 
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
@@ -581,15 +587,15 @@ def true_ss_seq_fetch(fnam, Label, boundary):
     acc_pos_fh.close()
     foh.close()
 
-def plus_tss_seq_fetch(fnam, Label, boundary):
+def plus_tss_seq_fetch(signal, fnam, Label, boundary):
     """
-    fetch the plus TSS signal sequence 
+    fetch the plus TSS, cleave signal sequence 
     """
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "_sig_plus_label.fa", 'w')
-    out_pos_fh = open("tss_sig_plus_label.fa", 'w')
+    out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
 
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
