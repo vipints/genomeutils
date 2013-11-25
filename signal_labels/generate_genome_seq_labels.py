@@ -80,6 +80,9 @@ def __main__():
             true_cdsStop_seq_fetch(faname, posLabel, t_boundary)
             print 'fetched', signal, 'plus signal lables'
 
+            false_cdsStop_seq_fetch(faname, posLabel, t_boundary)
+            print 'fetched', signal, 'minus signal lables'
+
         elif signal in ["tss", "cleave"]:
             plus_tss_seq_fetch(signal, faname, posLabel, t_boundary)
             print 'fetched', signal, 'plus signal lables'
@@ -177,9 +180,77 @@ def plus_label_cleanup(sig_type, plus_label_cnt):
         plus_hd.close()
         print '+', cnt, signal 
 
+def false_cdsStop_seq_fetch(fnam, Label, boundary):
+    """
+    fetch the minus cdsStop signal label sequences
+    """
+    foh = helper._open_file(fnam)
+    real_fnam = os.path.realpath(fnam)
+    out_path = os.path.dirname(real_fnam)
+    #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
+    out_min_fh = open("cdsstop_sig_minus_label.fa", 'w')
+
+    for rec in SeqIO.parse(foh, "fasta"):
+        if rec.id in Label:
+            for Lsub_feat in Label[rec.id]:
+                for fid, loc in Lsub_feat.items():
+                    if loc[-1] == '+': 
+                        motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+                        # get index for negative signal label sequence site 
+                        for ndr, stcodon in enumerate(['TAA', 'TAG', 'TGA']):
+                            idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
+
+                            # FIXME this has to make sure that we are removing the correct positive label 
+                            if boundary in idx:
+                                idx.remove(boundary)
+                            if not idx:
+                                continue
+                            # get the false labels for randomly selected region or the available ones   
+                            if len(idx) > 1:
+                                idx = random.sample(idx, 1)
+                            # adjusting the coordinate to the false site 
+                            rloc_min = (int(loc[0])-boundary)+idx[0]
+                            motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
+
+                            if not motif_sub_seq:
+                                continue
+                            if 'N' in motif_sub_seq.upper():
+                                continue
+                            if not str(motif_sub_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
+                                continue
+                            # result to fasta out
+                            fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                            out_min_fh.write(fseq.format("fasta"))
+
+                    elif loc[-1] == '-': 
+                        motif_seq = rec.seq[(int(loc[0])-boundary)-3:(int(loc[0])+boundary)-2]
+                        # get index for negative signal label sequence site 
+                        for ndr, stcodon in enumerate(['TTA', 'TCA', 'CTA']):
+                            idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
+
+                            # FIXME the same error as of positive gene models
+                            if boundary-1 in idx:
+                                idx.remove(boundary-1)
+                            if not idx:
+                                continue
+                            # get the false labels for randomly selected region or the available ones   
+                            if len(idx) > 1:
+                                idx = random.sample(idx, 1)
+                            # adjusting the coordinate to the false site 
+                            rloc_min = (int(loc[0])-boundary)+idx[0]
+                            motif_sub_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)]
+                            motif_sub_seq = motif_sub_seq.reverse_complement()
+                            
+                            #print motif_sub_seq.upper()
+                            print str(motif_sub_seq[boundary-1:boundary+2]).upper() 
+
+                        
+    out_min_fh.close()
+    foh.close()
+
 def false_tis_seq_fetch(fnam, Label, boundary):
     """
-    fetch the minus TIS signal sequence
+    fetch the minus TIS signal label sequences 
     """
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
