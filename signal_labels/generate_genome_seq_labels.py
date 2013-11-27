@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 2 # number of labels 
+    label_cnt = 1 # number of labels 
     sp_boundary = 100 # flanking region nucleotides to the splice site 
     t_boundary = 200 # flanking region nucleotides to TIS and TSS 
     # FIXME required input variables including the result path   
@@ -228,7 +228,6 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary):
                         for ndr, stcodon in enumerate(['TTA', 'TCA', 'CTA']):
                             idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
 
-                            # FIXME the same error as of positive gene models
                             if boundary-1 in idx:
                                 idx.remove(boundary-1)
                             if not idx:
@@ -238,13 +237,19 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary):
                                 idx = random.sample(idx, 1)
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+idx[0]
-                            motif_sub_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)]
+                            motif_sub_seq = rec.seq[(rloc_min-boundary)-2:(rloc_min+boundary)-1]
                             motif_sub_seq = motif_sub_seq.reverse_complement()
-                            
-                            #print motif_sub_seq.upper()
-                            print str(motif_sub_seq[boundary-1:boundary+2]).upper() 
 
-                        
+                            if not motif_sub_seq:
+                                continue
+                            if 'N' in motif_sub_seq.upper():
+                                continue
+                            if not str(motif_sub_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
+                                continue
+                                
+                            # result to fasta out
+                            fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                            out_min_fh.write(fseq.format("fasta"))
     out_min_fh.close()
     foh.close()
 
