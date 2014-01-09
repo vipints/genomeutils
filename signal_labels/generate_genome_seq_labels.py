@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 2 # number of labels 
+    label_cnt = 1 # number of labels 
 
     sp_boundary = 100 # flanking region nucleotides to the splice site 
     #t_boundary = 200 # flanking region nucleotides to TIS and TSS 
@@ -57,14 +57,13 @@ def __main__():
     # genomic signals : don/acc - Transcription - Translation 
     #for signal in ['cdsStop', 'cleave', 'splice', 'tss', 'tis']: 
 
-    for signal in ['tss']: 
+    for signal in ['tis']: 
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
 
         posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
         print 'selecting', COUNT, 'random', signal, 'labels'
-
 
         if signal == 'splice':
             true_ss_seq_fetch(faname, posLabel, sp_boundary) 
@@ -74,10 +73,10 @@ def __main__():
             print 'fetched don/acc minus signal lables'
 
         elif signal == 'tis':
-            true_tis_seq_fetch(faname, posLabel, t_boundary)
+            true_tis_seq_fetch(faname, posLabel)
             print 'fetched', signal, 'plus signal lables'
 
-            false_tis_seq_fetch(faname, posLabel, t_boundary)
+            false_tis_seq_fetch(faname, posLabel)
             print 'fetched', signal, 'minus signal lables'
 
         elif signal == 'cdsStop':
@@ -260,36 +259,38 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary):
     out_min_fh.close()
     foh.close()
 
-def false_tis_seq_fetch(fnam, Label, boundary):
+def false_tis_seq_fetch(fnam, Label, boundary=200):
     """
     fetch the minus TIS signal label sequences 
     """
-    foh = helper._open_file(fnam)
+
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_min_fh = open("tis_sig_minus_label.fa", 'w')
 
+    foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-                    if loc[-1] == '+': 
-                        motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+                    if loc[1] == '+': 
+                        motif_seq = rec.seq[loc[2][0]:loc[2][1]]
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('ATG'), str(motif_seq).upper())]
-                        # removing the true signl sequence site from selected false sites
-                        if boundary-1 in idx:
-                            idx.remove(boundary-1)
                         if not idx:
                             continue 
                         # limit to take maximum 2 false labels from one defined feature
-                        if len(idx) > 2:
-                            idx = random.sample(idx, 2)
+                        if len(idx) > 3:
+                            idx = random.sample(idx, 3)
                         # get the false labels for randomly selected region or the available ones   
                         for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
-                            rloc_min = (int(loc[0])-boundary)+xp
+                            rloc_min = loc[2][0]+xp
+                            # removing the true signl sequence site from selected false sites
+                            if rloc_min+1 == loc[0][0]:
+                                continue
+
                             motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
                             # check for sanity and consensus of the fetched sequence region 
                             if not motif_seq:
@@ -302,23 +303,25 @@ def false_tis_seq_fetch(fnam, Label, boundary):
                             fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             out_min_fh.write(fseq.format("fasta"))
 
-                    elif loc[-1] == '-': 
-                        motif_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-1]
+                    elif loc[1] == '-': 
+                        motif_seq = rec.seq[loc[2][0]:loc[2][1]]
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('CAT'), str(motif_seq).upper())]
-                        # removing the true signal sequence site from selected false sites
-                        if boundary-1 in idx:
-                            idx.remove(boundary-1)
                         if not idx:
                             continue 
                         # limit to take maximum 2 false labels from one defined feature
-                        if len(idx) > 2:
-                            idx = random.sample(idx, 2)
+                        if len(idx) > 3:
+                            idx = random.sample(idx, 3)
                         # get the false labels for randomly selected region or the available ones   
                         for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
-                            rloc_min = (int(loc[0])-boundary)+xp
-                            motif_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)]
+                            rloc_min = loc[2][0]+xp
+                            # removing the true signal sequence site from selected false sites
+                            if rloc_min+3 == loc[0][0]:
+                                continue
+                            
+                            #motif_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)]
+                            motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
                             motif_seq = motif_seq.reverse_complement()
                             # check for sanity and consensus of the fetched sequence region 
                             if not motif_seq:
@@ -376,21 +379,22 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary):
     out_pos_fh.close()
     foh.close()
 
-def true_tis_seq_fetch(fnam, Label, boundary):
+def true_tis_seq_fetch(fnam, Label, boundary=200):
     """
-    fetch the plus TIS signal sequence 
+    fetch the plus TIS signal sequence.
     """
-    foh = helper._open_file(fnam)
+
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_pos_fh = open("tis_sig_plus_label.fa", 'w')
 
+    foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-                    if loc[-1] == '+': 
+                    if loc[1] == '+': 
                         motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
                         # check for sanity and consensus of the fetched sequence region 
                         if not motif_seq:
@@ -403,7 +407,7 @@ def true_tis_seq_fetch(fnam, Label, boundary):
                         fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         out_pos_fh.write(fseq.format("fasta"))
 
-                    elif loc[-1] == '-': 
+                    elif loc[1] == '-': 
                         motif_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-1]
                         motif_seq = motif_seq.reverse_complement()
                         # check for sanity and consensus of the fetched sequence region 
@@ -420,7 +424,7 @@ def true_tis_seq_fetch(fnam, Label, boundary):
                         out_pos_fh.write(fseq.format("fasta"))
     out_pos_fh.close()
     foh.close()
-        
+     
 def get_label_regions(gtf_content, signal):
     """
     get signal sequence location from the annotation
@@ -435,24 +439,31 @@ def get_label_regions(gtf_content, signal):
                 feat_cnt += 1
                 mod_anno_db[ftid[0]] = (feature['tss'][xp], 
                                 feature['strand'], 
-                                (int(feature['start']), int(feature['stop'])))
+                                (int(feature['start']), int(feature['stop']))
+                                )
         elif signal == 'tis':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
                     feat_cnt += 1
                     mod_anno_db[ftid[0]] = (feature['tis'][xp],
-                                feature['strand'])
+                                feature['strand'],
+                                (int(feature['start']), int(feature['stop']))
+                                )
         elif signal == 'cdsStop':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
                     feat_cnt += 1
                     mod_anno_db[ftid[0]] = (feature['cdsStop'][xp],
-                                feature['strand'])
+                                feature['strand'],
+                                (int(feature['start']), int(feature['stop']))
+                                )
         elif signal == 'cleave':
             for xp, ftid in enumerate(feature['transcripts']):
                 feat_cnt += 1
                 mod_anno_db[ftid[0]] = (feature['cleave'][xp], 
-                                feature['strand'])
+                                feature['strand'],
+                                (int(feature['start']), int(feature['stop']))
+                                )
         elif signal == 'splice':
             # going through each transcripts annotated 
             for xp, ftid in enumerate(feature['transcripts']):
