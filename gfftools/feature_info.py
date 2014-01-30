@@ -18,6 +18,7 @@ def Intron_det(TDB):
     """
 
     intron_size = dict() 
+    exon_size = dict() 
     for ent1 in TDB:
         for idx, tid in enumerate(ent1['transcripts']):
 
@@ -33,11 +34,16 @@ def Intron_det(TDB):
                         intron_size[excod[0]-intron_start] = 1 
 
                     intron_start = excod[1]+1
+                    exon_size[intron_start-excod[0]] = 1
     
     # sort the intron_size based on the keys 
     keys_int = sorted(intron_size)
     print 'MinIntronLength', int(keys_int[0])
     print 'MaxIntronLength', int(keys_int[-1])
+    print 
+    keys_ex = sorted(exon_size)
+    print 'MinExonLength', int(keys_ex[0])
+    print 'MaxExonLength', int(keys_ex[-1])
 
 def __main__():
 
