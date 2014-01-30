@@ -9,7 +9,7 @@ Requirements:
 Copyright (C)	
 
 2009-2012 Friedrich Miescher Laboratory of the Max Planck Society, Tubingen, Germany. 
-2012-2013 Memorial Sloan-Kettering Cancer Center, New York City, USA.
+2012-2014 Memorial Sloan Kettering Cancer Center, New York City, USA.
 """
 
 import re
