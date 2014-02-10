@@ -87,7 +87,7 @@ tempfile.close()
 sra_file.close()
 
 ## split the file based on SE/PE
-# TODO fix the path of SRA toolkit 
+# FIXME SRA toolkit path  
 os.environ['PATH'] += os.pathsep + '/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
 
 ## depends on the compress type and library protocol type
