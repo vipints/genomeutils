@@ -277,10 +277,11 @@ def _format_gene_models(parent_nf_map, child_nf_map):
                                 NonetoemptyList(child_feat.get('three_prime_UTR')))
                     child_feat['exon'] = exon_cod 
                 else: 
+                    # TODO only UTR's
                     # searching through keys to find a pattern describing exon feature 
                     ex_key_pattern = [k for k in child_feat if k.endswith("exon")]
-                    child_feat['exon'] = child_feat[ex_key_pattern[0]]
-                    # TODO only UTR's
+                    if ex_key_pattern:
+                        child_feat['exon'] = child_feat[ex_key_pattern[0]]
 
             # make general ascending order of coordinates 
             if orient == '-':
