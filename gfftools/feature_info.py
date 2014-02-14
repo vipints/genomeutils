@@ -22,6 +22,8 @@ def Intron_det(TDB):
     for ent1 in TDB:
         for idx, tid in enumerate(ent1['transcripts']):
 
+            if not ent1['exons'][idx]:
+                continue
             exon_cnt = len(ent1['exons'][idx])
             if exon_cnt > 1:
 
@@ -30,6 +32,8 @@ def Intron_det(TDB):
                     
                     if xq > 0: 
                         #print intron_start, excod[0]-1 
+                        if excod[0]-intron_start==1:
+                            continue
                         # intron size 
                         intron_size[excod[0]-intron_start] = 1 
 
@@ -37,13 +41,17 @@ def Intron_det(TDB):
                     exon_size[intron_start-excod[0]] = 1
     
     # sort the intron_size based on the keys 
-    keys_int = sorted(intron_size)
-    print 'MinIntronLength', int(keys_int[0])
-    print 'MaxIntronLength', int(keys_int[-1])
-    print 
-    keys_ex = sorted(exon_size)
-    print 'MinExonLength', int(keys_ex[0])
-    print 'MaxExonLength', int(keys_ex[-1])
+    if intron_size:
+        keys_int = sorted(intron_size)
+        print 'MinIntronLength', int(keys_int[0])
+        print 'MaxIntronLength', int(keys_int[-1])
+        print 
+        keys_ex = sorted(exon_size)
+        print 'MinExonLength', int(keys_ex[0])
+        print 'MaxExonLength', int(keys_ex[-1])
+    else:
+        print "Error in feature mapping, please check the source of parent child features" 
+        print "May be the sources are different for parents and child features of the parent Gene"
 
 def __main__():
 
