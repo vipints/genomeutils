@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 1500 # number of labels 
+    label_cnt = 20000 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -52,7 +52,7 @@ def __main__():
     print 'processed annotation file'
     
     # genomic signals : don/acc - Transcription - Translation 
-    for signal in ['cdsStop', 'cleave', 'splice', 'tss', 'tis']: 
+    for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
@@ -74,7 +74,7 @@ def __main__():
             false_tis_seq_fetch(faname, posLabel)
             print 'fetched', signal, 'minus signal lables'
 
-        elif signal == 'cdsStop':
+        elif signal == 'cdsstop':
             true_cdsStop_seq_fetch(faname, posLabel)
             print 'fetched', signal, 'plus signal lables'
 
@@ -90,8 +90,8 @@ def __main__():
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
-        plus_cnt=1000
-        minus_cnt=3000
+        plus_cnt=10000
+        minus_cnt=30000
         #TODO add the other required result path for creating out files
         plus_label_cleanup([signal], plus_cnt)
         minus_label_cleanup([signal], minus_cnt)
@@ -439,7 +439,7 @@ def get_label_regions(gtf_content, signal):
                                 feature['strand'],
                                 (int(feature['start']), int(feature['stop']))
                                 )
-        elif signal == 'cdsStop':
+        elif signal == 'cdsstop':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
                     feat_cnt += 1
