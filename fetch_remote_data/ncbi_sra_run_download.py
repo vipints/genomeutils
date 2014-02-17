@@ -11,6 +11,8 @@ import urllib2
 import shutil
 import subprocess 
 
+class MyException( Exception ): pass
+
 base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
 
 try:
@@ -76,7 +78,7 @@ tempfile=open(out_file_name, "wb")
 try:
     sra_file = urllib2.urlopen(base_url, timeout=1 )
 except urllib2.URLError, err:
-    raise MyException("There was an error: %r" % e)
+    raise MyException("There is an Error: %r" % err)
 
 ## download job starts 
 sys.stdout.write('\tdownloading ' + base_url + ' ... \n')
