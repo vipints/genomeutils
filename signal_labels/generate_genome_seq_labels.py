@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 20000 # number of labels 
+    label_cnt = 1000 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -52,7 +52,9 @@ def __main__():
     print 'processed annotation file'
     
     # genomic signals : don/acc - Transcription - Translation 
-    for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
+    #for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
+    for signal in ['cdsstop', 'cleave', 'tss', 'tis']: 
+    #for signal in ['splice']: 
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
@@ -90,8 +92,8 @@ def __main__():
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
-        plus_cnt=10000
-        minus_cnt=30000
+        plus_cnt=1000
+        minus_cnt=3000
         #TODO add the other required result path for creating out files
         plus_label_cleanup([signal], plus_cnt)
         minus_label_cleanup([signal], minus_cnt)
@@ -211,7 +213,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                                 # check for sanity and consensus of the fetched sequence region 
                                 if not motif_sub_seq:
                                     continue
-                                if 'N' in motif_sub_seq.upper():
+                                if not all (XJ in 'ATCG' for XJ in str(motif_sub_seq.upper())):
                                     continue
                                 if not str(motif_sub_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                                     continue
@@ -239,7 +241,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                                 # check for sanity and consensus of the fetched sequence region 
                                 if not motif_sub_seq:
                                     continue
-                                if 'N' in motif_sub_seq.upper():
+                                if not all (XJ in 'ATCG' for XJ in str(motif_sub_seq.upper())):
                                     continue
                                 if not str(motif_sub_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                                     continue
@@ -638,7 +640,7 @@ def minus_tss_seq_fetch(signal, fnam, Label, boundary=200):
                         #    continue
                         if not motif_seq:
                             continue
-                        if 'N' in motif_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                             continue
                         # write to fasta out 
                         fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
