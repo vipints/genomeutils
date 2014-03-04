@@ -287,7 +287,7 @@ def false_tis_seq_fetch(fnam, Label, boundary=200):
                             # check for sanity and consensus of the fetched sequence region 
                             if not motif_seq:
                                 continue
-                            if 'N' in motif_seq.upper():
+                            if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                                 continue
                             if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                                 continue
@@ -318,7 +318,7 @@ def false_tis_seq_fetch(fnam, Label, boundary=200):
                             # check for sanity and consensus of the fetched sequence region 
                             if not motif_seq:
                                 continue
-                            if 'N' in motif_seq.upper():
+                            if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                                 continue
                             if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                                 continue
@@ -347,7 +347,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                         # check for sanity and consensus of the fetched sequence region 
                         if not motif_seq:
                             continue
-                        if 'N' in motif_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                             continue
                         if not str(motif_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                             continue
@@ -361,7 +361,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                         # check for sanity and consensus of the fetched sequence region 
                         if not motif_seq:
                             continue
-                        if 'N' in motif_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                             continue
                         if not str(motif_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                             continue
@@ -391,7 +391,7 @@ def true_tis_seq_fetch(fnam, Label, boundary=200):
                         # check for sanity and consensus of the fetched sequence region 
                         if not motif_seq:
                             continue
-                        if 'N' in motif_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                             continue
                         if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                             continue
@@ -407,7 +407,7 @@ def true_tis_seq_fetch(fnam, Label, boundary=200):
                         #    continue
                         if not motif_seq:
                             continue
-                        if 'N' in motif_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                             continue
                         if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                             continue
@@ -512,7 +512,7 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
                             #    continue
                             if not acc_mot_seq:
                                 continue
-                            if 'N' in acc_mot_seq.upper():
+                            if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                                 continue
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
@@ -541,7 +541,7 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
                             #    continue
                             if not don_mot_seq:
                                 continue
-                            if 'N' in don_mot_seq.upper():
+                            if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                                 continue
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
@@ -572,7 +572,7 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
                             #    continue 
                             if not don_mot_seq:
                                 continue
-                            if 'N' in don_mot_seq.upper():
+                            if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                                 continue
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
@@ -602,7 +602,7 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
                             #    continue
                             if not acc_mot_seq:
                                 continue
-                            if 'N' in acc_mot_seq.upper():
+                            if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                                 continue
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
@@ -672,7 +672,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                         #    continue
                         if not acc_mot_seq:
                             continue
-                        if 'N' in acc_mot_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                             continue
                         if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                             continue 
@@ -685,7 +685,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                         #    continue 
                         if not don_mot_seq:
                             continue
-                        if 'N' in don_mot_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                             continue
                         if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                             continue 
@@ -702,7 +702,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                         #    continue 
                         if not don_mot_seq:
                             continue
-                        if 'N' in don_mot_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                             continue
                         if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                             continue 
@@ -717,7 +717,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                         #    continue
                         if not acc_mot_seq:
                             continue
-                        if 'N' in acc_mot_seq.upper():
+                        if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                             continue
                         if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                             continue 
@@ -751,7 +751,7 @@ def plus_tss_seq_fetch(signal, fnam, Label, boundary=200):
                     #    continue
                     if not motif_seq:
                         continue
-                    if 'N' in motif_seq.upper():
+                    if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                         continue
                     # write to fasta out 
                     fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
