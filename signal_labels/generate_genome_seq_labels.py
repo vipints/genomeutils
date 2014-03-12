@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 1000 # number of labels 
+    label_cnt = 1500 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -51,10 +51,8 @@ def __main__():
     anno_file_content = GFFParser.Parse(gfname)
     print 'processed annotation file'
     
-    # genomic signals : don/acc - Transcription - Translation 
-    #for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
-    for signal in ['cdsstop', 'cleave', 'tss', 'tis']: 
-    #for signal in ['splice']: 
+    # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
+    for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted', feature_cnt, signal, 'signal regions'
@@ -64,31 +62,31 @@ def __main__():
 
         if signal == 'splice':
             true_ss_seq_fetch(faname, posLabel) 
-            print 'fetched don/acc plus signal lables'
+            print 'fetched %s signal plus lables' % signal
 
             false_ss_seq_fetch(faname, posLabel)
-            print 'fetched don/acc minus signal lables'
+            print 'fetched %s signal minus lables' % signal
 
         elif signal == 'tis':
             true_tis_seq_fetch(faname, posLabel)
-            print 'fetched', signal, 'plus signal lables'
+            print 'fetched %s plus signal lables' % signal
 
             false_tis_seq_fetch(faname, posLabel)
-            print 'fetched', signal, 'minus signal lables'
+            print 'fetched %s minus signal lables' % signal
 
         elif signal == 'cdsstop':
             true_cdsStop_seq_fetch(faname, posLabel)
-            print 'fetched', signal, 'plus signal lables'
+            print 'fetched %s plus signal lables' % signal
 
             false_cdsStop_seq_fetch(faname, posLabel)
-            print 'fetched', signal, 'minus signal lables'
+            print 'fetched %s minus signal lables' % signal
 
         elif signal in ["tss", "cleave"]:
             plus_tss_seq_fetch(signal, faname, posLabel)
-            print 'fetched', signal, 'plus signal lables'
+            print 'fetched %s plus signal lables' % signal
 
             minus_tss_seq_fetch(signal, faname, posLabel)
-            print 'fetched', signal, 'minus signal lables'
+            print 'fetched %s minus signal lables' % signal
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
@@ -763,6 +761,7 @@ def select_labels(feat_db, feat_count, label_cnt):
     """
     Random sampling to select signal lables
     """
+
     assert label_cnt <= feat_count, 'Number of features annotated ' + str(feat_count)
 
     try:
@@ -782,6 +781,7 @@ def recursive_fn(f_db, lb_cnt, apt_prob):
     """
     This function returns the random samples based on the label counts 
     """
+
     pLabel = defaultdict(list)
     cnt = 0 
     for chrom, feat in f_db.items():
