@@ -32,7 +32,7 @@ from gfftools import helper, GFFParser
 
 def __main__():
     """
-    Main processing unit
+    core unit
     """
     try:
         faname = sys.argv[1] # sequence 
@@ -55,45 +55,47 @@ def __main__():
     for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
-        print 'extracted', feature_cnt, signal, 'signal regions'
+        print 'extracted %d %s signal regions' % (feature_cnt, signal)
 
         posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        print 'selecting', COUNT, 'random', signal, 'labels'
+        print 'selecting %d RANDOM %s signal label entities' % (COUNT, signal) 
 
         if signal == 'splice':
             true_ss_seq_fetch(faname, posLabel) 
-            print 'fetched %s signal plus lables' % signal
+            print 'fetched plus %s signal lables' % signal
 
             false_ss_seq_fetch(faname, posLabel)
-            print 'fetched %s signal minus lables' % signal
+            print 'fetched minus %s signal lables' % signal
 
         elif signal == 'tis':
             true_tis_seq_fetch(faname, posLabel)
-            print 'fetched %s plus signal lables' % signal
+            print 'fetched plus %s signal lables' % signal
 
             false_tis_seq_fetch(faname, posLabel)
-            print 'fetched %s minus signal lables' % signal
+            print 'fetched minus %s signal lables' % signal
 
         elif signal == 'cdsstop':
-            true_cdsStop_seq_fetch(faname, posLabel)
-            print 'fetched %s plus signal lables' % signal
+            #label_count = true_cdsStop_seq_fetch(faname, posLabel)
+            #print 'selected %d plus %s signal lables' % (label_count, signal)
 
-            false_cdsStop_seq_fetch(faname, posLabel)
-            print 'fetched %s minus signal lables' % signal
+            label_count = false_cdsStop_seq_fetch(faname, posLabel)
+            print 'selected %d minus %s signal lables' % (label_count, signal)
 
         elif signal in ["tss", "cleave"]:
             plus_tss_seq_fetch(signal, faname, posLabel)
-            print 'fetched %s plus signal lables' % signal
+            print 'fetched plus %s signal lables' % signal
 
             minus_tss_seq_fetch(signal, faname, posLabel)
-            print 'fetched %s minus signal lables' % signal
+            print 'fetched minus %s signal lables' % signal
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
-        plus_cnt=1000
-        minus_cnt=3000
+        plus_cnt = 1000
+        minus_cnt = 3000
+
         #TODO add the other required result path for creating out files
         plus_label_cleanup([signal], plus_cnt)
+
         minus_label_cleanup([signal], minus_cnt)
 
         # signal data processing over 
@@ -108,15 +110,26 @@ def minus_label_cleanup(sig_type, minus_label_cnt):
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
     for signal in sig_type:
+
+        # remove duplicate sequences, expecting the file to be in cwd path!  
+        fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta')) 
+        dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
+        non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
+        dup_ent.clear()
+
         #fasta_out_minus = open(out_path + "/"+ signal + "_sig_minus_label.bkp", 'w')
-        fasta_out_minus = open(signal + "_sig_minus_label.bkp", 'w')
+        fasta_out_minus = open("%s_sig_minus_label.bkp" % signal, 'w')
         cnt = 0 
     
         #minus_hd = open(out_path + "/" + signal +"_sig_minus_label.fa", "rU")
-        minus_hd = open(signal +"_sig_minus_label.fa", "rU")
+        minus_hd = open("%s_sig_minus_label.fa" % signal, "rU")
         for rec in SeqIO.parse(minus_hd, 'fasta'):
             if not rec.seq:
                 continue
+            # check for uniq sequence 
+            if not rec.id in non_dup_ent:
+                continue
+
             SeqIO.write([rec], fasta_out_minus, "fasta")
             cnt += 1
             if cnt == minus_label_cnt:
@@ -125,18 +138,18 @@ def minus_label_cleanup(sig_type, minus_label_cnt):
         fasta_out_minus.close()
         # replacing with new file 
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
-        os.system('mv ' + signal + '_sig_minus_label.bkp '+ signal + "_sig_minus_label.fa")
+        os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
 
         cnt = 0 
         # double checking the count  
         #minus_hd = open(out_path + "/" + signal + "_sig_minus_label.fa", "rU")
-        minus_hd = open(signal + "_sig_minus_label.fa", "rU")
+        minus_hd = open("%s_sig_minus_label.fa" % signal, "rU")
         for rec in SeqIO.parse(minus_hd, 'fasta'):
-            if not rec.seq:
-                continue
             cnt += 1
         minus_hd.close()
-        print '-', cnt, signal
+
+        print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (cnt, signal, signal)
+
 
 def plus_label_cleanup(sig_type, plus_label_cnt):
     """
@@ -146,15 +159,27 @@ def plus_label_cleanup(sig_type, plus_label_cnt):
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
     for signal in sig_type:
+        
+        # remove duplicate sequences, expecting the file to be in cwd path!  
+        fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
+        dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
+        non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
+        dup_ent.clear()
+
         #fasta_out_plus = open(out_path + "/" + signal +"_sig_plus_label.bkp", 'w')
-        fasta_out_plus = open(signal +"_sig_plus_label.bkp", 'w')
-    
+        fasta_out_plus = open("%s_sig_plus_label.bkp" % signal, 'w')
+
         cnt = 0 
         #plus_hd = open(out_path + "/"+ signal + "_sig_plus_label.fa", "rU")
-        plus_hd = open(signal + "_sig_plus_label.fa", "rU")
+        plus_hd = open("%s_sig_plus_label.fa" %signal, "rU")
         for rec in SeqIO.parse(plus_hd, 'fasta'):
             if not rec.seq:
                 continue
+
+            # check for uniq sequence 
+            if not rec.id in non_dup_ent:
+                continue
+
             SeqIO.write([rec], fasta_out_plus, "fasta")
             cnt += 1
             if cnt == plus_label_cnt:
@@ -163,18 +188,18 @@ def plus_label_cleanup(sig_type, plus_label_cnt):
         fasta_out_plus.close()
         # replacing with new file 
         #os.system('mv ' + out_path + '/' + signal +'_sig_plus_label.bkp '+ out_path + "/"+ signal + "_sig_plus_label.fa")
-        os.system('mv ' + signal +'_sig_plus_label.bkp '+ signal + "_sig_plus_label.fa")
+        os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         
         cnt = 0 
         # double checking the count  
         #plus_hd = open(out_path + "/" + signal + "_sig_plus_label.fa", "rU")
-        plus_hd = open(signal + "_sig_plus_label.fa", "rU")
+        plus_hd = open("%s_sig_plus_label.fa" % signal, "rU")
         for rec in SeqIO.parse(plus_hd, 'fasta'):
-            if not rec.seq:
-                continue
             cnt += 1
         plus_hd.close()
-        print '+', cnt, signal 
+
+        print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (cnt, signal, signal)
+
 
 def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
     """
@@ -184,6 +209,8 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
     out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_min_fh = open("cdsstop_sig_minus_label.fa", 'w')
+
+    true_label = 0 
 
     foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
@@ -218,6 +245,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                                 # result to fasta out
                                 fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr)+'_'+str(nb), description='-ve label')
                                 out_min_fh.write(fseq.format("fasta"))
+                                true_label += 1 
 
                     elif loc[1] == '-': 
                         motif_seq = rec.seq[loc[2][0]:loc[2][1]]
@@ -232,6 +260,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                             for nb, xp in enumerate(idx):
                                 # adjusting the coordinate to the false site 
                                 rloc_min = loc[2][0]+xp
+
                                 # TODO removing the true signal sequence site from selected false sites
 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
@@ -246,8 +275,12 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                                 # result to fasta out
                                 fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr)+'_'+str(nb), description='-ve label')
                                 out_min_fh.write(fseq.format("fasta"))
+                                true_label += 1 
     out_min_fh.close()
     foh.close()
+    
+    return true_label
+
 
 def false_tis_seq_fetch(fnam, Label, boundary=200):
     """
@@ -330,10 +363,13 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
     """
     fetch positive cdsStop signal labels 
     """
+
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "cdsstop_sig_plus_label.fa", 'w')
     out_pos_fh = open("cdsstop_sig_plus_label.fa", 'w')
+
+    true_label = 0 
 
     foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
@@ -352,6 +388,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                         # result to fasta out
                         fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         out_pos_fh.write(fseq.format("fasta"))
+                        true_label += 1
 
                     elif loc[1] == '-': 
                         motif_seq = rec.seq[(int(loc[0])-boundary)-3:(int(loc[0])+boundary)-2]
@@ -366,8 +403,10 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                         # result to fasta out
                         fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         out_pos_fh.write(fseq.format("fasta"))
+                        true_label += 1
     out_pos_fh.close()
     foh.close()
+    return true_label
 
 def true_tis_seq_fetch(fnam, Label, boundary=200):
     """
@@ -419,6 +458,7 @@ def get_label_regions(gtf_content, signal):
     """
     get signal sequence location from the annotation
     """
+
     feat_cnt = 0
     anno_db = defaultdict(list) 
     
@@ -762,7 +802,7 @@ def select_labels(feat_db, feat_count, label_cnt):
     Random sampling to select signal lables
     """
 
-    assert label_cnt <= feat_count, 'Number of features annotated ' + str(feat_count)
+    assert label_cnt <= feat_count, 'Number of features annotated %d' % feat_count
 
     try:
         accept_prob = (1.0*label_cnt)/feat_count
@@ -773,7 +813,7 @@ def select_labels(feat_db, feat_count, label_cnt):
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
             break
-        print '    recursive ...', counter
+        print '    recursive ... %d' % counter
 
     return LSet, counter
 
