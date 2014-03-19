@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 1500 # number of labels 
+    label_cnt = 1 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -54,7 +54,7 @@ def __main__():
     # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
     for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
 
-        signal = 'tis'
+        signal = 'splice'
        
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted %d %s signal regions' % (feature_cnt, signal)
@@ -64,10 +64,10 @@ def __main__():
 
         if signal == 'splice':
             true_ss_seq_fetch(faname, posLabel) 
-            print 'fetched plus %s signal lables' % signal
+            print 'selected %d plus %s signal lables' % (label_count, signal)
 
             false_ss_seq_fetch(faname, posLabel)
-            print 'fetched minus %s signal lables' % signal
+            print 'selected %d minus %s signal lables' % (label_count, signal)
 
         elif signal == 'tis':
             label_count = true_tis_seq_fetch(faname, posLabel)
@@ -84,11 +84,11 @@ def __main__():
             print 'selected %d minus %s signal lables' % (label_count, signal)
 
         elif signal in ["tss", "cleave"]:
-            plus_tss_seq_fetch(signal, faname, posLabel)
-            print 'fetched plus %s signal lables' % signal
+            label_count = plus_tss_seq_fetch(signal, faname, posLabel)
+            print 'selected %d plus %s signal lables' % (label_count, signal) 
 
-            minus_tss_seq_fetch(signal, faname, posLabel)
-            print 'fetched minus %s signal lables' % signal
+            label_count = minus_tss_seq_fetch(signal, faname, posLabel)
+            print 'selected %d minus %s signal lables' % (label_count, signal) 
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
@@ -729,36 +729,46 @@ def minus_tss_seq_fetch(signal, fnam, Label, boundary=200):
     #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
     out_min_fh = open(signal + "_sig_minus_label.fa", 'w')
 
+    true_label = 0 
+
     foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
                     for ndr in range(3):
+
                         # max 3 labels from a true feature 
                         rloc = random.randint(loc[2][0],loc[2][1])
+
                         # remove the true signal index from random sampling 
                         if rloc == int(loc[0]):
                             continue
 
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+
                         # sanity check for featched sequence 
-                        #if len(motif_seq) != 2*boundary:
-                        #    continue
+                        if len(motif_seq) != 2*boundary+1:
+                            continue
                         if not motif_seq:
                             continue
                         if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                             continue
+
                         # write to fasta out 
                         fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                         out_min_fh.write(fseq.format("fasta"))
+                        true_label += 1 
     out_min_fh.close()
     foh.close()
+    return true_label
+
 
 def true_ss_seq_fetch(fnam, Label, boundary=100):
     """
     True splice signals 
     """
+
     foh = helper._open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
@@ -845,26 +855,35 @@ def plus_tss_seq_fetch(signal, fnam, Label, boundary=200):
     #out_pos_fh = open(out_path + "/" + "_sig_plus_label.fa", 'w')
     out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
 
+    true_label = 0 
+
     foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
                     motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+
                     if loc[1] == '-': 
                         motif_seq = motif_seq.reverse_complement()
+
                     # sanity check for the fetched sequence 
-                    #if len(motif_seq) != 2*boundary: 
-                    #    continue
+                    if len(motif_seq) != boundary*2+1: 
+                        continue
                     if not motif_seq:
                         continue
                     if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
                         continue
+
                     # write to fasta out 
                     fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                     out_pos_fh.write(fseq.format("fasta"))
+                    true_label += 1 
+
     out_pos_fh.close()
     foh.close()
+    return true_label
+
 
 def select_labels(feat_db, feat_count, label_cnt):
     """
