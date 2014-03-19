@@ -75,8 +75,8 @@ def __main__():
             print 'fetched minus %s signal lables' % signal
 
         elif signal == 'cdsstop':
-            #label_count = true_cdsStop_seq_fetch(faname, posLabel)
-            #print 'selected %d plus %s signal lables' % (label_count, signal)
+            label_count = true_cdsStop_seq_fetch(faname, posLabel)
+            print 'selected %d plus %s signal lables' % (label_count, signal)
 
             label_count = false_cdsStop_seq_fetch(faname, posLabel)
             print 'selected %d minus %s signal lables' % (label_count, signal)
@@ -97,6 +97,7 @@ def __main__():
         plus_label_cleanup([signal], plus_cnt)
 
         minus_label_cleanup([signal], minus_cnt)
+        sys.exit(-1)
 
         # signal data processing over 
         print signal, 'signal labels obtained.'
@@ -217,24 +218,33 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
+
                     if loc[1] == '+': 
                         motif_seq = rec.seq[loc[2][0]:loc[2][1]]
+
                         # get index for negative signal label sequence site 
                         for ndr, stcodon in enumerate(['TAA', 'TAG', 'TGA']):
+                            #search for different stop codon index 
                             idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
+
                             if not idx:
                                 continue
+
                             # get the false labels for randomly selected region or the available ones   
-                            if len(idx) > 2:
-                                idx = random.sample(idx, 2)
+                            if len(idx) > 1:
+                                idx = random.sample(idx, 1)
+
                             for nb, xp in enumerate(idx):
-                                # adjusting the coordinate to the false site 
+
+                                # adjusting the coordinate to the false site - mapping the relative position 
                                 rloc_min = loc[2][0]+xp
+
                                 # this has to make sure that we are removing the correct positive label 
                                 if rloc_min == loc[0][0]:
                                     continue
                                 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
+
                                 # check for sanity and consensus of the fetched sequence region 
                                 if not motif_sub_seq:
                                     continue
@@ -242,6 +252,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                                     continue
                                 if not str(motif_sub_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                                     continue
+
                                 # result to fasta out
                                 fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr)+'_'+str(nb), description='-ve label')
                                 out_min_fh.write(fseq.format("fasta"))
@@ -249,22 +260,36 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
 
                     elif loc[1] == '-': 
                         motif_seq = rec.seq[loc[2][0]:loc[2][1]]
+                        
+                        # 8713 3' UTR end, 3 nts for stop codon - 8714, 8715, 8716. 8717 end cds region
+                        #print loc[0][0]-3 # 1-based coordinates 
+                        #print loc[0][0] 
+                        #print rec.seq[(loc[0][0]-4):(loc[0][0]-1)] # 0-based coordinates stop codon 
+
                         # get index for negative signal label sequence site 
                         for ndr, stcodon in enumerate(['TTA', 'TCA', 'CTA']):
+                            #search for different stop codons 
                             idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
+
                             if not idx:
                                 continue
+                                
                             # get the false labels for randomly selected region or the available ones   
-                            if len(idx) > 2:
-                                idx = random.sample(idx, 2)
+                            if len(idx) > 1:
+                                idx = random.sample(idx, 1)
+
                             for nb, xp in enumerate(idx):
+
                                 # adjusting the coordinate to the false site 
                                 rloc_min = loc[2][0]+xp
-
-                                # TODO removing the true signal sequence site from selected false sites
+                                
+                                #removing the true signal sequence site from selected false sites
+                                if rloc_min == loc[0][0]-4:
+                                    continue 
 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
                                 motif_sub_seq = motif_sub_seq.reverse_complement()
+
                                 # check for sanity and consensus of the fetched sequence region 
                                 if not motif_sub_seq:
                                     continue
@@ -272,6 +297,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
                                     continue
                                 if not str(motif_sub_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                                     continue
+
                                 # result to fasta out
                                 fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr)+'_'+str(nb), description='-ve label')
                                 out_min_fh.write(fseq.format("fasta"))
@@ -378,6 +404,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                 for fid, loc in Lsub_feat.items():
                     if loc[1] == '+': 
                         motif_seq = rec.seq[(int(loc[0])-boundary)+1:int(loc[0])+boundary+2]
+
                         # check for sanity and consensus of the fetched sequence region 
                         if not motif_seq:
                             continue
@@ -385,6 +412,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                             continue
                         if not str(motif_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                             continue
+
                         # result to fasta out
                         fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         out_pos_fh.write(fseq.format("fasta"))
@@ -393,6 +421,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                     elif loc[1] == '-': 
                         motif_seq = rec.seq[(int(loc[0])-boundary)-3:(int(loc[0])+boundary)-2]
                         motif_seq = motif_seq.reverse_complement()
+
                         # check for sanity and consensus of the fetched sequence region 
                         if not motif_seq:
                             continue
@@ -400,6 +429,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
                             continue
                         if not str(motif_seq[boundary-1:boundary+2]).upper() in ['TAA', 'TAG', 'TGA']:
                             continue
+
                         # result to fasta out
                         fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         out_pos_fh.write(fseq.format("fasta"))
@@ -407,6 +437,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
     out_pos_fh.close()
     foh.close()
     return true_label
+
 
 def true_tis_seq_fetch(fnam, Label, boundary=200):
     """
