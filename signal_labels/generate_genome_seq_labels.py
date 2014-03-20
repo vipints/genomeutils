@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 1 # number of labels 
+    label_cnt = 1500 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -54,8 +54,6 @@ def __main__():
     # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
     for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
 
-        signal = 'splice'
-       
         gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
         print 'extracted %d %s signal regions' % (feature_cnt, signal)
 
@@ -63,11 +61,11 @@ def __main__():
         print 'selecting %d RANDOM %s signal label entities' % (COUNT, signal) 
 
         if signal == 'splice':
-            true_ss_seq_fetch(faname, posLabel) 
-            print 'selected %d plus %s signal lables' % (label_count, signal)
+            acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
+            print 'selected %d acc %d don plus %s signal lables' % (acc_cnt, don_cnt, signal)
 
-            false_ss_seq_fetch(faname, posLabel)
-            print 'selected %d minus %s signal lables' % (label_count, signal)
+            acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel)
+            print 'selected %d acc %d don minus %s signal lables' % (acc_cnt, don_cnt, signal)
 
         elif signal == 'tis':
             label_count = true_tis_seq_fetch(faname, posLabel)
@@ -99,7 +97,6 @@ def __main__():
         plus_label_cleanup([signal], plus_cnt)
 
         minus_label_cleanup([signal], minus_cnt)
-        sys.exit(-1)
 
         # signal data processing over 
         print signal, 'signal labels obtained.'
@@ -583,8 +580,9 @@ def get_label_regions(gtf_content, signal):
 
 def false_ss_seq_fetch(fnam, Label, boundary=100):
     """
-    false splice signals
+    false don acc splice signals
     """
+
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) 
     #don_min_fh = open(out_path + "/don_sig_minus_label.fa", 'w')
@@ -592,133 +590,166 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
     don_min_fh = open("don_sig_minus_label.fa", 'w')
     acc_min_fh = open("acc_sig_minus_label.fa", 'w')
 
+    true_label_acc = 0 
+    true_label_don = 0 
+
     foh = helper._open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for fLabel in Label[rec.id]:
                 for fid, loc in fLabel.items():
                     if loc[-1]=='+':
+
                         # acceptor splice site signal 
                         acc_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('AG'), str(acc_t_seq).upper())]
+
                         # removing the true signal sequence site from selected false sites
                         if boundary-1 in idx:
                             idx.remove(boundary-1)
                         if not idx:
                             continue 
+
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
+
                         for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+xp
                             acc_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
+
                             # check for sanity and consensus of the fetched sequence region 
-                            #if len(acc_mot_seq) != 2*boundary:
-                            #    continue
+                            if len(acc_mot_seq) != 2*boundary:
+                                continue
                             if not acc_mot_seq:
                                 continue
                             if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                                 continue
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
+
                             # write to fasta out 
                             fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
+                            true_label_acc += 1 
                         
                         # donor splice site signal 
                         don_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('GT'), str(don_t_seq).upper())]
+
                         # removing the true signal sequence site from selected false sites
                         if boundary-1 in idx:
                             idx.remove(boundary-1)
                         if not idx:
                             continue
+
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
+
                         for ndr, xj in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_pos = (int(loc[1])-boundary)+xj
                             don_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
+
                             # check for sanity and consensus of the fetched sequence region 
-                            #if len(don_mot_seq) != 2*boundary:
-                            #    continue
+                            if len(don_mot_seq) != 2*boundary:
+                                continue
                             if not don_mot_seq:
                                 continue
                             if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                                 continue
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
+
                             # write to fasta out 
                             fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             don_min_fh.write(fseq_don.format("fasta"))
+                            true_label_don += 1 
 
                     elif loc[-1]=="-":
                         # donor splice signal site 
                         don_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('AC'), str(don_t_seq).upper())]
+
                         # removing the true signal sequence site from selected false sites
                         if boundary-1 in idx:
                             idx.remove(boundary-1)
                         if not idx:
                             continue
+
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
+
                         for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_min = (int(loc[0])-boundary)+xp
                             don_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
                             don_mot_seq = don_mot_seq.reverse_complement()
+
                             # check for sanity and consensus of the fetched sequence region 
-                            #if len(don_mot_seq) != 2*boundary:
-                            #    continue 
+                            if len(don_mot_seq) != 2*boundary:
+                                continue 
                             if not don_mot_seq:
                                 continue
                             if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                                 continue
                             if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                                 continue 
+
                             # write to fasta out 
                             fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             don_min_fh.write(fseq_don.format("fasta"))
+                            true_label_don += 1 
                         
                         # acceptor splice signal site 
                         acc_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('CT'), str(acc_t_seq).upper())]
+
                         # removing the true signal sequence site from selected false sites
                         if boundary-1 in idx:
                             idx.remove(boundary-1)
                         if not idx:
                             continue
+
                         # limit to take maximum 2 false labels from one defined feature
                         if len(idx) > 2:
                             idx = random.sample(idx, 2)
+
                         for ndr, xk in enumerate(idx):
                             # adjusting the coordinate to the false site 
                             rloc_pos = (int(loc[1])-boundary)+xk
                             acc_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
                             acc_mot_seq = acc_mot_seq.reverse_complement()
+
                             # check for sanity and consensus of the fetched sequence region 
-                            #if len(acc_mot_seq) != 2*boundary:
-                            #    continue
+                            if len(acc_mot_seq) != 2*boundary:
+                                continue
                             if not acc_mot_seq:
                                 continue
                             if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                                 continue
                             if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                                 continue 
+
                             # write to fasta out 
                             fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
                             acc_min_fh.write(fseq_acc.format("fasta"))
+                            true_label_acc += 1 
     foh.close()
     don_min_fh.close()
     acc_min_fh.close()
+    return true_label_acc, true_label_don
+
 
 def minus_tss_seq_fetch(signal, fnam, Label, boundary=200):
     """
@@ -777,73 +808,93 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
     don_pos_fh = open("don_sig_plus_label.fa", 'w')
     acc_pos_fh = open("acc_sig_plus_label.fa", 'w')
 
+    true_label_acc = 0
+    true_label_don = 0 
+
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lfeat in Label[rec.id]:
                 for fid, loc in Lfeat.items():
                     if loc[-1] == '+': 
+
                         # acceptor splice site 
                         acc_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+
                         # sanity check and consensus sequence from fetched sequence 
-                        #if len(acc_mot_seq) != 2*boundary:
-                        #    continue
+                        if len(acc_mot_seq) != boundary*2:
+                            continue
                         if not acc_mot_seq:
                             continue
                         if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                             continue
                         if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                             continue 
+
                         # write to fasta out 
                         fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
                         acc_pos_fh.write(fseq_acc.format("fasta"))
+                        true_label_acc += 1 
+
                         # donor splice site 
                         don_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
-                        #if len(don_mot_seq) != 2*boundary:
-                        #    continue 
+
+                        if len(don_mot_seq) != 2*boundary:
+                            continue 
                         if not don_mot_seq:
                             continue
                         if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                             continue
                         if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                             continue 
+
                         # write to fasta out 
                         fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
                         don_pos_fh.write(fseq_don.format("fasta"))
+                        true_label_don += 1
 
                     elif loc[-1] == '-':
                         # donor splice site signal 
                         don_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
                         don_mot_seq = don_mot_seq.reverse_complement()
+
                         # sanity check and consensus sequence from fetched sequence 
-                        #if len(don_mot_seq) != 2*boundary:
-                        #    continue 
+                        if len(don_mot_seq) != 2*boundary:
+                            continue 
                         if not don_mot_seq:
                             continue
                         if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
                             continue
                         if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
                             continue 
+
                         # write to fasta out 
                         fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
                         don_pos_fh.write(fseq_don.format("fasta"))
+                        true_label_don += 1 
+
                         # acceptor splice signal 
                         acc_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
                         acc_mot_seq = acc_mot_seq.reverse_complement()
+
                         # sanity check and consensus sequence from fetched sequence 
-                        #if len(acc_mot_seq) != 2*boundary:
-                        #    continue
+                        if len(acc_mot_seq) != 2*boundary:
+                            continue
                         if not acc_mot_seq:
                             continue
                         if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
                             continue
                         if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
                             continue 
+
                         # write to fasta out 
                         fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
                         acc_pos_fh.write(fseq_acc.format("fasta"))
+                        true_label_acc += 1 
     don_pos_fh.close()
     acc_pos_fh.close()
     foh.close()
+    return true_label_acc, true_label_don
+
 
 def plus_tss_seq_fetch(signal, fnam, Label, boundary=200):
     """
