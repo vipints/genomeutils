@@ -42,7 +42,7 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 1500 # number of labels 
+    label_cnt = 10000 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -90,17 +90,18 @@ def __main__():
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
-        plus_cnt = 1000
-        minus_cnt = 3000
+        plus_cnt = 10000
+        minus_cnt = 30000
 
         #TODO add the other required result path for creating out files
         plus_label_cleanup([signal], plus_cnt)
 
         minus_label_cleanup([signal], minus_cnt)
 
-        # signal data processing over 
-        print signal, 'signal labels obtained.'
+        # signal label processing over 
+        print '%s signal done.' % signal
         print 
+
 
 def minus_label_cleanup(sig_type, minus_label_cnt):
     """
