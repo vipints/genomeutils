@@ -202,7 +202,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt):
         print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (cnt, signal, signal)
 
 
-def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
+def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
     """
     fetch the minus cdsStop signal label sequences
     """
@@ -308,7 +308,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=200):
     return true_label
 
 
-def false_tis_seq_fetch(fnam, Label, boundary=200):
+def false_tis_seq_fetch(fnam, Label, boundary=100):
     """
     fetch the minus TIS signal label sequences 
     """
@@ -408,7 +408,7 @@ def false_tis_seq_fetch(fnam, Label, boundary=200):
     return true_label
 
 
-def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
+def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
     """
     fetch positive cdsStop signal labels 
     """
@@ -462,7 +462,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=200):
     return true_label
 
 
-def true_tis_seq_fetch(fnam, Label, boundary=200):
+def true_tis_seq_fetch(fnam, Label, boundary=100):
     """
     fetch the plus TIS signal sequence.
     """
@@ -752,7 +752,7 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(signal, fnam, Label, boundary=200):
+def minus_tss_seq_fetch(signal, fnam, Label, boundary=100):
     """
     fetch the minus TSS, cleave signal sequence label
     """
@@ -897,7 +897,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
     return true_label_acc, true_label_don
 
 
-def plus_tss_seq_fetch(signal, fnam, Label, boundary=200):
+def plus_tss_seq_fetch(signal, fnam, Label, boundary=100):
     """
     fetch the plus TSS, cleave signal sequence. The default flanking region is 200 nucleotides. 
     """
