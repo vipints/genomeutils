@@ -26,6 +26,7 @@ def __main__():
     """
     Main processing unit
     """
+
     try:
         faname = sys.argv[1] # sequence 
         gfname = sys.argv[2] # annotation 
@@ -60,6 +61,7 @@ def get_label_regions(gtf_content, signal):
     """
     get signal sequence location from the annotation
     """
+
     feat_cnt = 0
     anno_db = defaultdict(list) 
     
@@ -103,6 +105,7 @@ def true_ss_seq_fetch(fnam, Label, boundary):
     """
     true splice signals 
     """
+
     foh = helper._open_file(fnam)
 
     don_cnt_pl = don_cnt_mi = acc_cnt_pl = acc_cnt_mi = 0 
@@ -187,5 +190,5 @@ def true_ss_seq_fetch(fnam, Label, boundary):
     foh.close()
     return don_cnt_pl+don_cnt_mi, acc_cnt_pl+acc_cnt_mi, don_in_pl+don_in_mi, acc_in_pl+acc_in_mi
 
-if __name__=="__main__":
+if __name__ == "__main__":
     __main__()
