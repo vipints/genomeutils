@@ -26,13 +26,13 @@ def feature_table(chr_id, source, orient, genes, transcripts, cds, exons, unk):
                 '.',
                 ginfo[2],
                 '.',
-                'ID='+str(gname)+';Name='+str(gname)+';Note='+ginfo[-1]]
+                'ID=%s;Name=%s;Note=%s' % (str(gname), str(gname), ginfo[-1])]
         print '\t'.join(line) 
         ## construct the transcript line is not defined in the original file 
         t_line = [str(chr_id), 'gbk_to_gff', source, 0, 1, '.', ginfo[2], '.'] 
 
         if not transcripts:
-            t_line.append('ID=Transcript:'+str(gname)+';Parent='+str(gname))
+            t_line.append('ID=Transcript:%s;Parent=%s' % (str(gname), str(gname)))
 
             if exons: ## get the entire transcript region  from the defined feature
                 t_line[3] = str(exons[gname][0][0])
@@ -114,7 +114,7 @@ def exon_line_print(temp_line, trx_exons, parent, ftype):
         temp_line[2] = ftype
         temp_line[3] = str(ex[0])
         temp_line[4] = str(ex[1])
-        temp_line[8] = 'Parent='+parent
+        temp_line[8] = 'Parent=%s' % parent
         print '\t'.join(temp_line)
 
 def gbk_parse(fname):
@@ -179,7 +179,6 @@ def gbk_parse(fname):
         # record extracted, generate feature table
         unk = feature_table(chr_id, mol_type, strand, gene_tags, tx_tags, cds, exon, unk)
         
-        #break
     fhand.close()
 
 if __name__=='__main__': 
