@@ -5,29 +5,35 @@ from __future__ import division
 from collections import defaultdict
 import numpy 
 
-def detailed_barplot(data, methods, plot_title="", ylabel="auROC"):
+def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
     """
-
+    visualizing the experiment result of different methods 
+    
+    @args data: data to plot, for each organism different methods and its performances
+    @type data: <defaultdict<org_name:[(method, list)]>
+    @args methods: different experiment methods 
+    @type methods: list
+    @args labels: X axis labels, organism names 
+    @type labels: list 
+    @args res_file: result file name 
+    @type res_file: str
     """
     
     import pylab 
-    pylab.figure(1,(10,30))
 
-    mod_methods = []
-    for l in methods:
-        mod_methods.append(l)
-    
+    pylab.figure(figsize=(len(labels)*4, (len(labels)/10)*5)) # 40, 10 # for 10 organisms 
+    pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
+
     width = 0.20
     separator = 0.15
 
     offset = 0
     num_methods = len(methods)
     
-    used_colors = ["green", "blue", "red"]
+    used_colors = ["#88aa33", "#9999ff", "#ff9999"]
     xlocations = []
-
+    
     min_max = [] 
-    labels = [] 
 
     for org_name, details in data.items():
         
@@ -36,21 +42,19 @@ def detailed_barplot(data, methods, plot_title="", ylabel="auROC"):
         
         print 'organism', org_name
 
+        xlocations.append(offset + (width*(num_methods*7+2))/2)
+
         for idx, bundles in enumerate(details):
             method, perfs = bundles 
             
-            xlocations.append(offset + num_methods*width/2)
-            labels.append('%s_%s' % (org_name, method))
-
             for method_perf in perfs: 
                 
                 min_max.append(method_perf) 
-                rects.append(pylab.bar(offset, method_perf, width, color=used_colors[idx]))
+                rects.append(pylab.bar(offset, method_perf, width, color=used_colors[idx], edgecolor='white'))
                 offset += width 
         
             offset += separator
-        offset += separator
-        break
+        #break
      
     # determine the extreams 
     min_max.sort() 
@@ -80,10 +84,10 @@ def detailed_barplot(data, methods, plot_title="", ylabel="auROC"):
     pylab.gca().get_yaxis().grid(True)
     pylab.gca().get_xaxis().grid(False)
 
-    #pylab.legend(tuple(rects), tuple(mod_methods))
+    pylab.legend(tuple(rects[0:21:7]), tuple(methods))
 
     pylab.ylabel(ylabel, fontsize = 15)
-    pylab.savefig('f1-test.pdf') 
+    pylab.savefig(res_file) 
 
 
 def data_process(filename):
