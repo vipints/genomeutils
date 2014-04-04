@@ -21,7 +21,8 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     
     import pylab 
 
-    pylab.figure(figsize=(len(labels)*4, (len(labels)/10)*5)) # 40, 10 # for 10 organisms 
+    #pylab.figure(figsize=(len(labels)*4, (len(labels)/10)*5)) # 40, 10 # for 10 organisms 
+    pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
     width = 0.20
@@ -42,18 +43,26 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
         
         print 'organism', org_name
 
-        xlocations.append(offset + (width*(num_methods*7+2))/2)
+        #xlocations.append(offset + (width*(num_methods*7+2))/2)
+        xlocations.append(offset + (width*(num_methods*1))/3)
 
         for idx, bundles in enumerate(details):
             method, perfs = bundles 
-            
+
+            best_c = [] 
             for method_perf in perfs: 
                 
-                min_max.append(method_perf) 
-                rects.append(pylab.bar(offset, method_perf, width, color=used_colors[idx], edgecolor='white'))
-                offset += width 
-        
-            offset += separator
+                #min_max.append(method_perf) 
+                best_c.append(method_perf)
+                #rects.append(pylab.bar(offset, method_perf, width, color=used_colors[idx], edgecolor='white'))
+                #offset += width 
+            best_c.sort() 
+            min_max.append(best_c[-1])
+
+            rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
+            offset += width 
+
+        offset += separator
         #break
      
     # determine the extreams 
@@ -84,7 +93,8 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     pylab.gca().get_yaxis().grid(True)
     pylab.gca().get_xaxis().grid(False)
 
-    pylab.legend(tuple(rects[0:21:7]), tuple(methods))
+    #pylab.legend(tuple(rects[0:21:7]), tuple(methods))
+    pylab.legend(tuple(rects), tuple(methods))
 
     pylab.ylabel(ylabel, fontsize = 15)
     pylab.savefig(res_file) 
