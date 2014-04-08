@@ -2,7 +2,7 @@
 """
 Visual check to the label sequences.
 
-Usage: python seq_consensus_viz.py in.fasta
+Usage: python seq_consensus_viz.py in.fasta fig1.pdf 
 
 Requirements:
     BioPython:- http://biopython.org 
@@ -13,7 +13,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-def seq_viz(records):
+def seq_viz(records,fname):
     """
     color coded sequence visualization 
     """
@@ -21,7 +21,7 @@ def seq_viz(records):
     import numpy 
     import pylab as pl 
 
-    pl.figure()
+    pl.figure(figsize=(30,len(records)/100))
 
     num_seqs = len(records)
     len_seqs = len(records[0])
@@ -40,13 +40,14 @@ def seq_viz(records):
     pl.xlabel("sequence position")
     pl.ylabel("sequence")
 
-    pl.show() 
+    pl.savefig(fname) 
     
 
 def __main__():
 
     try:
         fas_name = sys.argv[1]
+        res_name = sys.argv[2]
     except:
         print __doc__
         sys.exit(-1)
@@ -56,7 +57,7 @@ def __main__():
         if rec.seq:
             seq_records.append(str(rec.seq))
     
-    seq_viz(seq_records) 
+    seq_viz(seq_records, res_name) 
 
 
 if __name__ == "__main__":
