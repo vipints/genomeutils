@@ -23,6 +23,7 @@ Requirements:
 import re
 import os 
 import sys
+import numpy 
 import random
 from Bio import SeqIO 
 from Bio.Seq import Seq
@@ -42,27 +43,41 @@ def __main__():
         sys.exit(-1)
 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 10000 # number of labels 
+    label_cnt = 10 # number of labels 
 
     # FIXME required input variables including the result path   
     #base_path = ''
 
-    # extract genome annotation from gtf/gff type file 
-    anno_file_content = GFFParser.Parse(gfname)
-    print 'processed annotation file'
+    print 
+    print 'processing genome annotation %s' % gfname
+    print 
+    anno_file_content = GFFParser.Parse(gfname) # extract genome annotation from gtf/gff type file 
+    print 
+    print 'processed genome annotation'
+    print 
     
     # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
-    for signal in ['cdsstop', 'cleave', 'splice', 'tss', 'tis']: 
+    for signal in ['splice', 'cdsstop', 'cleave', 'tss', 'tis']: 
 
-        gtf_db, feature_cnt = get_label_regions(anno_file_content, signal)
+        gtf_db, feature_cnt, splice_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
+        print 
         print 'extracted %d %s signal regions' % (feature_cnt, signal)
+        print 
 
         posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
+        print 
         print 'selecting %d RANDOM %s signal label entities' % (COUNT, signal) 
+        print 
 
         if signal == 'splice':
+            print splice_checks.keys()
+            print tid_gene_map
             acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
+            print
             print 'selected %d acc %d don plus %s signal lables' % (acc_cnt, don_cnt, signal)
+            print
+
+            sys.exit(-1)
 
             acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel)
             print 'selected %d acc %d don minus %s signal lables' % (acc_cnt, don_cnt, signal)
@@ -90,8 +105,8 @@ def __main__():
 
         # remove the extra labels fetched from the previous step 
         # the number of positive and negative labels for training  
-        plus_cnt = 10000
-        minus_cnt = 30000
+        plus_cnt = 1000
+        minus_cnt = 3000
 
         #TODO add the other required result path for creating out files
         plus_label_cleanup([signal], plus_cnt)
@@ -101,6 +116,7 @@ def __main__():
         # signal label processing over 
         print '%s signal done.' % signal
         print 
+        break
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt):
@@ -524,13 +540,21 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
 def get_label_regions(gtf_content, signal):
     """
     get signal sequence location from the annotation
+    
+    @args gtf_content: parsed object from gtf/gff file 
+    @type gtf_content: numpy array 
+    @args signal: genomic signal name 
+    @type signal: str 
     """
 
     feat_cnt = 0
     anno_db = defaultdict(list) 
+    splice_signal_point = defaultdict(list)
+    trans_gene_map = dict() 
     
-    for feature in gtf_content: # gene list returned from GFFParse function 
+    for feature in gtf_content: # gene list from GFFParse function 
         mod_anno_db = dict()
+
         if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
                 feat_cnt += 1
@@ -562,22 +586,36 @@ def get_label_regions(gtf_content, signal):
                                 (int(feature['start']), int(feature['stop']))
                                 )
         elif signal == 'splice':
-            # going through each transcripts annotated 
-            for xp, ftid in enumerate(feature['transcripts']):
-                # spliced transcripts 
-                if len(feature['exons'][xp]) > 2: 
+            for xp, ftid in enumerate(feature['transcripts']):# considering each annotated transcript 
+                exons_count = len(feature['exons'][xp])
+                
+                if exons_count > 2:# spliced transcripts 
                     id_cnt = 1
-                    for ex in feature['exons'][xp][1:-1]:
+                    exon_ends = [] 
+                    for ikx, ex in enumerate(feature['exons'][xp]):
                         feat_cnt += 1
-                        alt_id = ftid[0] + '.' + str(id_cnt)
+                        exon_ends.extend((ex[0], ex[1]))
+
+                        alt_id = "%s.%d" % (ftid[0], id_cnt)
                         id_cnt += 1
+                        
+                        if ikx == 0: # first and last exon ends are not considering 
+                            ex[0] = None
+                        if exons_count-1 == ikx: 
+                            ex[1] = None 
+                        
                         mod_anno_db[alt_id] = (ex[0], 
                                             ex[1], 
-                                            feature['strand'])
+                                            feature['strand']
+                                            )
+                    splice_signal_point[feature['name']].extend(exon_ends) # appending splice sites of transcripts to the gene
+                    trans_gene_map[ftid[0]] = feature['name'] # transcript to gene mapping 
+
         if mod_anno_db:
             anno_db[feature['chr']].append(mod_anno_db)
     
-    return dict(anno_db), feat_cnt 
+    return dict(anno_db), feat_cnt, splice_signal_point, trans_gene_map 
+
 
 def false_ss_seq_fetch(fnam, Label, boundary=100):
     """
@@ -816,81 +854,91 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
         if rec.id in Label:
             for Lfeat in Label[rec.id]:
                 for fid, loc in Lfeat.items():
+                    print '***', fid, loc 
                     if loc[-1] == '+': 
 
-                        # acceptor splice site 
-                        acc_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+                        if not numpy.isnan(loc[0]):
+                            #print 'first', loc 
+                            # acceptor splice site 
+                            acc_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
 
-                        # sanity check and consensus sequence from fetched sequence 
-                        if len(acc_mot_seq) != boundary*2:
-                            continue
-                        if not acc_mot_seq:
-                            continue
-                        if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
-                            continue
-                        if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
-                            continue 
+                            # sanity check and consensus sequence from fetched sequence 
+                            if len(acc_mot_seq) != boundary*2:
+                                continue
+                            if not acc_mot_seq:
+                                continue
+                            if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
+                                continue
+                            if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
+                                continue 
 
-                        # write to fasta out 
-                        fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
-                        acc_pos_fh.write(fseq_acc.format("fasta"))
-                        true_label_acc += 1 
+                            # write to fasta out 
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
+                            acc_pos_fh.write(fseq_acc.format("fasta"))
+                            true_label_acc += 1 
+                        
+                        if not numpy.isnan(loc[1]):
+                            #print 'sec', loc 
+                            # donor splice site 
+                            don_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
 
-                        # donor splice site 
-                        don_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+                            if len(don_mot_seq) != 2*boundary:
+                                continue 
+                            if not don_mot_seq:
+                                continue
+                            if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
+                                continue
+                            if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
+                                continue 
 
-                        if len(don_mot_seq) != 2*boundary:
-                            continue 
-                        if not don_mot_seq:
-                            continue
-                        if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
-                            continue
-                        if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
-                            continue 
-
-                        # write to fasta out 
-                        fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
-                        don_pos_fh.write(fseq_don.format("fasta"))
-                        true_label_don += 1
+                            # write to fasta out 
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
+                            don_pos_fh.write(fseq_don.format("fasta"))
+                            true_label_don += 1
 
                     elif loc[-1] == '-':
-                        # donor splice site signal 
-                        don_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
-                        don_mot_seq = don_mot_seq.reverse_complement()
+                        
+                        if not numpy.isnan(loc[0]):
+                            #print 'first', loc 
+                            # donor splice site signal 
+                            don_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+                            don_mot_seq = don_mot_seq.reverse_complement()
 
-                        # sanity check and consensus sequence from fetched sequence 
-                        if len(don_mot_seq) != 2*boundary:
-                            continue 
-                        if not don_mot_seq:
-                            continue
-                        if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
-                            continue
-                        if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
-                            continue 
+                            # sanity check and consensus sequence from fetched sequence 
+                            if len(don_mot_seq) != 2*boundary:
+                                continue 
+                            if not don_mot_seq:
+                                continue
+                            if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
+                                continue
+                            if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
+                                continue 
 
-                        # write to fasta out 
-                        fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
-                        don_pos_fh.write(fseq_don.format("fasta"))
-                        true_label_don += 1 
+                            # write to fasta out 
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
+                            don_pos_fh.write(fseq_don.format("fasta"))
+                            true_label_don += 1 
+                        
+                        if not numpy.isnan(loc[1]):
+                            #print 'sec', loc 
+                            # acceptor splice signal 
+                            acc_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+                            acc_mot_seq = acc_mot_seq.reverse_complement()
 
-                        # acceptor splice signal 
-                        acc_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
-                        acc_mot_seq = acc_mot_seq.reverse_complement()
+                            # sanity check and consensus sequence from fetched sequence 
+                            if len(acc_mot_seq) != 2*boundary:
+                                continue
+                            if not acc_mot_seq:
+                                continue
+                            if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
+                                continue
+                            if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
+                                continue 
 
-                        # sanity check and consensus sequence from fetched sequence 
-                        if len(acc_mot_seq) != 2*boundary:
-                            continue
-                        if not acc_mot_seq:
-                            continue
-                        if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
-                            continue
-                        if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
-                            continue 
-
-                        # write to fasta out 
-                        fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
-                        acc_pos_fh.write(fseq_acc.format("fasta"))
-                        true_label_acc += 1 
+                            # write to fasta out 
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
+                            acc_pos_fh.write(fseq_acc.format("fasta"))
+                            true_label_acc += 1 
     don_pos_fh.close()
     acc_pos_fh.close()
     foh.close()
