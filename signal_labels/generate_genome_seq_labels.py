@@ -70,17 +70,16 @@ def __main__():
         print 
 
         if signal == 'splice':
-            print splice_checks.keys()
-            print tid_gene_map
             acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
             print
-            print 'selected %d acc %d don plus %s signal lables' % (acc_cnt, don_cnt, signal)
+            print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
             print
 
+            acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, splice_checks, tid_gene_map)
+            print 
+            print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+            print 
             sys.exit(-1)
-
-            acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel)
-            print 'selected %d acc %d don minus %s signal lables' % (acc_cnt, don_cnt, signal)
 
         elif signal == 'tis':
             label_count = true_tis_seq_fetch(faname, posLabel)
@@ -617,9 +616,9 @@ def get_label_regions(gtf_content, signal):
     return dict(anno_db), feat_cnt, splice_signal_point, trans_gene_map 
 
 
-def false_ss_seq_fetch(fnam, Label, boundary=100):
+def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100):
     """
-    false don acc splice signals
+    false splice signals
     """
 
     real_fnam = os.path.realpath(fnam)
@@ -638,152 +637,155 @@ def false_ss_seq_fetch(fnam, Label, boundary=100):
             for fLabel in Label[rec.id]:
                 for fid, loc in fLabel.items():
                     if loc[-1]=='+':
+                        if not numpy.isnan(loc[0]):
+                            # acceptor splice site signal 
+                            acc_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
 
-                        # acceptor splice site signal 
-                        acc_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+                            # get index for negative signal label sequence site 
+                            idx = [xq.start() for xq in re.finditer(re.escape('AG'), str(acc_t_seq).upper())]
 
-                        # get index for negative signal label sequence site 
-                        idx = [xq.start() for xq in re.finditer(re.escape('AG'), str(acc_t_seq).upper())]
-
-                        # removing the true signal sequence site from selected false sites
-                        if boundary-1 in idx:
-                            idx.remove(boundary-1)
-                        if not idx:
-                            continue 
-
-                        # limit to take maximum 2 false labels from one defined feature
-                        if len(idx) > 2:
-                            idx = random.sample(idx, 2)
-
-                        for ndr, xp in enumerate(idx):
-                            # adjusting the coordinate to the false site 
-                            rloc_min = (int(loc[0])-boundary)+xp
-                            acc_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
-
-                            # check for sanity and consensus of the fetched sequence region 
-                            if len(acc_mot_seq) != 2*boundary:
-                                continue
-                            if not acc_mot_seq:
-                                continue
-                            if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
-                                continue
-                            if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
+                            # removing the true signal sequence site from selected false sites
+                            if boundary-1 in idx:
+                                idx.remove(boundary-1)
+                            if not idx:
                                 continue 
 
-                            # write to fasta out 
-                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
-                            acc_min_fh.write(fseq_acc.format("fasta"))
-                            true_label_acc += 1 
+                            # limit to take maximum 2 false labels from one defined feature
+                            if len(idx) > 2:
+                                idx = random.sample(idx, 2)
+
+                            for ndr, xp in enumerate(idx):
+                                # adjusting the coordinate to the false site 
+                                rloc_min = (int(loc[0])-boundary)+xp
+                                acc_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
+
+                                # check for sanity and consensus of the fetched sequence region 
+                                if len(acc_mot_seq) != 2*boundary:
+                                    continue
+                                if not acc_mot_seq:
+                                    continue
+                                if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
+                                    continue
+                                if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
+                                    continue 
+
+                                # write to fasta out 
+                                fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                                acc_min_fh.write(fseq_acc.format("fasta"))
+                                true_label_acc += 1 
                         
-                        # donor splice site signal 
-                        don_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+                        if not numpy.isnan(loc[1]):
+                            # donor splice site signal 
+                            don_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
 
-                        # get index for negative signal label sequence site 
-                        idx = [xq.start() for xq in re.finditer(re.escape('GT'), str(don_t_seq).upper())]
+                            # get index for negative signal label sequence site 
+                            idx = [xq.start() for xq in re.finditer(re.escape('GT'), str(don_t_seq).upper())]
 
-                        # removing the true signal sequence site from selected false sites
-                        if boundary-1 in idx:
-                            idx.remove(boundary-1)
-                        if not idx:
-                            continue
-
-                        # limit to take maximum 2 false labels from one defined feature
-                        if len(idx) > 2:
-                            idx = random.sample(idx, 2)
-
-                        for ndr, xj in enumerate(idx):
-                            # adjusting the coordinate to the false site 
-                            rloc_pos = (int(loc[1])-boundary)+xj
-                            don_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
-
-                            # check for sanity and consensus of the fetched sequence region 
-                            if len(don_mot_seq) != 2*boundary:
+                            # removing the true signal sequence site from selected false sites
+                            if boundary-1 in idx:
+                                idx.remove(boundary-1)
+                            if not idx:
                                 continue
-                            if not don_mot_seq:
-                                continue
-                            if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
-                                continue
-                            if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
-                                continue 
 
-                            # write to fasta out 
-                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
-                            don_min_fh.write(fseq_don.format("fasta"))
-                            true_label_don += 1 
+                            # limit to take maximum 2 false labels from one defined feature
+                            if len(idx) > 2:
+                                idx = random.sample(idx, 2)
+
+                            for ndr, xj in enumerate(idx):
+                                # adjusting the coordinate to the false site 
+                                rloc_pos = (int(loc[1])-boundary)+xj
+                                don_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
+
+                                # check for sanity and consensus of the fetched sequence region 
+                                if len(don_mot_seq) != 2*boundary:
+                                    continue
+                                if not don_mot_seq:
+                                    continue
+                                if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
+                                    continue
+                                if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
+                                    continue 
+
+                                # write to fasta out 
+                                fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                                don_min_fh.write(fseq_don.format("fasta"))
+                                true_label_don += 1 
 
                     elif loc[-1]=="-":
-                        # donor splice signal site 
-                        don_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
+                        if not numpy.isnan(loc[0]):
+                            # donor splice signal site 
+                            don_t_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
 
-                        # get index for negative signal label sequence site 
-                        idx = [xq.start() for xq in re.finditer(re.escape('AC'), str(don_t_seq).upper())]
+                            # get index for negative signal label sequence site 
+                            idx = [xq.start() for xq in re.finditer(re.escape('AC'), str(don_t_seq).upper())]
 
-                        # removing the true signal sequence site from selected false sites
-                        if boundary-1 in idx:
-                            idx.remove(boundary-1)
-                        if not idx:
-                            continue
-
-                        # limit to take maximum 2 false labels from one defined feature
-                        if len(idx) > 2:
-                            idx = random.sample(idx, 2)
-
-                        for ndr, xp in enumerate(idx):
-                            # adjusting the coordinate to the false site 
-                            rloc_min = (int(loc[0])-boundary)+xp
-                            don_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
-                            don_mot_seq = don_mot_seq.reverse_complement()
-
-                            # check for sanity and consensus of the fetched sequence region 
-                            if len(don_mot_seq) != 2*boundary:
-                                continue 
-                            if not don_mot_seq:
+                            # removing the true signal sequence site from selected false sites
+                            if boundary-1 in idx:
+                                idx.remove(boundary-1)
+                            if not idx:
                                 continue
-                            if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
-                                continue
-                            if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
-                                continue 
 
-                            # write to fasta out 
-                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
-                            don_min_fh.write(fseq_don.format("fasta"))
-                            true_label_don += 1 
+                            # limit to take maximum 2 false labels from one defined feature
+                            if len(idx) > 2:
+                                idx = random.sample(idx, 2)
+
+                            for ndr, xp in enumerate(idx):
+                                # adjusting the coordinate to the false site 
+                                rloc_min = (int(loc[0])-boundary)+xp
+                                don_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
+                                don_mot_seq = don_mot_seq.reverse_complement()
+
+                                # check for sanity and consensus of the fetched sequence region 
+                                if len(don_mot_seq) != 2*boundary:
+                                    continue 
+                                if not don_mot_seq:
+                                    continue
+                                if not all (XJ in 'ATCG' for XJ in str(don_mot_seq.upper())):
+                                    continue
+                                if str(don_mot_seq[boundary-1:boundary+1]).upper() != 'GT':
+                                    continue 
+
+                                # write to fasta out 
+                                fseq_don = SeqRecord(don_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                                don_min_fh.write(fseq_don.format("fasta"))
+                                true_label_don += 1 
                         
-                        # acceptor splice signal site 
-                        acc_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
-                        # get index for negative signal label sequence site 
-                        idx = [xq.start() for xq in re.finditer(re.escape('CT'), str(acc_t_seq).upper())]
+                        if not numpy.isnan(loc[1]):
+                            # acceptor splice signal site 
+                            acc_t_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
+                            # get index for negative signal label sequence site 
+                            idx = [xq.start() for xq in re.finditer(re.escape('CT'), str(acc_t_seq).upper())]
 
-                        # removing the true signal sequence site from selected false sites
-                        if boundary-1 in idx:
-                            idx.remove(boundary-1)
-                        if not idx:
-                            continue
-
-                        # limit to take maximum 2 false labels from one defined feature
-                        if len(idx) > 2:
-                            idx = random.sample(idx, 2)
-
-                        for ndr, xk in enumerate(idx):
-                            # adjusting the coordinate to the false site 
-                            rloc_pos = (int(loc[1])-boundary)+xk
-                            acc_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
-                            acc_mot_seq = acc_mot_seq.reverse_complement()
-
-                            # check for sanity and consensus of the fetched sequence region 
-                            if len(acc_mot_seq) != 2*boundary:
+                            # removing the true signal sequence site from selected false sites
+                            if boundary-1 in idx:
+                                idx.remove(boundary-1)
+                            if not idx:
                                 continue
-                            if not acc_mot_seq:
-                                continue
-                            if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
-                                continue
-                            if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
-                                continue 
 
-                            # write to fasta out 
-                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
-                            acc_min_fh.write(fseq_acc.format("fasta"))
-                            true_label_acc += 1 
+                            # limit to take maximum 2 false labels from one defined feature
+                            if len(idx) > 2:
+                                idx = random.sample(idx, 2)
+
+                            for ndr, xk in enumerate(idx):
+                                # adjusting the coordinate to the false site 
+                                rloc_pos = (int(loc[1])-boundary)+xk
+                                acc_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
+                                acc_mot_seq = acc_mot_seq.reverse_complement()
+
+                                # check for sanity and consensus of the fetched sequence region 
+                                if len(acc_mot_seq) != 2*boundary:
+                                    continue
+                                if not acc_mot_seq:
+                                    continue
+                                if not all (XJ in 'ATCG' for XJ in str(acc_mot_seq.upper())):
+                                    continue
+                                if str(acc_mot_seq[boundary-1:boundary+1]).upper() != 'AG':
+                                    continue 
+
+                                # write to fasta out 
+                                fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                                acc_min_fh.write(fseq_acc.format("fasta"))
+                                true_label_acc += 1 
     foh.close()
     don_min_fh.close()
     acc_min_fh.close()
@@ -854,11 +856,8 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
         if rec.id in Label:
             for Lfeat in Label[rec.id]:
                 for fid, loc in Lfeat.items():
-                    print '***', fid, loc 
                     if loc[-1] == '+': 
-
                         if not numpy.isnan(loc[0]):
-                            #print 'first', loc 
                             # acceptor splice site 
                             acc_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
 
@@ -878,7 +877,6 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                             true_label_acc += 1 
                         
                         if not numpy.isnan(loc[1]):
-                            #print 'sec', loc 
                             # donor splice site 
                             don_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
 
@@ -897,9 +895,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                             true_label_don += 1
 
                     elif loc[-1] == '-':
-                        
                         if not numpy.isnan(loc[0]):
-                            #print 'first', loc 
                             # donor splice site signal 
                             don_mot_seq = rec.seq[(int(loc[0])-boundary)-2:(int(loc[0])+boundary)-2]
                             don_mot_seq = don_mot_seq.reverse_complement()
@@ -920,7 +916,6 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                             true_label_don += 1 
                         
                         if not numpy.isnan(loc[1]):
-                            #print 'sec', loc 
                             # acceptor splice signal 
                             acc_mot_seq = rec.seq[(int(loc[1])-boundary)+1:(int(loc[1])+boundary)+1]
                             acc_mot_seq = acc_mot_seq.reverse_complement()
