@@ -42,8 +42,13 @@ def __main__():
         print __doc__
         sys.exit(-1)
 
+    # FIXME 
     # adjust the training label sequence count & flaking region length  
-    label_cnt = 10 # number of labels 
+    label_cnt = 3000 # number of labels 
+
+    # the number of positive and negative labels for training  
+    plus_cnt = 1000
+    minus_cnt = 10000
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -66,7 +71,7 @@ def __main__():
 
         posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
         print 
-        print 'selecting %d RANDOM %s signal label entities' % (COUNT, signal) 
+        print 'selecting %d RANDOM %s signal regions' % (COUNT, signal) 
         print 
 
         if signal == 'splice':
@@ -102,10 +107,6 @@ def __main__():
             print 'selected %d minus %s signal lables' % (label_count, signal) 
 
         # remove the extra labels fetched from the previous step 
-        # the number of positive and negative labels for training  
-        plus_cnt = 10
-        minus_cnt = 30
-
         #TODO add the other required result path for creating out files
         plus_label_cleanup([signal], plus_cnt)
 
@@ -657,7 +658,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                 if rloc_min+3 in signal_location: # ---AG|Exon~~~~ removing the true signal from false site 
                                     continue
 
-                                acc_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
+                                acc_mot_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+1]
 
                                 # check for sanity and consensus of the fetched sequence region 
                                 if len(acc_mot_seq) != 2*boundary:
@@ -684,13 +685,14 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                             if len(idx) > sample:
                                 idx = random.sample(idx, sample)
 
+
                             for ndr, xj in enumerate(idx):
                                 # adjusting the coordinate to the false site 
                                 rloc_pos = int(signal_location[0])+xj
                                 if rloc_pos in signal_location:
                                     continue
 
-                                don_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
+                                don_mot_seq = rec.seq[(rloc_pos-boundary)+1:(rloc_pos+boundary)+1]
 
                                 # check for sanity and consensus of the fetched sequence region 
                                 if len(don_mot_seq) != 2*boundary:
@@ -724,7 +726,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                 if rloc_min+3 in signal_location:
                                     continue
 
-                                don_mot_seq = rec.seq[(rloc_min-boundary)-1:(rloc_min+boundary)-1]
+                                don_mot_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+1]
                                 don_mot_seq = don_mot_seq.reverse_complement()
 
                                 # check for sanity and consensus of the fetched sequence region 
@@ -758,7 +760,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                 if rloc_pos in signal_location:
                                     continue
 
-                                acc_mot_seq = rec.seq[(rloc_pos-boundary)+2:(rloc_pos+boundary)+2]
+                                acc_mot_seq = rec.seq[(rloc_pos-boundary)+1:(rloc_pos+boundary)+1]
                                 acc_mot_seq = acc_mot_seq.reverse_complement()
 
                                 # check for sanity and consensus of the fetched sequence region 
