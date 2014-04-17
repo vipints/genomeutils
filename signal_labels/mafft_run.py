@@ -11,6 +11,7 @@ Requirement:
 
 TODO: include more commandline features to mafft 
 check the inputs from user 
+http://mafft.cbrc.jp/alignment/server/index.html
 """
 
 import os
