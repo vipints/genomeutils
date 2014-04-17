@@ -28,7 +28,7 @@ def ClustalWrun(infile, outfile, data_type, outform):
     outlog = "clustalw2_run.log"
     tlf = open(outlog,'w')
 
-    out_order = "INPUT" # ALIGNED
+    out_order = "ALIGNED" # "INPUT" # ALIGNED
 
     cl = ['clustalw2 -INFILE=%s -OUTFILE=%s -OUTORDER=%s -TYPE=%s -OUTPUT=%s' % (infile, outfile, out_order, data_type, outform)]
     process = subprocess.Popen(' '.join(cl), shell=True, stderr=tlf, stdout=tlf)
@@ -44,7 +44,6 @@ try:
 except:
     print __doc__ 
     sys.exit(-1) 
-
 
 
 ClustalWrun(INFILE, OUTFILE, DATATYPE, OUTFORM) 
