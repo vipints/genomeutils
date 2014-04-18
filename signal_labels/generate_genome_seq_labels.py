@@ -35,6 +35,7 @@ def __main__():
     """
     core unit
     """
+
     try:
         faname = sys.argv[1] # sequence 
         gfname = sys.argv[2] # annotation 
@@ -42,8 +43,7 @@ def __main__():
         print __doc__
         sys.exit(-1)
 
-    # FIXME 
-    # adjust the training label sequence count & flaking region length  
+    # FIXME adjust the training label sequence count 
     label_cnt = 3000 # number of labels 
 
     # the number of positive and negative labels for training  
@@ -106,8 +106,7 @@ def __main__():
             label_count = minus_tss_seq_fetch(signal, faname, posLabel)
             print 'selected %d minus %s signal lables' % (label_count, signal) 
 
-        # remove the extra labels fetched from the previous step 
-        #TODO add the other required result path for creating out files
+        # TODO remove the extra labels fetched from the previous step 
         plus_label_cleanup([signal], plus_cnt)
 
         minus_label_cleanup([signal], minus_cnt)
@@ -115,13 +114,13 @@ def __main__():
         # signal label processing over 
         print '%s signal done.' % signal
         print 
-        break
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt):
     """
     clean up the result file with the correct number of fetched signal labels
     """
+
     #out_path = os.path.dirname(base_path) 
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
@@ -171,6 +170,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt):
     """
     clean up the result file with the correct number of fetched signal labels
     """
+
     #out_path = os.path.dirname(base_path) 
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
@@ -788,6 +788,7 @@ def minus_tss_seq_fetch(signal, fnam, Label, boundary=100):
     """
     fetch the minus TSS, cleave signal sequence label
     """
+
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam) ## result to fasta base dir 
     #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
