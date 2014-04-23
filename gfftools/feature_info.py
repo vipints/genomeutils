@@ -22,8 +22,9 @@ def Intron_det(TDB):
     for ent1 in TDB:
         for idx, tid in enumerate(ent1['transcripts']):
 
-            if not ent1['exons'][idx]:
+            if not ent1['exons'][idx].any():
                 continue
+
             exon_cnt = len(ent1['exons'][idx])
             if exon_cnt > 1:
 
