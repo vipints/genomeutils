@@ -31,20 +31,20 @@ from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 from gfftools import helper, GFFParser 
 
-def __main__():
+def main(faname=None, gfname=None):
     """
     core unit
     """
 
-    try:
-        faname = sys.argv[1] # sequence 
-        gfname = sys.argv[2] # annotation 
-    except:
-        print __doc__
-        sys.exit(-1)
+    #try:
+    #    faname = sys.argv[1] # sequence 
+    #    gfname = sys.argv[2] # annotation 
+    #except:
+    #    print __doc__
+    #    sys.exit(-1)
 
     # FIXME adjust the training label sequence count 
-    label_cnt = 3000 # number of labels 
+    label_cnt = 4000 # number of labels 
 
     # the number of positive and negative labels for training  
     plus_cnt = 1000
@@ -114,6 +114,7 @@ def __main__():
         # signal label processing over 
         print '%s signal done.' % signal
         print 
+        break
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt):
@@ -1015,4 +1016,4 @@ def recursive_fn(f_db, lb_cnt, apt_prob):
     return cnt, dict(pLabel)
 
 if __name__=="__main__":
-    __main__()
+    main()
