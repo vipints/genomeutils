@@ -22,7 +22,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     import pylab 
 
     #pylab.figure(figsize=(len(labels)*4, (len(labels)/10)*5)) # 40, 10 # for 10 organisms 
-    pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
+    pylab.figure(figsize=(len(labels), (len(labels)/9)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
     width = 0.20
@@ -35,6 +35,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     xlocations = []
     
     min_max = [] 
+    mean_perf = defaultdict(list) 
 
     for org_name, details in data.items():
         
@@ -58,13 +59,22 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
                 #offset += width 
             best_c.sort() 
             min_max.append(best_c[-1])
+            mean_perf[(method, used_colors[idx])].append(best_c[-1]) # average of best c over organisms on each method 
 
             rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
             offset += width 
 
         offset += separator
         #break
-     
+   
+    # average of each methods  
+    rects_avg = [] 
+    offset += separator
+    for meth_color, method_avg in mean_perf.items():
+        rects_avg.append(pylab.bar(offset, sum(method_avg)/len(labels), width, color = meth_color[1], edgecolor='white'))
+        offset += width 
+    offset += separator
+
     # determine the extreams 
     min_max.sort() 
     ymax = min_max[-1]*1.1
@@ -129,3 +139,9 @@ def data_process(filename):
     fh.close()
     return data_mat.keys(), methods, data_mat 
 
+"""
+from signal_labels import method_performance
+fname = '29_org_base_0.5_acc.pickle'
+organisms, diff_methods, perfomance = method_performance.data_process(fname) 
+method_performance.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor splice site') 
+"""
