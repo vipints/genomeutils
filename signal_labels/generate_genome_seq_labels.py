@@ -34,17 +34,20 @@ from gfftools import helper, GFFParser
 def main(faname=None, gfname=None):
     """
     core unit
-    """
 
-    #try:
-    #    faname = sys.argv[1] # sequence 
-    #    gfname = sys.argv[2] # annotation 
-    #except:
-    #    print __doc__
-    #    sys.exit(-1)
+    @args faname: genome sequence in fasta 
+    @type faname: str
+    @args gfname: genome annotation in gff 
+    @type gfname: str
+    """
+    
+    # check for inputs
+    if faname == gfname:
+        print __doc__
+        sys.exit(-1)
 
     # FIXME adjust the training label sequence count 
-    label_cnt = 4000 # number of labels 
+    label_cnt = 5000 # number of labels 
 
     # the number of positive and negative labels for training  
     plus_cnt = 1000
@@ -1016,4 +1019,12 @@ def recursive_fn(f_db, lb_cnt, apt_prob):
     return cnt, dict(pLabel)
 
 if __name__=="__main__":
-    main()
+
+    try:
+        fas_name = sys.argv[1]
+        gff_name = sys.argv[2]
+    except:
+        print __doc__
+        sys.exit(-1) 
+
+    main(fas_name, gff_name)
