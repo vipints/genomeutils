@@ -22,7 +22,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     import pylab 
 
     #pylab.figure(figsize=(len(labels)*4, (len(labels)/10)*5)) # 40, 10 # for 10 organisms 
-    pylab.figure(figsize=(len(labels), (len(labels)/9)*5)) # 40, 10 # for 10 organisms 
+    pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
     width = 0.20
@@ -52,11 +52,8 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
 
             best_c = [] 
             for method_perf in perfs: 
-                
-                #min_max.append(method_perf) 
                 best_c.append(method_perf)
-                #rects.append(pylab.bar(offset, method_perf, width, color=used_colors[idx], edgecolor='white'))
-                #offset += width 
+
             best_c.sort() 
             min_max.append(best_c[-1])
             mean_perf[(method, used_colors[idx])].append(best_c[-1]) # average of best c over organisms on each method 
