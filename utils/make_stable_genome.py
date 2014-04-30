@@ -46,7 +46,7 @@ def __main__():
     
     # get the filehandler from input file
     try:
-        fh = helper._open_file(fname)
+        fh = helper.open_file(fname)
     except Exception, errmsg:
         stop_err('error in reading file '+ errmsg) 
 
