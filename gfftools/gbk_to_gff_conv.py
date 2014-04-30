@@ -11,7 +11,7 @@ Requirements:
 import os, sys, re
 import collections
 from Bio import SeqIO
-from helper import _open_file
+from helper import open_file
 
 def feature_table(chr_id, source, orient, genes, transcripts, cds, exons, unk):
     """
@@ -121,7 +121,7 @@ def gbk_parse(fname):
     """
     Extract genome annotation recods from genbank format 
     """
-    fhand = _open_file(gbkfname)
+    fhand = open_file(gbkfname)
     unk = 1 
 
     for record in SeqIO.parse(fhand, "genbank"):
