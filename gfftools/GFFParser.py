@@ -21,7 +21,7 @@ import scipy.io as sio
 from collections import defaultdict
 import helper as utils 
 
-def _attribute_tags(col9):
+def attribute_tags(col9):
     """ 
     Split the key-value tags from the attribute column, it takes column number 9 from GTF/GFF file 
     """
@@ -65,7 +65,7 @@ def _attribute_tags(col9):
 
     return is_gff, info
                 
-def _spec_features_keywd(gff_parts):
+def spec_features_keywd(gff_parts):
     """
     Specify the feature key word according to the GFF specifications
     """
@@ -120,7 +120,7 @@ def Parse(ga_file):
         assert len(parts) >= 8, rec
 
         # process the attribute column (9th column)
-        ftype, tags = _attribute_tags(parts[-1])
+        ftype, tags = attribute_tags(parts[-1])
         if not tags: # skip the line if no attribute column.
 	        continue 
         
@@ -147,7 +147,7 @@ def Parse(ga_file):
 
             # key word according to the GFF spec.
             if not ftype:
-                gff_info = _spec_features_keywd(gff_info)
+                gff_info = spec_features_keywd(gff_info)
         
             # link the feature relationships
             if gff_info['info'].has_key('Parent'): 
@@ -187,15 +187,15 @@ def Parse(ga_file):
     
     # depends on file type create parent feature  
     if not ftype:
-        parent_map, child_map = _create_missing_feature_type(parent_map, child_map)    
+        parent_map, child_map = create_missing_feature_type(parent_map, child_map)    
     
     # connecting parent child relations  
     # // essentially the parent child features are here from any type of GTF/GFF2/GFF3 file
-    gene_mat = _format_gene_models(parent_map, child_map) 
+    gene_mat = format_gene_models(parent_map, child_map) 
 
     return gene_mat 
     
-def _format_gene_models(parent_nf_map, child_nf_map): 
+def format_gene_models(parent_nf_map, child_nf_map): 
     """
     Genarate GeneObject based on the parsed file contents
 
@@ -408,7 +408,7 @@ def NonetoemptyList(XS):
     """
     return [] if XS is None else XS 
 
-def _create_missing_feature_type(p_feat, c_feat):
+def create_missing_feature_type(p_feat, c_feat):
     """
     GFF/GTF file defines only child features. This function tries to create 
     the parent feature from the information provided in the attribute column. 
@@ -472,27 +472,19 @@ def _create_missing_feature_type(p_feat, c_feat):
 
 ## General instruction to use the above functions:
 ## Usage: GFFParser.py in.gff3 out.mat 
-##    """
-##    extract genome feature information main factory  
-##    """
 
-## -- Provide input and result file names --
+#
+#gff_file = 'in.gff3'
+#out_mat = 'out.mat'
+#
 
-##    try:
-##        gff_file = sys.argv[1]
-##        out_mat = sys.argv[2]
-##    except:
-##        print __doc__
-##        sys.exit(-1)
+#
+#gene_struct = Parse(gff_file)
+#
 
-## -- Parse the file accoring to the type and returns the genes informations --
-
-##    gene_struct = Parse(gff_file)
-
-## -- Write the gene annotations to a matlab struct array format --
-
-##    sio.savemat(out_mat, 
-##                    mdict = dict(genes = gene_struct), 
-##                    format = '5', 
-##                    oned_as = 'row')
-########------------------------------------------------------#######
+#
+#sio.savemat(out_mat, 
+#       mdict = dict(genes = gene_struct), 
+#       format = '5', 
+#       oned_as = 'row')
+#
