@@ -104,7 +104,7 @@ def Parse(ga_file):
     child_map = defaultdict(list)
     parent_map = dict()
 
-    ga_handle = utils._open_file(ga_file)
+    ga_handle = utils.open_file(ga_file)
 
     for rec in ga_handle:
         rec = rec.strip('\n\r')
