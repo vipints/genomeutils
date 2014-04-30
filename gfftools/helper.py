@@ -82,7 +82,7 @@ def init_gene_GP():
 
     return gene_det
 
-def _open_file(fname):
+def open_file(fname):
     """
     Open the file (supports .gz .bz2) and returns the handler
     """
