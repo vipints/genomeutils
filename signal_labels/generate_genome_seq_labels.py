@@ -30,7 +30,7 @@ from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 from gfftools import helper, GFFParser 
 
-def main(faname=None, gfname=None):
+def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=1000, minus_cnt=3000):
     """
     core unit
 
@@ -38,19 +38,20 @@ def main(faname=None, gfname=None):
     @type faname: str
     @args gfname: genome annotation in gff 
     @type gfname: str
+    @args signal: different genomic signal types ['splice', 'cdsstop', 'cleave', 'tss', 'tis']
+    @type signal: str
+    @args label_cnt: number of random labels to be selected 
+    @type label_cnt: integer
+    @args plus_cnt: plus label count  
+    @type plus_cnt: integer
+    @args minus_cnt: minus label count 
+    @type minus_cnt: integer
     """
     
     # check for inputs
     if faname == gfname:
         print __doc__
         sys.exit(-1)
-
-    # FIXME adjust the training label sequence count 
-    label_cnt = 15000 # number of labels 
-
-    # the number of positive and negative labels for training  
-    plus_cnt = 1000
-    minus_cnt = 3000
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -63,29 +64,33 @@ def main(faname=None, gfname=None):
     print 'processed genome annotation'
     print 
     
+    gtf_db, feature_cnt, splice_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
+    print 
+    print 'extracted %d %s signal regions' % (feature_cnt, signal)
+    print 
+
+    posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
+    print 
+    print 'selecting %d RANDOM %s signal regions' % (COUNT, signal) 
+    print 
+
+    if signal == 'splice':
+        acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
+        print
+        print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+        print
+
+        acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, splice_checks, tid_gene_map)
+        print 
+        print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+        print 
+    
+    """
     # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
     for signal in ['splice', 'cdsstop', 'cleave', 'tss', 'tis']: 
 
-        gtf_db, feature_cnt, splice_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
-        print 
-        print 'extracted %d %s signal regions' % (feature_cnt, signal)
-        print 
 
-        posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        print 
-        print 'selecting %d RANDOM %s signal regions' % (COUNT, signal) 
-        print 
 
-        if signal == 'splice':
-            acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
-            print
-            print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
-            print
-
-            acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, splice_checks, tid_gene_map)
-            print 
-            print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
-            print 
 
         elif signal == 'tis':
             label_count = true_tis_seq_fetch(faname, posLabel)
@@ -117,6 +122,7 @@ def main(faname=None, gfname=None):
         print '%s signal done.' % signal
         print 
         break
+    """
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt):
@@ -622,6 +628,19 @@ def get_label_regions(gtf_content, signal):
 def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=3):
     """
     false splice signals
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args don_acc_check: splice signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
+    @type don_acc_check: defraultdict(list)
+    @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
+    @type tr_gene_mp: dict  
+    @args boundary: flanking region to the signal position
+    @type boundary: int
+    @args sample: number of minus regions to be selected from a true region.
+    @type sample: int  
     """
 
     real_fnam = os.path.realpath(fnam)
@@ -835,6 +854,13 @@ def minus_tss_seq_fetch(signal, fnam, Label, boundary=100):
 def true_ss_seq_fetch(fnam, Label, boundary=100):
     """
     True splice signals 
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: random signal label position in the genome  <chrom<transcript:(location, strand)>>
+    @type Label: dict
+    @args boundary: flanking region to the signal upstream and downstream
+    @type boundary: integer 
     """
 
     foh = helper.open_file(fnam)
@@ -979,6 +1005,13 @@ def plus_tss_seq_fetch(signal, fnam, Label, boundary=100):
 def select_labels(feat_db, feat_count, label_cnt):
     """
     Random sampling to select signal lables
+
+    @args feat_db: signal sequence location from the genome 
+    @type feat_db: dict
+    @args feat_count: annotated total signal features 
+    @type feat_count: integer
+    @args label_cnt: number of features to be considered
+    @type label_cnt: integer
     """
 
     assert label_cnt <= feat_count, 'Number of features annotated %d' % feat_count
@@ -992,13 +1025,20 @@ def select_labels(feat_db, feat_count, label_cnt):
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
             break
-        print '    recursive ... %d' % counter
+        print '    still trying ... %d' % counter
 
     return LSet, counter
 
 def recursive_fn(f_db, lb_cnt, apt_prob):
     """
     This function returns the random samples based on the label counts 
+
+    @args f_db: signal sequence location from genome 
+    @type f_db: dict 
+    @args lb_cnt: number of labels 
+    @type lb_cnt: integer
+    @args apt_prob: accept probability to make a the random search  entire list
+    @type apt_prob: float 
     """
 
     pLabel = defaultdict(list)
@@ -1020,8 +1060,8 @@ def recursive_fn(f_db, lb_cnt, apt_prob):
 if __name__=="__main__":
 
     try:
-        fas_name = sys.argv[1]
-        gff_name = sys.argv[2]
+        fas_name = sys.argv[1] # genome sequence - fasta 
+        gff_name = sys.argv[2] # genome annotation - gff/gtf 
     except:
         print __doc__
         sys.exit(-1) 
