@@ -85,6 +85,13 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
         print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
         print 
     
+    elif signal == 'tis':
+        label_count = true_tis_seq_fetch(faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count, signal) 
+
+        label_count = false_tis_seq_fetch(faname, posLabel)
+        print 'selected %d minus %s signal lables' % (label_count, signal)
+
     """
     # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
     for signal in ['splice', 'cdsstop', 'cleave', 'tss', 'tis']: 
@@ -92,12 +99,6 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
 
 
 
-        elif signal == 'tis':
-            label_count = true_tis_seq_fetch(faname, posLabel)
-            print 'selected %d plus %s signal lables' % (label_count, signal) 
-
-            label_count = false_tis_seq_fetch(faname, posLabel)
-            print 'selected %d minus %s signal lables' % (label_count, signal)
 
         elif signal == 'cdsstop':
             label_count = true_cdsStop_seq_fetch(faname, posLabel)
@@ -489,6 +490,13 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
 def true_tis_seq_fetch(fnam, Label, boundary=100):
     """
     fetch the plus TIS signal sequence.
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args boundary: flanking region to the signal position
+    @type boundary: int
     """
 
     real_fnam = os.path.realpath(fnam)
