@@ -64,7 +64,7 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
     print 'processed genome annotation'
     print 
     
-    gtf_db, feature_cnt, splice_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
+    gtf_db, feature_cnt, signal_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
     print 
     print 'extracted %d %s signal regions' % (feature_cnt, signal)
     print 
@@ -80,7 +80,7 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
         print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
         print
 
-        acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, splice_checks, tid_gene_map)
+        acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 
         print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
         print 
@@ -89,8 +89,22 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
         label_count = true_tis_seq_fetch(faname, posLabel)
         print 'selected %d plus %s signal lables' % (label_count, signal) 
 
-        label_count = false_tis_seq_fetch(faname, posLabel)
-        print 'selected %d minus %s signal lables' % (label_count, signal)
+        #label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        #print 'selected %d minus %s signal lables' % (label_count, signal)
+        
+    elif signal == "tss": 
+        label_count = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count, signal) 
+
+        label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        print 'selected %d minus %s signal lables' % (label_count, signal) 
+
+    elif signal == "cleave":
+        label_count = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count, signal) 
+
+        label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        print 'selected %d minus %s signal lables' % (label_count, signal) 
 
     """
     # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
@@ -107,12 +121,6 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
             label_count = false_cdsStop_seq_fetch(faname, posLabel)
             print 'selected %d minus %s signal lables' % (label_count, signal)
 
-        elif signal in ["tss", "cleave"]:
-            label_count = plus_tss_seq_fetch(signal, faname, posLabel)
-            print 'selected %d plus %s signal lables' % (label_count, signal) 
-
-            label_count = minus_tss_seq_fetch(signal, faname, posLabel)
-            print 'selected %d minus %s signal lables' % (label_count, signal) 
 
         # TODO remove the extra labels fetched from the previous step 
         plus_label_cleanup([signal], plus_cnt)
@@ -333,9 +341,22 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
     return true_label
 
 
-def false_tis_seq_fetch(fnam, Label, boundary=100):
+def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=3):
     """
     fetch the minus TIS signal label sequences 
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args tis_check: tis signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
+    @type tis_check: defraultdict(list)
+    @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
+    @type tr_gene_mp: dict  
+    @args boundary: flanking region to the signal position
+    @type boundary: int
+    @args sample: number of minus regions to be selected from a true region.
+    @type sample: int  
     """
 
     real_fnam = os.path.realpath(fnam)
@@ -351,18 +372,20 @@ def false_tis_seq_fetch(fnam, Label, boundary=100):
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
 
+                    signal_location = tis_check[tr_gene_mp[fid]]
+                    signal_location.sort() 
+                    print signal_location
+                    print tis_check
+
                     if loc[1] == '+': 
                         motif_seq = rec.seq[loc[2][0]:loc[2][1]]
 
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('ATG'), str(motif_seq).upper())]
 
-                        if not idx:
-                            continue 
-
                         # limit to take maximum 3 false labels from one defined feature
-                        if len(idx) > 3:
-                            idx = random.sample(idx, 3)
+                        if len(idx) > sample:
+                            idx = random.sample(idx, sample)
 
                         # get the false labels for randomly selected region or the available ones   
                         for ndr, xp in enumerate(idx):
@@ -395,12 +418,9 @@ def false_tis_seq_fetch(fnam, Label, boundary=100):
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('CAT'), str(motif_seq).upper())]
 
-                        if not idx:
-                            continue 
-
                         # limit to take maximum 3 false labels from one defined feature
-                        if len(idx) > 3:
-                            idx = random.sample(idx, 3)
+                        if len(idx) > sample:
+                            idx = random.sample(idx, sample)
 
                         # get the false labels for randomly selected region or the available ones   
                         for ndr, xp in enumerate(idx):
@@ -565,7 +585,7 @@ def get_label_regions(gtf_content, signal):
 
     feat_cnt = 0
     anno_db = defaultdict(list) 
-    splice_signal_point = defaultdict(list)
+    signal_point = defaultdict(list)
     trans_gene_map = dict() 
     
     for feature in gtf_content: # gene list from GFFParse function 
@@ -574,6 +594,8 @@ def get_label_regions(gtf_content, signal):
         if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
                 feat_cnt += 1
+                signal_point[feature['name']].extend(feature['tss'][xp])
+                trans_gene_map[ftid[0]] = feature['name']
                 mod_anno_db[ftid[0]] = (feature['tss'][xp], 
                                 feature['strand'], 
                                 (int(feature['start']), int(feature['stop']))
@@ -582,6 +604,8 @@ def get_label_regions(gtf_content, signal):
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
                     feat_cnt += 1
+                    signal_point[feature['name']].extend(feature['tis'][xp])
+                    trans_gene_map[ftid[0]] = feature['name']
                     mod_anno_db[ftid[0]] = (feature['tis'][xp],
                                 feature['strand'],
                                 (int(feature['start']), int(feature['stop']))
@@ -624,13 +648,13 @@ def get_label_regions(gtf_content, signal):
                                             ex[1], 
                                             feature['strand']
                                             )
-                    splice_signal_point[feature['name']].extend(exon_ends) # appending splice sites of transcripts to the gene
+                    signal_point[feature['name']].extend(exon_ends) # appending splice sites of transcripts to the gene
                     trans_gene_map[ftid[0]] = feature['name'] # transcript to gene mapping 
 
         if mod_anno_db:
             anno_db[feature['chr']].append(mod_anno_db)
     
-    return dict(anno_db), feat_cnt, splice_signal_point, trans_gene_map 
+    return dict(anno_db), feat_cnt, signal_point, trans_gene_map 
 
 
 def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=3):
@@ -814,15 +838,26 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(signal, fnam, Label, boundary=100):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
     """
-    fetch the minus TSS, cleave signal sequence label
+    fetch the minus TSS signal sequence label
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args tss_check: tss signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
+    @type tss_check: defraultdict(list)
+    @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
+    @type tr_gene_mp: dict  
+    @args boundary: flanking region to the signal position
+    @type boundary: int
+    @args sample: number of minus regions to be selected from a true region.
+    @type sample: int  
     """
 
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam) ## result to fasta base dir 
     #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
-    out_min_fh = open(signal + "_sig_minus_label.fa", 'w')
+    out_min_fh = open("tss_sig_minus_label.fa", 'w')
 
     true_label = 0 
 
@@ -831,13 +866,77 @@ def minus_tss_seq_fetch(signal, fnam, Label, boundary=100):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-                    for ndr in range(3):
+                    signal_location = tss_check[tr_gene_mp[fid]]
+                    signal_location.sort() 
+                    for ndr in range(sample):
 
-                        # max 3 labels from a true feature 
-                        rloc = random.randint(loc[2][0],loc[2][1])
+                        if loc[1]=='+': # ---------|~~~~~
+                            rloc = random.randint(loc[2][0]+200,loc[2][1])
+                        elif loc[1]=='-':
+                            rloc = random.randint(loc[2][0],loc[2][1]-200)
 
                         # remove the true signal index from random sampling 
-                        if rloc == int(loc[0]):
+                        if rloc in signal_location:
+                            continue
+
+                        motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+
+                        # sanity check for featched sequence 
+                        if len(motif_seq) != 2*boundary+1:
+                            continue
+                        if not motif_seq:
+                            continue
+                        if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
+                            continue
+
+                        # write to fasta out 
+                        fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                        out_min_fh.write(fseq.format("fasta"))
+                        true_label += 1 
+    out_min_fh.close()
+    foh.close()
+    return true_label
+
+
+def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, sample=3):
+    """
+    fetch the minus TSS signal sequence label
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args cleave_check: tss signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
+    @type cleave_check: defraultdict(list)
+    @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
+    @type tr_gene_mp: dict  
+    @args boundary: flanking region to the signal position
+    @type boundary: int
+    @args sample: number of minus regions to be selected from a true region.
+    @type sample: int  
+    """
+
+    #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
+    out_min_fh = open("cleave_sig_minus_label.fa", 'w')
+
+    true_label = 0 
+
+    foh = helper.open_file(fnam)
+    for rec in SeqIO.parse(foh, "fasta"):
+        if rec.id in Label:
+            for Lsub_feat in Label[rec.id]:
+                for fid, loc in Lsub_feat.items():
+                    signal_location = cleave_check[tr_gene_mp[fid]]
+                    signal_location.sort() 
+                    for ndr in range(sample):
+
+                        if loc[1]=='+': # ---------|~~~~~
+                            rloc = random.randint(loc[2][0],loc[2][1]-200)
+                        elif loc[1]=='-':
+                            rloc = random.randint(loc[2][0]+200,loc[2][1])
+
+                        # remove the true signal index from random sampling 
+                        if rloc in signal_location:
                             continue
 
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
@@ -970,9 +1069,18 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
     return true_label_acc, true_label_don
 
 
-def plus_tss_seq_fetch(signal, fnam, Label, boundary=100):
+def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
     """
-    fetch the plus TSS, cleave signal sequence. The default flanking region is 200 nucleotides. 
+    fetch the plus TSS and Cleave signal sequence
+
+    @args signal: signal type cleave or tss 
+    @type signal: str
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args boundary: flanking region to the signal position
+    @type boundary: int
     """
 
     real_fnam = os.path.realpath(fnam)
