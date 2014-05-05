@@ -76,21 +76,17 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
 
     if signal == 'splice':
         acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
-        print
         print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
-        print
 
         acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
-        print 
         print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
-        print 
     
     elif signal == 'tis':
         label_count = true_tis_seq_fetch(faname, posLabel)
         print 'selected %d plus %s signal lables' % (label_count, signal) 
 
-        #label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
-        #print 'selected %d minus %s signal lables' % (label_count, signal)
+        label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        print 'selected %d minus %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
         label_count = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
@@ -359,8 +355,6 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
     @type sample: int  
     """
 
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_min_fh = open("tis_sig_minus_label.fa", 'w')
 
@@ -373,12 +367,9 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                 for fid, loc in Lsub_feat.items():
 
                     signal_location = tis_check[tr_gene_mp[fid]]
-                    signal_location.sort() 
-                    print signal_location
-                    print tis_check
 
                     if loc[1] == '+': 
-                        motif_seq = rec.seq[loc[2][0]:loc[2][1]]
+                        motif_seq = rec.seq[loc[2][0]+200:loc[2][1]]
 
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('ATG'), str(motif_seq).upper())]
@@ -393,7 +384,7 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                             rloc_min = loc[2][0]+xp
 
                             # removing the true signl sequence site from selected false sites
-                            if rloc_min+1 == loc[0][0]:
+                            if rloc_min+1 in signal_location:
                                 continue
 
                             motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
@@ -413,12 +404,12 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                             true_label += 1 
 
                     elif loc[1] == '-': 
-                        motif_seq = rec.seq[loc[2][0]:loc[2][1]]
+                        motif_seq = rec.seq[loc[2][0]:loc[2][1]-200]
 
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('CAT'), str(motif_seq).upper())]
 
-                        # limit to take maximum 3 false labels from one defined feature
+                        # limit to take maximum  false labels from one defined feature
                         if len(idx) > sample:
                             idx = random.sample(idx, sample)
 
@@ -428,7 +419,7 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                             rloc_min = loc[2][0]+xp
 
                             # removing the true signal sequence site from selected false sites
-                            if rloc_min+3 == loc[0][0]:
+                            if rloc_min+3 in signal_location:
                                 continue
                             
                             motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
@@ -519,8 +510,6 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_pos_fh = open("tis_sig_plus_label.fa", 'w')
 
@@ -1083,8 +1072,6 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "_sig_plus_label.fa", 'w')
     out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
 
