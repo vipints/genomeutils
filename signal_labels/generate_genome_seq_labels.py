@@ -102,32 +102,20 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
         label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 'selected %d minus %s signal lables' % (label_count, signal) 
 
-    """
-    # genomic signals : TranslationStop - TranscriptionStop - don/acc - Transcription - Translation 
-    for signal in ['splice', 'cdsstop', 'cleave', 'tss', 'tis']: 
+    elif signal == 'cdsstop':
+        label_count = true_cdsStop_seq_fetch(faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count, signal)
 
+        label_count = false_cdsStop_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        print 'selected %d minus %s signal lables' % (label_count, signal)
 
+    # TODO remove the extra labels fetched from the previous step 
+    plus_label_cleanup([signal], plus_cnt)
+    minus_label_cleanup([signal], minus_cnt)
 
-
-
-        elif signal == 'cdsstop':
-            label_count = true_cdsStop_seq_fetch(faname, posLabel)
-            print 'selected %d plus %s signal lables' % (label_count, signal)
-
-            label_count = false_cdsStop_seq_fetch(faname, posLabel)
-            print 'selected %d minus %s signal lables' % (label_count, signal)
-
-
-        # TODO remove the extra labels fetched from the previous step 
-        plus_label_cleanup([signal], plus_cnt)
-
-        minus_label_cleanup([signal], minus_cnt)
-
-        # signal label processing over 
-        print '%s signal done.' % signal
-        print 
-        break
-    """
+    # signal label processing over 
+    print '%s signal done.' % signal
+    print 
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt):
@@ -231,12 +219,24 @@ def plus_label_cleanup(sig_type, plus_label_cnt):
         print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (cnt, signal, signal)
 
 
-def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
+def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100, sample=3):
     """
     fetch the minus cdsStop signal label sequences
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args cdsstop_check: cdsstop signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
+    @type cdsstop_check: defraultdict(list)
+    @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
+    @type tr_gene_mp: dict  
+    @args boundary: flanking region to the signal position
+    @type boundary: int
+    @args sample: number of minus regions to be selected from a true region.
+    @type sample: int  
     """
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam)
+
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_min_fh = open("cdsstop_sig_minus_label.fa", 'w')
 
@@ -247,29 +247,26 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
+                    signal_location = cdsstop_check[tr_gene_mp[fid]]
 
                     if loc[1] == '+': 
-                        motif_seq = rec.seq[loc[2][0]:loc[2][1]]
+                        motif_seq = rec.seq[loc[2][0]:loc[2][1]-200]
 
                         # get index for negative signal label sequence site 
                         for ndr, stcodon in enumerate(['TAA', 'TAG', 'TGA']):
                             #search for different stop codon index 
                             idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
 
-                            if not idx:
-                                continue
-
                             # get the false labels for randomly selected region or the available ones   
-                            if len(idx) > 1:
-                                idx = random.sample(idx, 1)
+                            if len(idx) > sample:
+                                idx = random.sample(idx, sample)
 
                             for nb, xp in enumerate(idx):
-
                                 # adjusting the coordinate to the false site - mapping the relative position 
                                 rloc_min = loc[2][0]+xp
 
                                 # this has to make sure that we are removing the correct positive label 
-                                if rloc_min == loc[0][0]:
+                                if rloc_min in signal_location:
                                     continue
                                 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
@@ -288,7 +285,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
                                 true_label += 1 
 
                     elif loc[1] == '-': 
-                        motif_seq = rec.seq[loc[2][0]:loc[2][1]]
+                        motif_seq = rec.seq[loc[2][0]+200:loc[2][1]]
                         
                         # 8713 3' UTR end, 3 nts for stop codon - 8714, 8715, 8716. 8717 end cds region
                         #print loc[0][0]-3 # 1-based coordinates 
@@ -300,20 +297,16 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
                             #search for different stop codons 
                             idx = [xq.start() for xq in re.finditer(re.escape(stcodon), str(motif_seq).upper())]
 
-                            if not idx:
-                                continue
-                                
                             # get the false labels for randomly selected region or the available ones   
-                            if len(idx) > 1:
-                                idx = random.sample(idx, 1)
+                            if len(idx) > sample:
+                                idx = random.sample(idx, sample)
 
                             for nb, xp in enumerate(idx):
-
                                 # adjusting the coordinate to the false site 
                                 rloc_min = loc[2][0]+xp
                                 
                                 #removing the true signal sequence site from selected false sites
-                                if rloc_min == loc[0][0]-4:
+                                if rloc_min+4 in signal_location:
                                     continue 
 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
@@ -333,7 +326,6 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
                                 true_label += 1 
     out_min_fh.close()
     foh.close()
-    
     return true_label
 
 
@@ -447,10 +439,15 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
 def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
     """
     fetch positive cdsStop signal labels 
+
+    @args fnam: genome sequence in fasta format 
+    @type fnam: str
+    @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
+    @type Label: dict 
+    @args boundary: flanking region to the signal position
+    @type boundary: int
     """
 
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam)
     #out_pos_fh = open(out_path + "/" + "cdsstop_sig_plus_label.fa", 'w')
     out_pos_fh = open("cdsstop_sig_plus_label.fa", 'w')
 
@@ -603,6 +600,8 @@ def get_label_regions(gtf_content, signal):
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
                     feat_cnt += 1
+                    signal_point[feature['name']].extend(feature['cdsStop'][xp])
+                    trans_gene_map[ftid[0]] = feature['name']
                     mod_anno_db[ftid[0]] = (feature['cdsStop'][xp],
                                 feature['strand'],
                                 (int(feature['start']), int(feature['stop']))
@@ -610,6 +609,8 @@ def get_label_regions(gtf_content, signal):
         elif signal == 'cleave':
             for xp, ftid in enumerate(feature['transcripts']):
                 feat_cnt += 1
+                signal_point[feature['name']].extend(feature['cleave'][xp])
+                trans_gene_map[ftid[0]] = feature['name']
                 mod_anno_db[ftid[0]] = (feature['cleave'][xp], 
                                 feature['strand'],
                                 (int(feature['start']), int(feature['stop']))
@@ -856,7 +857,6 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
                     signal_location = tss_check[tr_gene_mp[fid]]
-                    signal_location.sort() 
                     for ndr in range(sample):
 
                         if loc[1]=='+': # ---------|~~~~~
@@ -916,7 +916,6 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
                     signal_location = cleave_check[tr_gene_mp[fid]]
-                    signal_location.sort() 
                     for ndr in range(sample):
 
                         if loc[1]=='+': # ---------|~~~~~
