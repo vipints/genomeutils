@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 """
-Extract genome signal sequence labels like Transcription Start Site [TSS], 
-Translational Initiation Site [TIS] and Splice Sites [don, acc] from the 
-genome annotation in GTF/GFF with genome sequence in FASTA format. 
+Extract genomic signal labels like Transcription Start Site[tss], 
+Translational Initiation Site[tis], Splice Sites [don, acc], 
+Transcription Stop Site[cleave] and Translation Stop Site [cdsstop]
+from the genome sequence and annotation file. 
 
-The number of positive and negative labels for each signal sequence are 
-generated randomly from each chromosome. The numbers can be adjusted. 
-Currently which is set to TT and NN for positive and negative respectively. 
+The number of positive and negative labels for each signal sequence
+are generated randomly from each chromosome. 
 
-The positive labels are generated from YY nucleotides upstream and downstream 
-of the annotated genome signal region. Extracted labels are stored in the 
-base folder of input file with signal specific names. 
+The labels are flanked by 100 nucleotides upstream and downstream of
+the genome signal region. Labels are stored as: 
 ex: TSS [tss_sig_{minus|plus}_label.fa]
 
 Usage: python generate_genome_seq_labels.py in.fasta.(gz|bz2) in.gtf.(gz|bz2)
@@ -47,11 +46,11 @@ def main(faname=None, gfname=None):
         sys.exit(-1)
 
     # FIXME adjust the training label sequence count 
-    label_cnt = 5000 # number of labels 
+    label_cnt = 15000 # number of labels 
 
     # the number of positive and negative labels for training  
     plus_cnt = 1000
-    minus_cnt = 10000
+    minus_cnt = 3000
 
     # FIXME required input variables including the result path   
     #base_path = ''
@@ -232,7 +231,7 @@ def false_cdsStop_seq_fetch(fnam, Label, boundary=100):
 
     true_label = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
@@ -339,7 +338,7 @@ def false_tis_seq_fetch(fnam, Label, boundary=100):
 
     true_label = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
@@ -439,7 +438,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
 
     true_label = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
@@ -493,7 +492,7 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
 
     true_label = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
@@ -620,7 +619,7 @@ def get_label_regions(gtf_content, signal):
     return dict(anno_db), feat_cnt, splice_signal_point, trans_gene_map 
 
 
-def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=10):
+def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=3):
     """
     false splice signals
     """
@@ -635,7 +634,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     true_label_acc = 0 
     true_label_don = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for fLabel in Label[rec.id]:
@@ -800,7 +799,7 @@ def minus_tss_seq_fetch(signal, fnam, Label, boundary=100):
 
     true_label = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
@@ -838,7 +837,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
     True splice signals 
     """
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     real_fnam = os.path.realpath(fnam)
     out_path = os.path.dirname(real_fnam)
     #don_pos_fh = open(out_path + "/don_sig_plus_label.fa", 'w')
@@ -949,7 +948,7 @@ def plus_tss_seq_fetch(signal, fnam, Label, boundary=100):
 
     true_label = 0 
 
-    foh = helper._open_file(fnam)
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
