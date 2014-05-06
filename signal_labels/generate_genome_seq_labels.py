@@ -880,10 +880,10 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
                     signal_location = tss_check[tr_gene_mp[fid]]
                     for ndr in range(sample):
 
-                        if loc[1]=='+': # ---------|~~~~~
-                            rloc = random.randint(loc[2][0]+200,loc[2][1])
+                        if loc[1]=='+': # I---------|~~~~~
+                            rloc = random.randint(loc[2][0]-1000,loc[2][1])
                         elif loc[1]=='-':
-                            rloc = random.randint(loc[2][0],loc[2][1]-200)
+                            rloc = random.randint(loc[2][0],loc[2][1]+1000)
 
                         # remove the true signal index from random sampling 
                         if rloc in signal_location:
