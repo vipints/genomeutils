@@ -368,9 +368,7 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
     @type sample: int  
     """
 
-    #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_min_fh = open("tis_sig_minus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -469,9 +467,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    #out_pos_fh = open(out_path + "/" + "cdsstop_sig_plus_label.fa", 'w')
     out_pos_fh = open("cdsstop_sig_plus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -528,9 +524,7 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_pos_fh = open("tis_sig_plus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -686,10 +680,6 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     @type sample: int  
     """
 
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam) 
-    #don_min_fh = open(out_path + "/don_sig_minus_label.fa", 'w')
-    #acc_min_fh = open(out_path + "/acc_sig_minus_label.fa", 'w')
     don_min_fh = open("don_sig_minus_label.fa", 'w')
     acc_min_fh = open("acc_sig_minus_label.fa", 'w')
 
@@ -867,9 +857,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
     @type sample: int  
     """
 
-    #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
     out_min_fh = open("tss_sig_minus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -926,9 +914,7 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
     @type sample: int  
     """
 
-    #out_min_fh = open(out_path + "/" + "_sig_minus_label.fa", 'w')
     out_min_fh = open("cleave_sig_minus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -979,17 +965,13 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
     @type boundary: integer 
     """
 
-    foh = helper.open_file(fnam)
-    real_fnam = os.path.realpath(fnam)
-    out_path = os.path.dirname(real_fnam)
-    #don_pos_fh = open(out_path + "/don_sig_plus_label.fa", 'w')
-    #acc_pos_fh = open(out_path + "/acc_sig_plus_label.fa", 'w')
     don_pos_fh = open("don_sig_plus_label.fa", 'w')
     acc_pos_fh = open("acc_sig_plus_label.fa", 'w')
 
     true_label_acc = 0
     true_label_don = 0 
 
+    foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
             for Lfeat in Label[rec.id]:
@@ -1092,9 +1074,7 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    #out_pos_fh = open(out_path + "/" + "_sig_plus_label.fa", 'w')
     out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -1143,8 +1123,6 @@ def select_labels(feat_db, feat_count, label_cnt):
         accept_prob = (1.0*label_cnt)/feat_count
     except:
         accept_prob = 1
-
-    print accept_prob
 
     while 1: # ensure the label count 
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
