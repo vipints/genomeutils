@@ -77,50 +77,59 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=100
     if signal == 'splice':
         acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
         print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+        label_count_plus = (acc_cnt + don_cnt)/2
 
         acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+        label_count = (acc_cnt + don_cnt)/2
     
     elif signal == 'tis':
-        label_count = true_tis_seq_fetch(faname, posLabel)
-        print 'selected %d plus %s signal lables' % (label_count, signal) 
+        label_count_plus = true_tis_seq_fetch(faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
 
         label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 'selected %d minus %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
-        label_count = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
-        print 'selected %d plus %s signal lables' % (label_count, signal) 
+        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
 
         label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 'selected %d minus %s signal lables' % (label_count, signal) 
 
     elif signal == "cleave":
-        label_count = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
-        print 'selected %d plus %s signal lables' % (label_count, signal) 
+        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
 
         label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 'selected %d minus %s signal lables' % (label_count, signal) 
 
     elif signal == 'cdsstop':
-        label_count = true_cdsStop_seq_fetch(faname, posLabel)
-        print 'selected %d plus %s signal lables' % (label_count, signal)
+        label_count_plus = true_cdsStop_seq_fetch(faname, posLabel)
+        print 'selected %d plus %s signal lables' % (label_count_plus, signal)
 
         label_count = false_cdsStop_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
         print 'selected %d minus %s signal lables' % (label_count, signal)
 
-    # TODO remove the extra labels fetched from the previous step 
-    plus_label_cleanup([signal], plus_cnt)
-    minus_label_cleanup([signal], minus_cnt)
+    # remove the extra labels fetched from the previous step 
+    plus_label_cleanup([signal], plus_cnt, label_count_plus)
+    minus_label_cleanup([signal], minus_cnt, label_count)
 
     # signal label processing over 
     print '%s signal done.' % signal
     print 
 
 
-def minus_label_cleanup(sig_type, minus_label_cnt):
+def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
     """
     clean up the result file with the correct number of fetched signal labels
+
+    @args sig_type: genomic signal type 
+    @type sig_type: str 
+    @args plus_label_cnt: number of positive labels 
+    @type plus_label_cnt: int 
+    @args feat_count: total number of random valid features extracted
+    @type feat_count: int 
     """
 
     #out_path = os.path.dirname(base_path) 
@@ -134,92 +143,104 @@ def minus_label_cleanup(sig_type, minus_label_cnt):
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
 
-        #fasta_out_minus = open(out_path + "/"+ signal + "_sig_minus_label.bkp", 'w')
-        fasta_out_minus = open("%s_sig_minus_label.bkp" % signal, 'w')
-        cnt = 0 
-    
-        #minus_hd = open(out_path + "/" + signal +"_sig_minus_label.fa", "rU")
-        minus_hd = open("%s_sig_minus_label.fa" % signal, "rU")
-        for rec in SeqIO.parse(minus_hd, 'fasta'):
-            if not rec.seq:
-                continue
-            # check for uniq sequence 
-            if not rec.id in non_dup_ent:
-                continue
+        try:
+            accept_prob = (1.0*minus_label_cnt)/feat_count
+        except:
+            accept_prob = 1
 
-            SeqIO.write([rec], fasta_out_minus, "fasta")
-            cnt += 1
-            if cnt == minus_label_cnt:
+        while 1: # to ensure that we are considering every element 
+            counter = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
+            if minus_label_cnt <= counter:
                 break
-        minus_hd.close()
-        fasta_out_minus.close()
-        # replacing with new file 
+            print '    still trying ... %d' % counter
+
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
         os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
-
-        cnt = 0 
-        # double checking the count  
-        #minus_hd = open(out_path + "/" + signal + "_sig_minus_label.fa", "rU")
-        minus_hd = open("%s_sig_minus_label.fa" % signal, "rU")
-        for rec in SeqIO.parse(minus_hd, 'fasta'):
-            cnt += 1
-        minus_hd.close()
-
-        print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (cnt, signal, signal)
+        print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (counter, signal, signal)
 
 
-def plus_label_cleanup(sig_type, plus_label_cnt):
+def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
     """
     clean up the result file with the correct number of fetched signal labels
+ 
+    @args sig_type: genomic signal type 
+    @type sig_type: str 
+    @args plus_label_cnt: number of positive labels 
+    @type plus_label_cnt: int 
+    @args feat_count: total number of random valid features extracted
+    @type feat_count: int 
     """
 
     #out_path = os.path.dirname(base_path) 
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
     for signal in sig_type:
-        
         # remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
 
-        #fasta_out_plus = open(out_path + "/" + signal +"_sig_plus_label.bkp", 'w')
-        fasta_out_plus = open("%s_sig_plus_label.bkp" % signal, 'w')
+        try:
+            accept_prob = (1.0*plus_label_cnt)/feat_count
+        except:
+            accept_prob = 1
 
-        cnt = 0 
-        #plus_hd = open(out_path + "/"+ signal + "_sig_plus_label.fa", "rU")
-        plus_hd = open("%s_sig_plus_label.fa" %signal, "rU")
-        for rec in SeqIO.parse(plus_hd, 'fasta'):
-            if not rec.seq:
-                continue
-
-            # check for uniq sequence 
-            if not rec.id in non_dup_ent:
-                continue
-
-            SeqIO.write([rec], fasta_out_plus, "fasta")
-            cnt += 1
-            if cnt == plus_label_cnt:
+        while 1: # to ensure that we are considering every element 
+            counter = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
+            if plus_label_cnt <= counter:
                 break
-        plus_hd.close()
-        fasta_out_plus.close()
-        # replacing with new file 
+            print '    still trying ... %d' % counter
+
         #os.system('mv ' + out_path + '/' + signal +'_sig_plus_label.bkp '+ out_path + "/"+ signal + "_sig_plus_label.fa")
         os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
-        
-        cnt = 0 
-        # double checking the count  
-        #plus_hd = open(out_path + "/" + signal + "_sig_plus_label.fa", "rU")
-        plus_hd = open("%s_sig_plus_label.fa" % signal, "rU")
-        for rec in SeqIO.parse(plus_hd, 'fasta'):
+        print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal)
+
+
+def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
+    """
+    navigate through the filtered set and fetch the right number of plus and minus labels 
+
+    @args signal: genomic signal type  
+    @type signal: str 
+    @args plus_minus: plus or minus tag 
+    @type plus_minus: str 
+    @args non_dup_ent: unique entries 
+    @type non_dup_ent: dict 
+    @args lb_cnt: plus or minus label count  
+    @type lb_cnt: int  
+    @args apt_prob: acceptence probability 
+    @type apt_prob: flaot   
+    """
+
+    cnt = 0 
+    #fasta_out_plus = open(out_path + "/" + signal +"_sig_plus_label.bkp", 'w')
+    fasta_out_plus = open("%s_sig_%s_label.bkp" % (signal, plus_minus), 'w')
+
+    #plus_hd = open(out_path + "/"+ signal + "_sig_plus_label.fa", "rU")
+    plus_hd = open("%s_sig_%s_label.fa" % (signal, plus_minus), "rU")
+    for rec in SeqIO.parse(plus_hd, 'fasta'):
+        if not rec.seq:
+            continue
+
+        # check for uniq sequence 
+        if not rec.id in non_dup_ent:
+            continue
+
+        rnb = random.random()
+        if rnb <= apt_prob:
+            if lb_cnt == cnt:
+                break
+            SeqIO.write([rec], fasta_out_plus, "fasta")
             cnt += 1
-        plus_hd.close()
 
-        print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (cnt, signal, signal)
+    plus_hd.close()
+    fasta_out_plus.close()
+    
+    return cnt 
 
 
-def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100, sample=3):
+def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100, sample=5):
     """
     fetch the minus cdsStop signal label sequences
 
@@ -329,7 +350,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
     return true_label
 
 
-def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=3):
+def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=5):
     """
     fetch the minus TIS signal label sequences 
 
@@ -647,7 +668,7 @@ def get_label_regions(gtf_content, signal):
     return dict(anno_db), feat_cnt, signal_point, trans_gene_map 
 
 
-def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=3):
+def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=5):
     """
     false splice signals
 
@@ -828,7 +849,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=5):
     """
     fetch the minus TSS signal sequence label
 
@@ -887,7 +908,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
     return true_label
 
 
-def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, sample=3):
+def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, sample=5):
     """
     fetch the minus TSS signal sequence label
 
@@ -1122,6 +1143,8 @@ def select_labels(feat_db, feat_count, label_cnt):
         accept_prob = (1.0*label_cnt)/feat_count
     except:
         accept_prob = 1
+
+    print accept_prob
 
     while 1: # ensure the label count 
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
