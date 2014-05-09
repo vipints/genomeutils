@@ -56,21 +56,30 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
 
             best_c.sort() 
             min_max.append(best_c[-1])
-            mean_perf[(method, used_colors[idx])].append(best_c[-1]) # average of best c over organisms on each method 
+            mean_perf[method].append(best_c[-1]) # average of best c over organisms on each method 
 
             rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
             offset += width 
 
-        offset += separator
+        #offset += separator
         #break
    
     # average of each methods  
     rects_avg = [] 
     offset += separator
-    for meth_color, method_avg in mean_perf.items():
-        rects_avg.append(pylab.bar(offset, sum(method_avg)/len(labels), width, color = meth_color[1], edgecolor='white'))
-        offset += width 
+    #for meth_color, method_avg in mean_perf.items():
+    #    print meth_color
+    xlocations.append(offset + (width*(num_methods*1))/3)
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['union'])/len(labels), width, color = used_colors[0], edgecolor='white'))
+    offset += width 
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['individual'])/len(labels), width, color = used_colors[1], edgecolor='white'))
+    offset += width 
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
+    offset += width 
+
     offset += separator
+
+    labels.append('Mean')
 
     # determine the extreams 
     min_max.sort() 
