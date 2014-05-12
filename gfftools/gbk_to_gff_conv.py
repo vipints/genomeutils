@@ -8,6 +8,7 @@ python gbk_to_gff_conv.py in.gbk > out.gff
 Requirements:
     BioPython:- http://biopython.org/
 """
+
 import os, sys, re
 import collections
 from Bio import SeqIO
@@ -161,8 +162,8 @@ def gbk_parse(fname):
                 gene_tags[fid] = (rec.location._start.position+1, 
                                     rec.location._end.position, 
                                     strand,
-                                    rec.type,
-                                    rec.qualifiers['note'][0])
+                                    rec.type
+                                    )
             elif rec.type == 'exon':
                 exon[fid].append((rec.location._start.position+1, 
                                     rec.location._end.position))
