@@ -132,6 +132,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
     @type feat_count: int 
     """
 
+    assert minus_label_cnt <= feat_count, 'PLEASE INCREASE THE NUMBER OF RANDOM FEATURES TO BE SELECTED FROM %d' % feat_count
+
     #out_path = os.path.dirname(base_path) 
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
@@ -170,6 +172,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
     @args feat_count: total number of random valid features extracted
     @type feat_count: int 
     """
+
+    assert plus_label_cnt <= feat_count, 'PLEASE INCREASE THE NUMBER OF RANDOM FEATURES TO BE SELECTED FROM %d' % feat_count
 
     #out_path = os.path.dirname(base_path) 
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
