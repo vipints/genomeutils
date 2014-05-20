@@ -145,6 +145,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
 
+        assert minus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
+
         try:
             accept_prob = (1.0*minus_label_cnt)/feat_count
         except:
@@ -183,8 +185,11 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
-        print len(non_dup_ent)
         dup_ent.clear()
+
+        assert plus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
+
+        print len(non_dup_ent)
 
         try:
             accept_prob = (1.0*plus_label_cnt)/feat_count
