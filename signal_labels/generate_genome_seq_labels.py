@@ -183,12 +183,15 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
+        print len(non_dup_ent)
         dup_ent.clear()
 
         try:
             accept_prob = (1.0*plus_label_cnt)/feat_count
         except:
             accept_prob = 1
+
+        print accept_prob
 
         while 1: # to ensure that we are considering every element 
             counter = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
@@ -354,7 +357,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
     return true_label
 
 
-def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=4):
+def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=6):
     """
     fetch the minus TIS signal label sequences 
 
@@ -926,7 +929,11 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
+                    if loc[2][1]-loc[2][0] < 200: # remove small transcripts 
+                        continue
+
                     signal_location = cleave_check[tr_gene_mp[fid]]
+                    
                     for ndr in range(sample):
 
                         if loc[1]=='+': # ---------|~~~~~
