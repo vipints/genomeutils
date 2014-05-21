@@ -250,6 +250,7 @@ def make_Exon_cod(strand_p, five_p_utr, cds_cod, three_p_utr):
             exon_pos.append(jun_exon) if jun_exon != [] else ''
             for utr3 in three_p_utr:
                 exon_pos.append(utr3)
+
     elif strand_p == '-':
         utr3_start, utr3_end = 0, 0        
         if three_p_utr != []:
