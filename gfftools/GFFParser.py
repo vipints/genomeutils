@@ -268,6 +268,14 @@ def format_gene_models(parent_nf_map, child_nf_map):
                 E_TYP = Lv2.get('type', '')
                 child_feat[E_TYP].append(Lv2.get('location'))
             
+            # make general ascending order of coordinates 
+            if orient == '-':
+                for etype, excod in child_feat.items():
+                    if len(excod) > 1:
+                        if excod[0][0] > excod[-1][0]:
+                            excod.reverse()
+                            child_feat[etype] = excod
+
             # make exon coordinate from cds and utr regions 
             if not child_feat.get('exon'):  
                 if child_feat.get('CDS'):
@@ -282,14 +290,6 @@ def format_gene_models(parent_nf_map, child_nf_map):
                     ex_key_pattern = [k for k in child_feat if k.endswith("exon")]
                     if ex_key_pattern:
                         child_feat['exon'] = child_feat[ex_key_pattern[0]]
-
-            # make general ascending order of coordinates 
-            if orient == '-':
-                for etype, excod in child_feat.items():
-                    if len(excod) > 1:
-                        if excod[0][0] > excod[-1][0]:
-                            excod.reverse()
-                            child_feat[etype] = excod
 
             # stop_codon are seperated from CDS, add the coordinates based on strand
             if child_feat.get('stop_codon'):
