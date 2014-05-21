@@ -37,6 +37,7 @@ def Intron_det(TDB):
                             continue
                         # intron size 
                         intron_size[excod[0]-intron_start] = 1 
+                        #print tid, excod[0]-intron_start
 
                     intron_start = excod[1]+1
                     exon_size[intron_start-excod[0]] = 1
