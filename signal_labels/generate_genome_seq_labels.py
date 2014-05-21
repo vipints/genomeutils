@@ -189,14 +189,15 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
 
         assert plus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
 
-        print len(non_dup_ent)
+        #print len(non_dup_ent)
 
         try:
             accept_prob = (1.0*plus_label_cnt)/feat_count
         except:
             accept_prob = 1
 
-        print accept_prob
+        #accept_prob = 0.75
+        #print accept_prob
 
         while 1: # to ensure that we are considering every element 
             counter = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
