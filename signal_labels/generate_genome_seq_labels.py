@@ -152,7 +152,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        while 1: # to ensure that we are considering every element 
+        while True: # to ensure that we are considering every element 
             counter = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
             if minus_label_cnt <= counter:
                 break
@@ -188,7 +188,6 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         dup_ent.clear()
 
         assert plus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
-
         #print len(non_dup_ent)
 
         try:
@@ -199,7 +198,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         #accept_prob = 0.75
         #print accept_prob
 
-        while 1: # to ensure that we are considering every element 
+        while True: # to ensure that we are considering every element 
             counter = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
             if plus_label_cnt <= counter:
                 break
@@ -363,7 +362,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
     return true_label
 
 
-def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=6):
+def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=4):
     """
     fetch the minus TIS signal label sequences 
 
@@ -1141,7 +1140,7 @@ def select_labels(feat_db, feat_count, label_cnt):
     except:
         accept_prob = 1
 
-    while 1: # ensure the label count 
+    while True: # ensure the label count 
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
             break
