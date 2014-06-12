@@ -30,7 +30,7 @@ from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 from gfftools import helper, GFFParser 
 
-def main(faname=None, gfname=None, signal='splice', label_cnt=8000, plus_cnt=1000, minus_cnt=3000):
+def main(faname=None, gfname=None, signal='splice', label_cnt=4000, plus_cnt=1000, minus_cnt=3000):
     """
     core unit
 
@@ -152,6 +152,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
+        accept_prob = 0.98
+
         while True: # to ensure that we are considering every element 
             counter = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
             if minus_label_cnt <= counter:
@@ -195,8 +197,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        #accept_prob = 0.75
-        #print accept_prob
+        accept_prob = 0.98
+        print accept_prob
 
         while True: # to ensure that we are considering every element 
             counter = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
