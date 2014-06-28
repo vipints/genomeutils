@@ -31,7 +31,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     offset = 0
     num_methods = len(methods)
     
-    used_colors = ["#88aa33", "#9999ff", "#ff9999"]
+    used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
     xlocations = []
     
     min_max = [] 
@@ -49,6 +49,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
 
         for idx, bundles in enumerate(details):
             method, perfs = bundles 
+            print '\t', method
 
             best_c = [] 
             for method_perf in perfs: 
@@ -56,7 +57,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
 
             best_c.sort() 
             min_max.append(best_c[-1])
-            mean_perf[method].append(best_c[-1]) # average of best c over organisms on each method 
+            mean_perf[method].append(best_c[-1]) # best c over organisms on each method 
 
             rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
             offset += width 
@@ -74,7 +75,9 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     offset += width 
     rects_avg.append(pylab.bar(offset, sum(mean_perf['individual'])/len(labels), width, color = used_colors[1], edgecolor='white'))
     offset += width 
-    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtmkl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
+    offset += width 
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[3], edgecolor='white'))
     offset += width 
 
     offset += separator
