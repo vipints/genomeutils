@@ -3,7 +3,11 @@
 Download RNA-sequencing reads trace file from NCBI Short Read Archive repository based on Run ID. 
 
 Usage: python ncbi_sra_run_download.py run_id out_dir pe/se{paired-end/single-end}  
+
+Requirement:
+    fastq-dump - sratoolkit: http://www.ncbi.nlm.nih.gov/Traces/sra/?view=software
 """
+
 
 import re 
 import os 
