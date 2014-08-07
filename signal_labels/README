@@ -1,4 +1,5 @@
---UNDER CONSTRUCTION--
+Generate Train and Test labels for ARTS program 
+-----------------------------------------------
 
 generate_genome_seq_labels.py: extract genomic signal sequence with flanking regions. 
 
