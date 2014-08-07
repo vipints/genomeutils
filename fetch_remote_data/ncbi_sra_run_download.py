@@ -5,13 +5,15 @@ Download RNA-sequencing reads trace file from NCBI Short Read Archive repository
 Usage: python ncbi_sra_run_download.py run_id out_dir pe/se{paired-end/single-end}  
 """
 
+import re 
+import os 
 import sys 
-import re, os
-import urllib2
 import shutil
+import urllib2
 import subprocess 
 
-class MyException( Exception ): pass
+class MyException( Exception ): 
+    pass
 
 base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
 
@@ -88,20 +90,22 @@ sys.stdout.write('\tsaved at ' + out_file_name + ' done! \n')
 tempfile.close()
 sra_file.close()
 
-## split the file based on SE/PE
-# FIXME SRA toolkit path  
-os.environ['PATH'] += os.pathsep + '/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
+## default compression type
+out_compress = "bzip2"
 
 ## depends on the compress type and library protocol type
 if lib_type in ['pe', 'PE', 'paired-end']:
-    cli = 'fastq-dump --gzip --split-3 --outdir %s %s' % (download_path, out_file_name) 
+    cli = 'fastq-dump --%s --split-3 --outdir %s %s' % (out_compress, download_path, out_file_name) 
 elif lib_type in ['se', 'SE', 'single-end']:
-    cli = 'fastq-dump --gzip --outdir %s %s' % (download_path, out_file_name)
+    cli = 'fastq-dump --%s --outdir %s %s' % (out_compress, download_path, out_file_name)
 else:
     print 'Error! Library layout [PE/pe/paired-end|SE/se/single-end]'
     print '\tYour Library layout is ', lib_type
     print '\tProgram cannot continue, Exiting...'
     sys.exit(-1)
+
+## add the installation path of sratoolkit  
+os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
 
 ## split the .SRA format file based on the library layout
 sys.stdout.write('\trun ' + cli + '\n')
