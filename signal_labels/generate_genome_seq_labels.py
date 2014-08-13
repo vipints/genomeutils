@@ -30,7 +30,7 @@ from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 from gfftools import helper, GFFParser 
 
-def main(faname=None, gfname=None, signal='splice', label_cnt=4000, plus_cnt=1000, minus_cnt=3000):
+def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minus_cnt=30, flanks=1000):
     """
     core unit
 
@@ -46,6 +46,8 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=4000, plus_cnt=100
     @type plus_cnt: integer
     @args minus_cnt: minus label count 
     @type minus_cnt: integer
+    @args flanks: flanking sequence length 
+    @type flanks: integer
     """
     
     # check for inputs
@@ -91,10 +93,10 @@ def main(faname=None, gfname=None, signal='splice', label_cnt=4000, plus_cnt=100
         print 'selected %d minus %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
-        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
+        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
 
-        label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         print 'selected %d minus %s signal lables' % (label_count, signal) 
 
     elif signal == "cleave":
