@@ -67,6 +67,9 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
     print 'processed genome annotation'
     print 
     
+    # check the consistency of chr names in fasta and gff file 
+    chrom_name_consistency(faname, anno_file_content) 
+    
     gtf_db, feature_cnt, signal_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
     print 
     print 'extracted %d %s signal regions' % (feature_cnt, signal)
@@ -121,6 +124,38 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
     # signal label processing over 
     print '%s signal done.' % signal
     print 
+
+
+def chrom_name_consistency(fasta_fname, gff_content):
+    """
+    check the chromosome name consistency in gff file and fasta file 
+
+    @args fasta_fname: fasta file 
+    @type fasta_fname: string 
+    @args gff_content: parsed object from gtf/gff file 
+    @type gff_content: numpy array 
+    """
+    
+    chrom_fasta = dict() 
+    fasta_h = helper.open_file(fasta_fname)
+    for fas_rec in SeqIO.parse(fasta_h, "fasta"):
+        chrom_fasta[fas_rec.id] = 0 
+
+    chrom_gff = dict() 
+    for gff_rec in gff_content:
+        chrom_gff[gff_rec['chr']] = 0 
+
+    cnt = 0 
+    for chrom in chrom_fasta:
+        if not chrom in chrom_gff:
+            print chrom, 'NOT found in GFF/GTF file'
+            cnt += 1  
+    
+    if cnt == len(chrom_fasta):
+        print 
+        print 'Warning: chromosome/contig names are different in provided fasta and gff file, cannot continue.'
+        print 
+        sys.exit(-1)
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
