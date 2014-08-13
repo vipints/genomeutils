@@ -30,6 +30,7 @@ from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 from gfftools import helper, GFFParser 
 
+
 def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minus_cnt=30, flanks=1000):
     """
     core unit
@@ -86,10 +87,10 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
         label_count = (acc_cnt + don_cnt)/2
     
     elif signal == 'tis':
-        label_count_plus = true_tis_seq_fetch(faname, posLabel)
+        label_count_plus = true_tis_seq_fetch(faname, posLabel, flanks)
         print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
 
-        label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         print 'selected %d minus %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
@@ -100,17 +101,17 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
         print 'selected %d minus %s signal lables' % (label_count, signal) 
 
     elif signal == "cleave":
-        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel)
+        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
 
-        label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         print 'selected %d minus %s signal lables' % (label_count, signal) 
 
     elif signal == 'cdsstop':
-        label_count_plus = true_cdsStop_seq_fetch(faname, posLabel)
+        label_count_plus = true_cdsStop_seq_fetch(faname, posLabel, flanks)
         print 'selected %d plus %s signal lables' % (label_count_plus, signal)
 
-        label_count = false_cdsStop_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
+        label_count = false_cdsStop_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         print 'selected %d minus %s signal lables' % (label_count, signal)
 
     # remove the extra labels fetched from the previous step 
