@@ -646,7 +646,7 @@ def get_label_regions(gtf_content, signal):
 
         if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
-                if feature['cds_exons'][xp].any() and len(feature['cds_exons'][xp])>1:
+                if feature['cds_exons'][xp].any() and len(feature['cds_exons'][xp]) > 1:
                     feat_cnt += 1
                     signal_point[feature['name']].extend(feature['tss'][xp])
                     trans_gene_map[ftid[0]] = feature['name']
