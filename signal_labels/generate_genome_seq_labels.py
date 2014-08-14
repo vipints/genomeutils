@@ -646,7 +646,7 @@ def get_label_regions(gtf_content, signal):
 
         if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
-                if feature['cds_exons'][xp].any():
+                if feature['cds_exons'][xp].any() and len(feature['cds_exons'][xp])>1:
                     feat_cnt += 1
                     signal_point[feature['name']].extend(feature['tss'][xp])
                     trans_gene_map[ftid[0]] = feature['name']
@@ -930,10 +930,12 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
                         if rloc in signal_location:
                             continue
 
-                        motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+                        #motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+                        motif_seq = rec.seq[rloc-boundary:rloc+boundary]
 
                         # sanity check for featched sequence 
-                        if len(motif_seq) != 2*boundary+1:
+                        #if len(motif_seq) != 2*boundary+1:
+                        if len(motif_seq) != 2*boundary:
                             continue
                         if not motif_seq:
                             continue
@@ -991,10 +993,12 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
                         if rloc in signal_location:
                             continue
 
-                        motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+                        #motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
+                        motif_seq = rec.seq[rloc-boundary:rloc+boundary]
 
                         # sanity check for featched sequence 
-                        if len(motif_seq) != 2*boundary+1:
+                        #if len(motif_seq) != 2*boundary+1:
+                        if len(motif_seq) != 2*boundary:
                             continue
                         if not motif_seq:
                             continue
@@ -1139,13 +1143,15 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-                    motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1]
+                    #motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1] # TSS ---A---
+                    motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary] # TSS ---A--
 
                     if loc[1] == '-': 
                         motif_seq = motif_seq.reverse_complement()
 
                     # sanity check for the fetched sequence 
-                    if len(motif_seq) != boundary*2+1: 
+                    #if len(motif_seq) != boundary*2+1: 
+                    if len(motif_seq) != boundary*2: 
                         continue
                     if not motif_seq:
                         continue
