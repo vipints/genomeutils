@@ -11,7 +11,6 @@ Requirement:
 import re 
 import sys
 from Bio import SeqIO 
-from gfftools import GFFParser
 
 def __main__():
     """
@@ -24,13 +23,6 @@ def __main__():
         print __doc__
         sys.exit(-1) 
 
-    #gff_fname = "/cbio/grlab/nobackup/projects/SignalPrediction/SRA-rnaseq/H_sapiens/trans_pred/predgenes.gff3" 
-    gff_fname = "/cbio/grlab/home/vipin/tmp/test-data/splice_gene.gff"
-    gff_content = GFFParser.Parse(gff_fname)
-
-    for rec in gff_content:
-        for xp, sub_rec in enumerate(rec['transcripts']):
-            print xp, sub_rec, rec['exons'][xp][0]
 
     #fasta_reader(label_type_1)
 
