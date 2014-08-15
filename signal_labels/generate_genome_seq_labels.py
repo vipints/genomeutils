@@ -646,7 +646,7 @@ def get_label_regions(gtf_content, signal):
 
         if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
-                if feature['cds_exons'][xp].any() and len(feature['cds_exons'][xp]) > 1:
+                if feature['exons'][xp].any() and len(feature['exons'][xp]) > 1:
                     feat_cnt += 1
                     signal_point[feature['name']].extend(feature['tss'][xp])
                     trans_gene_map[ftid[0]] = feature['name']
@@ -1143,6 +1143,7 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
+
                     #motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1] # TSS ---A---
                     motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary] # TSS ---A--
 
@@ -1159,7 +1160,7 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
                         continue
 
                     # write to fasta out 
-                    fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                    fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                     out_pos_fh.write(fseq.format("fasta"))
                     true_label += 1 
 
