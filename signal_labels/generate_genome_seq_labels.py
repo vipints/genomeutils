@@ -919,6 +919,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
                     signal_location = tss_check[tr_gene_mp[fid]]
+                    prev_value = []
                     for ndr in range(sample):
 
                         if loc[1]=='+': # I---------|~~~~~
@@ -929,6 +930,11 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
                         # remove the true signal index from random sampling 
                         if rloc in signal_location:
                             continue
+
+                        if rloc in prev_value:
+                            continue
+
+                        prev_value.append(rloc) 
 
                         #motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary]
@@ -943,7 +949,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
                             continue
 
                         # write to fasta out 
-                        fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], rloc), description='-1 %s' % fid)
                         out_min_fh.write(fseq.format("fasta"))
                         true_label += 1 
     out_min_fh.close()
