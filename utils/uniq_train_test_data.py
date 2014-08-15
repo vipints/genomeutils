@@ -8,7 +8,6 @@ Requirement:
 
 """
 
-import re 
 import sys
 from Bio import SeqIO 
 
@@ -24,18 +23,26 @@ def __main__():
         sys.exit(-1) 
 
 
-    #fasta_reader(label_type_1)
+    train_recs = fasta_reader(label_type_1)
+    test_recs = fasta_reader(label_type_2)
+
+
+    shared_keys = set(train_recs.keys()) & set(test_recs.keys())
+
+    print len(shared_keys)
 
 
 def fasta_reader(fasname):
     """
     read fasta file and return the records locations
     """
-
+    
+    location_marks = dict() 
     for rec in SeqIO.parse(fasname, "fasta"):
-        print rec.id
 
-        break 
+        location_marks[rec.id] = 0 
+
+    return location_marks 
 
 
 if __name__=="__main__":
