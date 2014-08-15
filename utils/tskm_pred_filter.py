@@ -37,7 +37,7 @@ def __main__():
     clean_entries = dict() 
     for chrom, sub_trees in cluster_trees.items():
         for start, stop, id in sub_trees.getregions():
-            for xq in range(2):
+            for xq in range(1):
 
                 try:
                     clean_entries[feat_id_map[id[xq]]] = 0 
