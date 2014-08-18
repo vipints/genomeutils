@@ -599,7 +599,8 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
                             continue
 
                         # result to fasta out
-                        fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        #fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                         out_pos_fh.write(fseq.format("fasta"))
                         true_label += 1 
 
@@ -618,7 +619,8 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
                             continue
 
                         # result to fasta out
-                        fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        #fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                         out_pos_fh.write(fseq.format("fasta"))
                         true_label += 1 
     out_pos_fh.close()
