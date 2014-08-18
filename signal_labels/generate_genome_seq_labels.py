@@ -746,7 +746,6 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
         if rec.id in Label:
             for fLabel in Label[rec.id]:
                 for fid, loc in fLabel.items():
-                    
                     fid_lookup = re.search(r'^(.*)\.\d+$', fid).group(1) # to search in tr_gene_map 
                     signal_location = don_acc_check[tr_gene_mp[fid_lookup]]
                     signal_location.sort() 
@@ -758,15 +757,19 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                             # get index for negative signal label sequence site 
                             idx = [xq.start() for xq in re.finditer(re.escape('AG'), str(acc_t_seq).upper())]
 
-                            # limit to take maximum 2 false labels from one defined feature
-                            if len(idx) > sample:
+                            if len(idx) > sample: # limit to take maximum 2 false labels from one defined feature
                                 idx = random.sample(idx, sample)
                             
+                            prev_value = dict()
                             for ndr, xp in enumerate(idx):
-                                # adjusting the coordinate to the false site 
-                                rloc_min = int(signal_location[0])+xp
+                                rloc_min = int(signal_location[0])+xp # adjusting the coordinate to the false site 
                                 if rloc_min+3 in signal_location: # ---AG|Exon~~~~ removing the true signal from false site 
                                     continue
+
+                                if rloc_min in prev_value:
+                                    continue
+
+                                prev_value[rloc_min]=0 
 
                                 acc_mot_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+1]
 
@@ -781,7 +784,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                     continue 
 
                                 # write to fasta out 
-                                fseq_acc = SeqRecord(acc_mot_seq.upper(), id='%s_%d' % (fid, ndr), description='-ve label')
+                                fseq_acc = SeqRecord(acc_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], rloc_min), description='-1 %s' % fid)
                                 acc_min_fh.write(fseq_acc.format("fasta"))
                                 true_label_acc += 1 
                         
@@ -791,16 +794,19 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                             # get index for negative signal label sequence site 
                             idx = [xq.start() for xq in re.finditer(re.escape('GT'), str(don_t_seq).upper())]
 
-                            # limit to take maximum 2 false labels from one defined feature
-                            if len(idx) > sample:
+                            if len(idx) > sample:# limit to take maximum 2 false labels from one defined feature
                                 idx = random.sample(idx, sample)
 
-
+                            prev_value = dict()
                             for ndr, xj in enumerate(idx):
-                                # adjusting the coordinate to the false site 
-                                rloc_pos = int(signal_location[0])+xj
+                                rloc_pos = int(signal_location[0])+xj# adjusting the coordinate to the false site 
                                 if rloc_pos in signal_location:
                                     continue
+
+                                if rloc_pos in prev_value:
+                                    continue
+
+                                prev_value[rloc_pos]=0 
 
                                 don_mot_seq = rec.seq[(rloc_pos-boundary)+1:(rloc_pos+boundary)+1]
 
@@ -815,7 +821,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                     continue 
 
                                 # write to fasta out 
-                                fseq_don = SeqRecord(don_mot_seq.upper(), id='%s_%d' % (fid, ndr), description='-ve label')
+                                fseq_don = SeqRecord(don_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], rloc_pos), description='-1 %s' % fid)
                                 don_min_fh.write(fseq_don.format("fasta"))
                                 true_label_don += 1 
 
@@ -826,15 +832,20 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                             # get index for negative signal label sequence site 
                             idx = [xq.start() for xq in re.finditer(re.escape('AC'), str(don_t_seq).upper())]
 
-                            # limit to take maximum 2 false labels from one defined feature
-                            if len(idx) > sample:
+                            if len(idx) > sample:# limit to take maximum 2 false labels from one defined feature
                                 idx = random.sample(idx, sample)
 
+                            prev_value = dict()
                             for ndr, xp in enumerate(idx):
                                 # adjusting the coordinate to the false site 
                                 rloc_min = int(signal_location[0])+xp
                                 if rloc_min+3 in signal_location:
                                     continue
+
+                                if rloc_min in prev_value:
+                                    continue
+
+                                prev_value[rloc_min] = 0 
 
                                 don_mot_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+1]
                                 don_mot_seq = don_mot_seq.reverse_complement()
@@ -850,7 +861,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                     continue 
 
                                 # write to fasta out 
-                                fseq_don = SeqRecord(don_mot_seq.upper(), id='%s_%d' % (fid, ndr), description='-ve label')
+                                fseq_don = SeqRecord(don_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], rloc_min), description='-1 %s' % fid)
                                 don_min_fh.write(fseq_don.format("fasta"))
                                 true_label_don += 1 
                         
@@ -860,15 +871,20 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                             # get index for negative signal label sequence site 
                             idx = [xq.start() for xq in re.finditer(re.escape('CT'), str(acc_t_seq).upper())]
 
-                            # limit to take maximum 2 false labels from one defined feature
-                            if len(idx) > sample:
+                            if len(idx) > sample:# limit to take maximum 2 false labels from one defined feature
                                 idx = random.sample(idx, sample)
 
+                            prev_value = dict()
                             for ndr, xk in enumerate(idx):
                                 # adjusting the coordinate to the false site 
                                 rloc_pos = int(signal_location[0])+xk
                                 if rloc_pos in signal_location:
                                     continue
+
+                                if rloc_pos in prev_value:
+                                    continue
+                                
+                                prev_value[rloc_pos] = 0 
 
                                 acc_mot_seq = rec.seq[(rloc_pos-boundary)+1:(rloc_pos+boundary)+1]
                                 acc_mot_seq = acc_mot_seq.reverse_complement()
@@ -884,7 +900,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
                                     continue 
 
                                 # write to fasta out 
-                                fseq_acc = SeqRecord(acc_mot_seq.upper(), id='%s_%d' % (fid, ndr), description='-ve label')
+                                fseq_acc = SeqRecord(acc_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], rloc_pos), description='-1 %s' % fid)
                                 acc_min_fh.write(fseq_acc.format("fasta"))
                                 true_label_acc += 1
 
@@ -1061,7 +1077,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                                 continue 
 
                             # write to fasta out 
-                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], int(loc[0])), description='+1 %s' % fid)
                             acc_pos_fh.write(fseq_acc.format("fasta"))
                             true_label_acc += 1 
                         
@@ -1079,7 +1095,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                                 continue 
 
                             # write to fasta out 
-                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], int(loc[1])), description='+1 %s' % fid)
                             don_pos_fh.write(fseq_don.format("fasta"))
                             true_label_don += 1
 
@@ -1100,7 +1116,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                                 continue 
 
                             # write to fasta out 
-                            fseq_don = SeqRecord(don_mot_seq.upper(), id=fid, description='+ve label')
+                            fseq_don = SeqRecord(don_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], int(loc[0])), description='+1 %s' % fid)
                             don_pos_fh.write(fseq_don.format("fasta"))
                             true_label_don += 1 
                         
@@ -1120,7 +1136,7 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
                                 continue 
 
                             # write to fasta out 
-                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id=fid, description='+ve label')
+                            fseq_acc = SeqRecord(acc_mot_seq.upper(), id='%s%s%d' % (rec.id, loc[-1], int(loc[1])), description='+1 %s' % fid)
                             acc_pos_fh.write(fseq_acc.format("fasta"))
                             true_label_acc += 1 
     don_pos_fh.close()
