@@ -312,7 +312,6 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
 
     #out_pos_fh = open(out_path + "/" + "tis_sig_plus_label.fa", 'w')
     out_min_fh = open("cdsstop_sig_minus_label.fa", 'w')
-
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -333,7 +332,8 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
                             # get the false labels for randomly selected region or the available ones   
                             if len(idx) > sample:
                                 idx = random.sample(idx, sample)
-
+                            
+                            prev_value = dict() 
                             for nb, xp in enumerate(idx):
                                 # adjusting the coordinate to the false site - mapping the relative position 
                                 rloc_min = loc[2][0]+xp
@@ -341,6 +341,10 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
                                 # this has to make sure that we are removing the correct positive label 
                                 if rloc_min in signal_location:
                                     continue
+
+                                if rloc_min in prev_value:
+                                    continue
+                                prev_value[rloc_min] = 0
                                 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
 
@@ -353,7 +357,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
                                     continue
 
                                 # result to fasta out
-                                fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr)+'_'+str(nb), description='-ve label')
+                                fseq = SeqRecord(motif_sub_seq.upper(), id='%s%s%d' % (rec.id, loc[1], rloc_min), description='-1 %s' % fid)
                                 out_min_fh.write(fseq.format("fasta"))
                                 true_label += 1 
 
@@ -374,6 +378,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
                             if len(idx) > sample:
                                 idx = random.sample(idx, sample)
 
+                            prev_value = dict() 
                             for nb, xp in enumerate(idx):
                                 # adjusting the coordinate to the false site 
                                 rloc_min = loc[2][0]+xp
@@ -381,6 +386,10 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
                                 #removing the true signal sequence site from selected false sites
                                 if rloc_min+4 in signal_location:
                                     continue 
+
+                                if rloc_min in prev_value:
+                                    continue
+                                prev_value[rloc_min] = 0 
 
                                 motif_sub_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
                                 motif_sub_seq = motif_sub_seq.reverse_complement()
@@ -394,7 +403,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
                                     continue
 
                                 # result to fasta out
-                                fseq = SeqRecord(motif_sub_seq.upper(), id=fid+'_'+str(ndr)+'_'+str(nb), description='-ve label')
+                                fseq = SeqRecord(motif_sub_seq.upper(), id='%s%s%d' % (rec.id, loc[1], rloc_min), description='-1 %s' % fid)
                                 out_min_fh.write(fseq.format("fasta"))
                                 true_label += 1 
     out_min_fh.close()
@@ -428,7 +437,6 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
         if rec.id in Label:
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
-
                     signal_location = tis_check[tr_gene_mp[fid]]
 
                     if loc[1] == '+': 
@@ -437,10 +445,10 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('ATG'), str(motif_seq).upper())]
 
-                        # limit to take maximum 3 false labels from one defined feature
-                        if len(idx) > sample:
+                        if len(idx) > sample:# limit to take maximum  false labels from one defined feature
                             idx = random.sample(idx, sample)
-
+                        
+                        prev_value = dict() 
                         # get the false labels for randomly selected region or the available ones   
                         for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
@@ -449,6 +457,10 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                             # removing the true signl sequence site from selected false sites
                             if rloc_min+1 in signal_location:
                                 continue
+
+                            if rloc_min in prev_value:
+                                continue
+                            prev_value[rloc_min] = 0 
 
                             motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
 
@@ -461,8 +473,9 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                                 continue
                             if str(motif_seq[boundary-1:boundary+2]).upper() != 'ATG':
                                 continue
+
                             # result to fasta out
-                            fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                            fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], rloc_min), description='-1 %s' % fid)
                             out_min_fh.write(fseq.format("fasta"))
                             true_label += 1 
 
@@ -472,10 +485,10 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                         # get index for negative signal label sequence site 
                         idx = [xq.start() for xq in re.finditer(re.escape('CAT'), str(motif_seq).upper())]
 
-                        # limit to take maximum  false labels from one defined feature
-                        if len(idx) > sample:
+                        if len(idx) > sample:# limit to take maximum  false labels from one defined feature
                             idx = random.sample(idx, sample)
 
+                        prev_value = dict() 
                         # get the false labels for randomly selected region or the available ones   
                         for ndr, xp in enumerate(idx):
                             # adjusting the coordinate to the false site 
@@ -484,6 +497,10 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                             # removing the true signal sequence site from selected false sites
                             if rloc_min+3 in signal_location:
                                 continue
+
+                            if rloc_min in prev_value:
+                                continue
+                            prev_value[rloc_min] = 0 
                             
                             motif_seq = rec.seq[(rloc_min-boundary)+1:(rloc_min+boundary)+2]
                             motif_seq = motif_seq.reverse_complement()
@@ -499,7 +516,7 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
                                 continue
 
                             # result to fasta out
-                            fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                            fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], rloc_min), description='-1 %s' % fid)
                             out_min_fh.write(fseq.format("fasta"))
                             true_label += 1 
     out_min_fh.close()
@@ -539,7 +556,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
                             continue
 
                         # result to fasta out
-                        fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                         out_pos_fh.write(fseq.format("fasta"))
                         true_label += 1
 
@@ -556,7 +573,7 @@ def true_cdsStop_seq_fetch(fnam, Label, boundary=100):
                             continue
 
                         # result to fasta out
-                        fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                         out_pos_fh.write(fseq.format("fasta"))
                         true_label += 1
     out_pos_fh.close()
@@ -599,7 +616,6 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
                             continue
 
                         # result to fasta out
-                        #fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                         out_pos_fh.write(fseq.format("fasta"))
                         true_label += 1 
@@ -619,7 +635,6 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
                             continue
 
                         # result to fasta out
-                        #fseq = SeqRecord(motif_seq.upper(), id=fid, description='+ve label')
                         fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                         out_pos_fh.write(fseq.format("fasta"))
                         true_label += 1 
@@ -937,7 +952,8 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
                     signal_location = tss_check[tr_gene_mp[fid]]
-                    prev_value = []
+
+                    prev_value = dict() 
                     for ndr in range(sample):
 
                         if loc[1]=='+': # I---------|~~~~~
@@ -951,8 +967,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
 
                         if rloc in prev_value:
                             continue
-
-                        prev_value.append(rloc) 
+                        prev_value[rloc] = 0  
 
                         #motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary]
@@ -1005,9 +1020,9 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
                         continue
 
                     signal_location = cleave_check[tr_gene_mp[fid]]
-                    
-                    for ndr in range(sample):
 
+                    prev_value = dict() 
+                    for ndr in range(sample):
                         if loc[1]=='+': # ---------|~~~~~
                             rloc = random.randint(loc[2][0],loc[2][1]-200)
                         elif loc[1]=='-':
@@ -1016,6 +1031,10 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
                         # remove the true signal index from random sampling 
                         if rloc in signal_location:
                             continue
+
+                        if rloc in prev_value:
+                            continue
+                        prev_value[rloc] = 0 
 
                         #motif_seq = rec.seq[rloc-boundary:rloc+boundary+1]
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary]
@@ -1030,7 +1049,7 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
                             continue
 
                         # write to fasta out 
-                        fseq = SeqRecord(motif_seq.upper(), id=fid+'_'+str(ndr), description='-ve label')
+                        fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], rloc), description='-1 %s' % fid)
                         out_min_fh.write(fseq.format("fasta"))
                         true_label += 1 
     out_min_fh.close()
