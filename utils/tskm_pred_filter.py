@@ -19,7 +19,6 @@ def __main__():
     except:
         print __doc__
         sys.exit(-1) 
-
     
     cluster_distance = 5 
     min_entries = 1 
@@ -29,7 +28,6 @@ def __main__():
     cluster_trees = collections.defaultdict(lambda:ClusterTree(cluster_distance, min_entries))
 
     feat_id_map = dict() 
-
     for xp, rec in enumerate(gff_content):
         feat_id_map[xp] = rec['name']
 
@@ -38,14 +36,10 @@ def __main__():
     clean_entries = dict() 
     for chrom, sub_trees in cluster_trees.items():
         for start, stop, id in sub_trees.getregions():
+            xq = random.randrange(len(id))
             
-            for xq in range(1):
+            clean_entries[feat_id_map[id[xq]]] = 0 
 
-                try:
-                    clean_entries[feat_id_map[id[xq]]] = 0 
-                except:
-                    pass 
- 
     for rec in gff_content:
         if rec['name'] in clean_entries:
             print '%s\t%s\tgene\t%d\t%d\t.\t%s\t.\tID=%s;Name=%s' % (rec['chr'], 
