@@ -82,40 +82,40 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
 
     if signal == 'splice':
         acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
-        print 'selected %d acc %d don _plus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+        print 'selected %d acc %d don _positive_ %s signal lables' % (acc_cnt, don_cnt, signal)
         label_count_plus = (acc_cnt + don_cnt)/2
 
         acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
-        print 'selected %d acc %d don _minus_ %s signal lables' % (acc_cnt, don_cnt, signal)
+        print 'selected %d acc %d don _negative_ %s signal lables' % (acc_cnt, don_cnt, signal)
         label_count = (acc_cnt + don_cnt)/2
     
     elif signal == 'tis':
         label_count_plus = true_tis_seq_fetch(faname, posLabel, flanks)
-        print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
+        print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
 
         label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
-        print 'selected %d minus %s signal lables' % (label_count, signal)
+        print 'selected %d negative %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
-        print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
+        print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
 
         label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
-        print 'selected %d minus %s signal lables' % (label_count, signal) 
+        print 'selected %d negative %s signal lables' % (label_count, signal) 
 
     elif signal == "cleave":
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
-        print 'selected %d plus %s signal lables' % (label_count_plus, signal) 
+        print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
 
         label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
-        print 'selected %d minus %s signal lables' % (label_count, signal) 
+        print 'selected %d negative %s signal lables' % (label_count, signal) 
 
     elif signal == 'cdsstop':
         label_count_plus = true_cdsStop_seq_fetch(faname, posLabel, flanks)
-        print 'selected %d plus %s signal lables' % (label_count_plus, signal)
+        print 'selected %d positive %s signal lables' % (label_count_plus, signal)
 
         label_count = false_cdsStop_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
-        print 'selected %d minus %s signal lables' % (label_count, signal)
+        print 'selected %d negative %s signal lables' % (label_count, signal)
 
     # remove the extra labels fetched from the previous step 
     plus_label_cleanup([signal], plus_cnt, label_count_plus)
