@@ -36,9 +36,20 @@ def __main__():
     clean_entries = dict() 
     for chrom, sub_trees in cluster_trees.items():
         for start, stop, id in sub_trees.getregions():
-            xq = random.randrange(len(id))
-            
-            clean_entries[feat_id_map[id[xq]]] = 0 
+
+            if len(id) > 3:
+                xq = random.randrange(len(id))
+                clean_entries[feat_id_map[id[xq]]] = 0 
+                rand_index = xq 
+
+                while True:
+                    xq = random.randrange(len(id))
+                    if xq != rand_index:
+                        clean_entries[feat_id_map[id[xq]]] = 0 
+                        break 
+            else:            
+                xq = random.randrange(len(id))
+                clean_entries[feat_id_map[id[xq]]] = 0 
 
     for rec in gff_content:
         if rec['name'] in clean_entries:
