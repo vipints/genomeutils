@@ -176,8 +176,21 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
     for signal in sig_type:
+        # 1 remove the same rec.id presents in the file 
+        fas_rec_ids = dict() 
+        for fas_rec in SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta'):
+            fas_rec_ids[fas_rec.id] = 0 
+        
+        # remove the duplicated records based on the record name 
+        fasta_out = open("%s_sig_minus_label.bkp" % signal, 'w')
+        for fas_rec in SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta'):
+            if fas_rec.id in fas_rec_ids:
+                SeqIO.write([fas_rec], fasta_out, "fasta")
+                del fas_rec_ids[fas_rec.id]
+        fasta_out.close() 
+        os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
 
-        # remove duplicate sequences, expecting the file to be in cwd path!  
+        # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
@@ -221,7 +234,21 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
 
     for signal in sig_type:
-        # remove duplicate sequences, expecting the file to be in cwd path!  
+        # 1 remove the same rec.id presents in the file 
+        fas_rec_ids = dict() 
+        for fas_rec in SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta'):
+            fas_rec_ids[fas_rec.id] = 0 
+        
+        # remove the duplicated records based on the record name 
+        fasta_out = open("%s_sig_plus_label.bkp" % signal, 'w')
+        for fas_rec in SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta'):
+            if fas_rec.id in fas_rec_ids:
+                SeqIO.write([fas_rec], fasta_out, "fasta")
+                del fas_rec_ids[fas_rec.id]
+        fasta_out.close() 
+        os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
+
+        # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
