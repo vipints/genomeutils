@@ -690,7 +690,7 @@ def get_label_regions(gtf_content, signal):
 
         if signal == 'tss':
             for xp, ftid in enumerate(feature['transcripts']):
-                if feature['exons'][xp].any() and len(feature['exons'][xp]) > 1:
+                if feature['exons'][xp].any():
                     feat_cnt += 1
                     signal_point[feature['name']].extend(feature['tss'][xp])
                     trans_gene_map[ftid[0]] = feature['name']
@@ -720,10 +720,11 @@ def get_label_regions(gtf_content, signal):
                                 )
         elif signal == 'cleave':
             for xp, ftid in enumerate(feature['transcripts']):
-                feat_cnt += 1
-                signal_point[feature['name']].extend(feature['cleave'][xp])
-                trans_gene_map[ftid[0]] = feature['name']
-                mod_anno_db[ftid[0]] = (feature['cleave'][xp], 
+                if feature['exons'][xp].any():
+                    feat_cnt += 1
+                    signal_point[feature['name']].extend(feature['cleave'][xp])
+                    trans_gene_map[ftid[0]] = feature['name']
+                    mod_anno_db[ftid[0]] = (feature['cleave'][xp], 
                                 feature['strand'],
                                 (int(feature['start']), int(feature['stop']))
                                 )
