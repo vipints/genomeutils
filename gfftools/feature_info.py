@@ -45,12 +45,12 @@ def Intron_det(TDB):
     # sort the intron_size based on the keys 
     if intron_size:
         keys_int = sorted(intron_size)
-        print 'MinIntronLength', int(keys_int[0])
-        print 'MaxIntronLength', int(keys_int[-1])
+        print 'MinIntronLength', int(keys_int[0]), int(keys_int[1]), int(keys_int[2])
+        print 'MaxIntronLength', int(keys_int[-1]), int(keys_int[-2]), int(keys_int[-3])
         print 
         keys_ex = sorted(exon_size)
-        print 'MinExonLength', int(keys_ex[0])
-        print 'MaxExonLength', int(keys_ex[-1])
+        print 'MinExonLength', int(keys_ex[0]), int(keys_ex[1]), int(keys_ex[2]) 
+        print 'MaxExonLength', int(keys_ex[-1]), int(keys_ex[-2]), int(keys_ex[-3]) 
     else:
         print "Error in feature mapping, please check the source of parent child features" 
         print "May be the sources are different for parents and child features of the parent Gene"
