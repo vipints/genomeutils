@@ -6,14 +6,18 @@ into few larger ones.
 Usage: python compact_chrom.py gio_file_path no_chrom merged_gio_map_file merged_gio_file_path
 """
 
-import sys, os, re, time
+import os 
+import re 
+import sys
+import time
 from operator import itemgetter
 
 def write_map_file(new_path, flat_seq, chr_id, cname, map, chr_no):
     """
     Coordinate Mapping file from OLD to NEW Contigs 
     """
-    f_flat = open(new_path + '/genome/Contig' + str(chr_id[0]+1) + '.flat', 'w') ## create new contig file in .flat format in target directory
+
+    f_flat = open('%s/genome/Contig%d.flat' % (new_path, chr_id[0]+1), 'w') ## create new contig file in .flat format in target directory
     f_flat.write(flat_seq)
     f_flat.close()
 
@@ -26,9 +30,10 @@ def write_map_file(new_path, flat_seq, chr_id, cname, map, chr_no):
         else:
             start = p_stop
             stop = start + map[i] - 1
-        print 'Contig' + str(chr_id[0]+1) + '\t' + ele + '\t' + str(start) + '\t' + str(stop) + '\t' + str(map[i])
-        if i==(tc-1): break
-        print 'Contig' + str(chr_id[0]+1) + '\t' + 'NSPACER\t' + str(stop+1) + '\t' + str(stop+25000) + '\t' + str(25000) 
+        print 'Contig%d\t%s\t%d\t%d\t%d' %(chr_id[0]+1, ele, start, stop, map[i])
+        if i==(tc-1): 
+            break
+        print 'Contig%d\tNSPACER\t%d\t%d\t%d' % (chr_id[0]+1, stop+1, stop+25000, 25000) 
         p_stop = stop + 25001 # default spacer nts 
         i += 1    
     
@@ -36,7 +41,7 @@ def write_map_file(new_path, flat_seq, chr_id, cname, map, chr_no):
     chr_no.append(chr_id[0]+1)
     chr_id = chr_id[1:]
 
-    return (flat_seq, cname, map, chr_no, chr_id)
+    return flat_seq, cname, map, chr_no, chr_id
 
 def __main__():
     
