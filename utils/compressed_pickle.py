@@ -37,7 +37,7 @@ def load(filename):
     
     try:
         fh = bz2.BZ2File(filename, 'rb') 
-    except, IOError, details:
+    except IOError, details:
         sys.stderr.write('File %s cannot be read\n' % filename)
         sys.stderr.write(details) 
         return 
