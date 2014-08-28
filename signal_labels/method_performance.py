@@ -1,6 +1,7 @@
 """
 detailed bar plot to measure the performance of different methods 
 """
+
 from __future__ import division
 from collections import defaultdict
 import numpy 
