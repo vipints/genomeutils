@@ -8,8 +8,6 @@ Requirement:
     fastq-dump - sratoolkit: http://www.ncbi.nlm.nih.gov/Traces/sra/?view=software
 """
 
-
-import re 
 import os 
 import sys 
 import shutil
@@ -30,7 +28,7 @@ except:
     sys.exit(-1)
 
 ## sanity check for run id 
-assert len(RUNID)==9, 'Error in SRA Run ID format [ex: SRR548309] '+ RUNID
+assert len(RUNID) in [9, 10], 'Error in SRA Run ID format [ex: SRR548309, SRR1050788] '+ RUNID
 
 ## build the complete url based on the RunID 
 if not RUNID[0:3] in ['DRR', 'SRR', 'ERR']:
@@ -38,9 +36,8 @@ if not RUNID[0:3] in ['DRR', 'SRR', 'ERR']:
     print '\tYour Run ID start with ', RUNID[0:3], ' prefix'
     print '\tProgram cannot continue, Exiting...'
     sys.exit(-1)
-
 ## adding sub folder 
-base_url = base_url + RUNID[0:3] + '/'
+base_url = '%s%s/' % (base_url, RUNID[0:3]) 
 
 try:
     isinstance(int(RUNID[3:6]), int)
@@ -49,23 +46,25 @@ except:
     print '\tYour Run ID is ', RUNID[0:6]
     print '\tProgram cannot continue, Exiting...'
     sys.exit(-1)
-
-## adding sub - sub folder 
-base_url = base_url + RUNID[0:6] + '/'
+## adding sub - sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/ 
+base_url = '%s%s/' % (base_url, RUNID[0:6]) 
 
 try:
-    isinstance(int(RUNID[6:9]), int)
+    isinstance(int(RUNID[6:10]), int)
+    ## adding sub - sub sub folder ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/SRR1050788/SRR1050788.sra
+    base_url = '%s%s/%s.sra' % (base_url, RUNID[0:10], RUNID[0:10])
+   
 except:
-    print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNNNNN'
-    print '\tYour Run ID is ', RUNID[0:9]
-    print '\tProgram cannot continue, Exiting...'
-    sys.exit(-1)
+    try:
+        isinstance(int(RUNID[6:9]), int)
+    except:
+        print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNNNNN'
+        print '\tYour Run ID is ', RUNID[0:9]
+        print '\tProgram cannot continue, Exiting...'
+        sys.exit(-1)
 
-## adding sub - sub sub folder 
-base_url = base_url + RUNID[0:9] + '/'
-
-## append the .sra extension to the run id 
-base_url = base_url + RUNID[0:9] + '.sra'
+    ## adding sub - sub sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR548/SRR548309/SRR548309.sra 
+    base_url = '%s%s/%s.sra' % (base_url, RUNID[0:9], RUNID[0:9]) 
 
 ## create downloadpath if doesnot exists 
 if not os.path.exists(download_path):
