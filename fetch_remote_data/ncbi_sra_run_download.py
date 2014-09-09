@@ -74,7 +74,7 @@ if not os.path.exists(download_path):
 download_path = os.path.realpath(download_path)
 
 ## out file name 
-out_file_name = download_path + '/' + RUNID[0:9] + '.sra' 
+out_file_name = '%s/%s.sra' % (download_path, RUNID)
 
 ## creating temporory file 
 tempfile=open(out_file_name, "wb")
@@ -86,9 +86,9 @@ except urllib2.URLError, err:
     raise MyException("There is an Error: %r" % err)
 
 ## download job starts 
-sys.stdout.write('\tdownloading ' + base_url + ' ... \n')
+sys.stdout.write('\tdownloading %s ...\n' % base_url)
 shutil.copyfileobj(sra_file, tempfile)
-sys.stdout.write('\tsaved at ' + out_file_name + ' done! \n')
+sys.stdout.write('\tsaved at %s done!\n' % out_file_name)
 
 tempfile.close()
 sra_file.close()
@@ -111,6 +111,6 @@ else:
 os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
 
 ## split the .SRA format file based on the library layout
-sys.stdout.write('\trun ' + cli + '\n')
+sys.stdout.write('\trun %s \n' % cli)
 process = subprocess.Popen(cli, shell=True) 
 process.wait()
