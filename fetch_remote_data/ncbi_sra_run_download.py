@@ -34,75 +34,73 @@ def download_sra_file(RUNID=None, download_path=None, lib_type='pe', out_compres
 
     base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
 
+    ## sanity check for run id 
+    assert len(RUNID) in [9, 10], 'Error in SRA Run ID format [ex: SRR548309, SRR1050788] -- %s --' % RUNID
 
-## sanity check for run id 
-assert len(RUNID) in [9, 10], 'Error in SRA Run ID format [ex: SRR548309, SRR1050788] '+ RUNID
-
-## build the complete url based on the RunID 
-if not RUNID[0:3] in ['DRR', 'SRR', 'ERR']:
-    print 'Error! Experiment Run ID must start with DRR or SRR or ERR'
-    print '\tYour Run ID start with ', RUNID[0:3], ' prefix'
-    print '\tProgram cannot continue, Exiting...'
-    sys.exit(-1)
-## adding sub folder 
-base_url = '%s%s/' % (base_url, RUNID[0:3]) 
-
-try:
-    isinstance(int(RUNID[3:6]), int)
-except:
-    print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNN'
-    print '\tYour Run ID is ', RUNID[0:6]
-    print '\tProgram cannot continue, Exiting...'
-    sys.exit(-1)
-## adding sub - sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/ 
-base_url = '%s%s/' % (base_url, RUNID[0:6]) 
-
-try:
-    isinstance(int(RUNID[6:10]), int)
-    ## adding sub - sub sub folder ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/SRR1050788/SRR1050788.sra
-    base_url = '%s%s/%s.sra' % (base_url, RUNID[0:10], RUNID[0:10])
-   
-except:
-    try:
-        isinstance(int(RUNID[6:9]), int)
-    except:
-        print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNNNNN'
-        print '\tYour Run ID is ', RUNID[0:9]
+    ## build the complete url based on the RunID 
+    if not RUNID[0:3] in ['DRR', 'SRR', 'ERR']:
+        print 'Error! Experiment Run ID must start with DRR or SRR or ERR'
+        print '\tYour Run ID start with ', RUNID[0:3], ' prefix'
         print '\tProgram cannot continue, Exiting...'
         sys.exit(-1)
+
+    ## adding sub folder 
+    base_url = '%s%s/' % (base_url, RUNID[0:3]) 
+
+    try:
+        isinstance(int(RUNID[3:6]), int)
+    except:
+        print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNN'
+        print '\tYour Run ID is ', RUNID[0:6]
+        print '\tProgram cannot continue, Exiting...'
+        sys.exit(-1)
+    ## adding sub - sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/ 
+    base_url = '%s%s/' % (base_url, RUNID[0:6]) 
+
+    try:
+        isinstance(int(RUNID[6:10]), int)
+        ## adding sub - sub sub folder ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/SRR1050788/SRR1050788.sra
+        base_url = '%s%s/%s.sra' % (base_url, RUNID[0:10], RUNID[0:10])
+   
+    except:
+        try:
+            isinstance(int(RUNID[6:9]), int)
+        except:
+            print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNNNNN'
+            print '\tYour Run ID is ', RUNID[0:9]
+            print '\tProgram cannot continue, Exiting...'
+            sys.exit(-1)
 
     ## adding sub - sub sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR548/SRR548309/SRR548309.sra 
     base_url = '%s%s/%s.sra' % (base_url, RUNID[0:9], RUNID[0:9]) 
 
-## create downloadpath if doesnot exists 
-if not os.path.exists(download_path):
-    os.makedirs(download_path)
+    ## create downloadpath if doesnot exists 
+    if not os.path.exists(download_path):
+        os.makedirs(download_path)
 
-## getting the absolute path 
-download_path = os.path.realpath(download_path)
+    ## getting the absolute path 
+    download_path = os.path.realpath(download_path)
 
-## out file name 
-out_file_name = '%s/%s.sra' % (download_path, RUNID)
+    ## out file name 
+    out_file_name = '%s/%s.sra' % (download_path, RUNID)
 
-## creating temporory file 
-tempfile=open(out_file_name, "wb")
+    ## creating temporory file 
+    tempfile=open(out_file_name, "wb")
 
-## start fetching the remote file 
-try:
-    sra_file = urllib2.urlopen(base_url, timeout=1 )
-except urllib2.URLError, err:
-    raise MyException("There is an Error: %r" % err)
+    ## start fetching the remote file 
+    try:
+        sra_file = urllib2.urlopen(base_url, timeout=1 )
+    except urllib2.URLError, err:
+        raise MyException("There is an Error: %r" % err)
 
-## download job starts 
-sys.stdout.write('\tdownloading %s ...\n' % base_url)
-shutil.copyfileobj(sra_file, tempfile)
-sys.stdout.write('\tsaved at %s done!\n' % out_file_name)
+    ## download job starts 
+    sys.stdout.write('\tdownloading %s ...\n' % base_url)
+    shutil.copyfileobj(sra_file, tempfile)
+    sys.stdout.write('\tsaved at %s done!\n' % out_file_name)
 
-tempfile.close()
-sra_file.close()
+    tempfile.close()
+    sra_file.close()
 
-## default compression type
-out_compress = "bzip2"
 
 ## depends on the compress type and library protocol type
 if lib_type in ['pe', 'PE', 'paired-end']:
