@@ -17,15 +17,23 @@ import subprocess
 class MyException( Exception ): 
     pass
 
-base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
 
-try:
-    RUNID = sys.argv[1]
-    download_path = sys.argv[2]
-    lib_type = sys.argv[3]
-except:
-    print __doc__
-    sys.exit(-1)
+def download_sra_file(RUNID=None, download_path=None, lib_type='pe', out_compress="bzip2"):
+    """
+    Download the SRA file
+
+    @args RUNID: SRA run ID 
+    @type RUNID: str 
+    @args download_path: SRA file download path 
+    @type download_path: str 
+    @args lib_type: Library layout 
+    @type lib_type: str 
+    @args out_compress: compress format for result file  
+    @type out_compress: str 
+    """
+
+    base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
+
 
 ## sanity check for run id 
 assert len(RUNID) in [9, 10], 'Error in SRA Run ID format [ex: SRR548309, SRR1050788] '+ RUNID
@@ -114,3 +122,14 @@ os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2
 sys.stdout.write('\trun %s \n' % cli)
 process = subprocess.Popen(cli, shell=True) 
 process.wait()
+
+
+if __name__=="__main__":
+    
+    try:
+        RUNID = sys.argv[1]
+        download_path = sys.argv[2]
+        lib_type = sys.argv[3]
+    except:
+        print __doc__
+        sys.exit(-1)
