@@ -18,7 +18,7 @@ class MyException( Exception ):
     pass
 
 
-def download_sra_file(RUNID=None, download_path=None, lib_type='pe', out_compress="bzip2"):
+def download_sra_file(RUNID=None, download_path=None):
     """
     Download the SRA file
 
@@ -26,10 +26,6 @@ def download_sra_file(RUNID=None, download_path=None, lib_type='pe', out_compres
     @type RUNID: str 
     @args download_path: SRA file download path 
     @type download_path: str 
-    @args lib_type: Library layout 
-    @type lib_type: str 
-    @args out_compress: compress format for result file  
-    @type out_compress: str 
     """
 
     base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
@@ -71,8 +67,8 @@ def download_sra_file(RUNID=None, download_path=None, lib_type='pe', out_compres
             print '\tProgram cannot continue, Exiting...'
             sys.exit(-1)
 
-    ## adding sub - sub sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR548/SRR548309/SRR548309.sra 
-    base_url = '%s%s/%s.sra' % (base_url, RUNID[0:9], RUNID[0:9]) 
+        ## adding sub - sub sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR548/SRR548309/SRR548309.sra 
+        base_url = '%s%s/%s.sra' % (base_url, RUNID[0:9], RUNID[0:9]) 
 
     ## create downloadpath if doesnot exists 
     if not os.path.exists(download_path):
@@ -101,25 +97,41 @@ def download_sra_file(RUNID=None, download_path=None, lib_type='pe', out_compres
     tempfile.close()
     sra_file.close()
 
+    return out_file_name
 
-## depends on the compress type and library protocol type
-if lib_type in ['pe', 'PE', 'paired-end']:
-    cli = 'fastq-dump --%s --split-3 --outdir %s %s' % (out_compress, download_path, out_file_name) 
-elif lib_type in ['se', 'SE', 'single-end']:
-    cli = 'fastq-dump --%s --outdir %s %s' % (out_compress, download_path, out_file_name)
-else:
-    print 'Error! Library layout [PE/pe/paired-end|SE/se/single-end]'
-    print '\tYour Library layout is ', lib_type
-    print '\tProgram cannot continue, Exiting...'
-    sys.exit(-1)
 
-## add the installation path of sratoolkit  
-os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
+def uncompress_sra_file(out_file_name=None, download_path=None, lib_type="pe", out_compress="bzip2"):
+    """
+    Uncompress downloaded SRA file 
 
-## split the .SRA format file based on the library layout
-sys.stdout.write('\trun %s \n' % cli)
-process = subprocess.Popen(cli, shell=True) 
-process.wait()
+    @args out_file_name: Downloaded SRA file name 
+    @type out_file_name: str 
+    @args download_path: SRA file uncompressing path 
+    @type download_path: str 
+    @args lib_type: Library layout 
+    @type lib_type: str 
+    @args out_compress: compress format for result file  
+    @type out_compress: str 
+    """
+
+    ## depends on the compress type and library protocol type
+    if lib_type in ['pe', 'PE', 'paired-end']:
+        cli = 'fastq-dump --%s --split-3 --outdir %s %s' % (out_compress, download_path, out_file_name) 
+    elif lib_type in ['se', 'SE', 'single-end']:
+        cli = 'fastq-dump --%s --outdir %s %s' % (out_compress, download_path, out_file_name)
+    else:
+        print 'Error! Library layout [PE/pe/paired-end|SE/se/single-end]'
+        print '\tYour Library layout is ', lib_type
+        print '\tProgram cannot continue, Exiting...'
+        sys.exit(-1)
+
+    ## add the installation path of sratoolkit  
+    os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
+
+    ## split the .SRA format file based on the library layout
+    sys.stdout.write('\trun %s \n' % cli)
+    process = subprocess.Popen(cli, shell=True) 
+    process.wait()
 
 
 if __name__=="__main__":
@@ -131,3 +143,7 @@ if __name__=="__main__":
     except:
         print __doc__
         sys.exit(-1)
+
+    sra_file = download_sra_file(RUNID, download_path)
+    uncompress_sra_file(sra_file, download_path)
+
