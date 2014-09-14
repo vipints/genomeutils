@@ -19,6 +19,21 @@ class MyException( Exception ):
     pass
 
 
+def fetch_phytozome_genome_seq(release_version=None,download_path=None,species_name=None):
+    """
+    Download genome sequence from Phytozome ftp page.
+    """
+
+    base_url = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s' % release_version
+
+    org_names = urllib2.urlopen(base_url)
+    for org_name in org_names:
+        org_name = org_name.strip("\n\r")
+        print org_name.split()[-1]
+
+    org_file.close()
+
+
 def fetch_ensembl_genome_seq(ensembl_release_version=None, download_path=None, species_name=None):
     """
     Download genome sequence from ENSEMBL ftp page.
