@@ -1,4 +1,5 @@
 *~
+fetch_remote_data/*.pyc 
 gfftools/*.pyc 
 signal_labels/*.pyc 
 utils/*.pyc 
