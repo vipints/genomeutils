@@ -22,6 +22,13 @@ class MyException( Exception ):
 def fetch_phytozome_genome_seq(release_version=None,download_path=None,species_name=None):
     """
     Download genome sequence from Phytozome ftp page.
+
+    @args release_version: release version 
+    @type release_version: str 
+    @args download_path: file download path 
+    @type download_path: str 
+    @args species_name: organism name 
+    @type species_name: str 
     """
 
     base_url = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s' % release_version
@@ -37,6 +44,13 @@ def fetch_phytozome_genome_seq(release_version=None,download_path=None,species_n
 def fetch_ensembl_genome_seq(ensembl_release_version=None, download_path=None, species_name=None):
     """
     Download genome sequence from ENSEMBL ftp page.
+    
+    @args ensembl_release_version: ensembl release version 
+    @type ensembl_release_version: str 
+    @args download_path: file download path 
+    @type download_path: str 
+    @args species_name: organism name 
+    @type species_name: str 
     """
 
     base_url_fasta = "ftp://ftp.ensembl.org/pub/release-%s/fasta/" % ensembl_release_version 
