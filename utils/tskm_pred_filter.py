@@ -2,11 +2,11 @@
 """
 Filter genes predicted by TranscriptSkimmer program  
 
-Usage: python tskm_pred_filter.py in.gff > filter.gff 
+Usage: python tskm_pred_filter.py in.gff in.bam > filter.gff 
 """
 
 import sys 
-import random 
+import pysam 
 import collections
 from gfftools import GFFParser
 from bx.intervals.cluster import ClusterTree
@@ -16,10 +16,11 @@ def __main__():
 
     try:
         gff_name = sys.argv[1]
+        bam_file = sys.argv[2]
     except:
         print __doc__
         sys.exit(-1) 
-    
+
     cluster_distance = 5 
     min_entries = 1 
 
@@ -29,27 +30,51 @@ def __main__():
 
     feat_id_map = dict() 
     for xp, rec in enumerate(gff_content):
-        feat_id_map[xp] = rec['name']
 
-        cluster_trees[rec['chr']].insert(rec['start'], rec['stop'], xp)
+        ## bad fix to include the strand information 
+        xp += 1 
+        if rec['strand'] == '+':
+            xp = str(xp) + '%d' % 0 
+        elif rec['strand'] == '-':
+            xp = str(xp) + '%d' % 1 
+
+        feat_id_map[xp] = rec['name']
+        cluster_trees[rec['chr']].insert(rec['start'], rec['stop'], int(xp))
+
+    bam_fh = pysam.Samfile(bam_file, "rb")
 
     clean_entries = dict() 
     for chrom, sub_trees in cluster_trees.items():
         for start, stop, id in sub_trees.getregions():
+            if len(id) > 1:
 
-            if len(id) > 3:
-                xq = random.randrange(len(id))
-                clean_entries[feat_id_map[id[xq]]] = 0 
-                rand_index = xq 
+                reverse_cnt = 0 
+                forward_cnt = 0 
+                for read in bam_fh.fetch(str(chrom), start, stop):
+                    if read.is_proper_pair and read.is_read1:
+                        if read.is_reverse:
+                            reverse_cnt +=1 
+        
+                        else:
+                            forward_cnt +=1 
+                
+                ## Decision which transcript want to take
+                ## --------------------------------------> gene 
+                ## --->  <--- = 16    --->   <--- = 3000  = read count 
+                ##  1      2           2       1         first and second read 
 
-                while True:
-                    xq = random.randrange(len(id))
-                    if xq != rand_index:
-                        clean_entries[feat_id_map[id[xq]]] = 0 
-                        break 
-            else:            
-                xq = random.randrange(len(id))
-                clean_entries[feat_id_map[id[xq]]] = 0 
+                selected = '1' # minus 
+                selected = '0' if reverse_cnt > forward_cnt else  selected
+
+                for element in id:
+                    element=str(element)
+                    xq = element[-1]
+                    if xq == selected:
+                        clean_entries[feat_id_map[element]] = 0 
+
+            else: 
+                clean_entries[feat_id_map[str(id[0])]] = 0 
+    bam_fh.close()
 
     for rec in gff_content:
         if rec['name'] in clean_entries:
