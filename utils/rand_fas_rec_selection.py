@@ -18,10 +18,10 @@ def __main__():
         print __doc__
         sys.exit(-1)
 
-    total_record_count = 4100 # 40000
-    sub_sample_records = 4000 # 12000
+    total_record_count = 12100 # 40000
+    sub_sample_records = 12011 # 12000
 
-    label_type = "+1" # -1 
+    label_type = "-1" # -1 
 
     try:
         accept_prob = (1.0*sub_sample_records)/total_record_count
