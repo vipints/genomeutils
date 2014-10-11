@@ -18,8 +18,8 @@ def __main__():
         print __doc__
         sys.exit(-1)
 
-    total_record_count = 12100 # 40000
-    sub_sample_records = 12011 # 12000
+    total_record_count = 46000
+    sub_sample_records = 12000 # 12000
 
     label_type = "-1" # -1 
 
@@ -27,6 +27,9 @@ def __main__():
         accept_prob = (1.0*sub_sample_records)/total_record_count
     except:
         accept_prob = 1
+    
+    #accept_prob = 0.285
+    print accept_prob
 
     cnt = 1
     fas_rec = 0 
@@ -54,5 +57,5 @@ def __main__():
     print '%d number of labels dumped' % cnt 
     print 
 
-
-if __name__=="__main__": __main__()
+if __name__=="__main__": 
+    __main__()
