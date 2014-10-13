@@ -2,30 +2,27 @@
 """
 Filter genes predicted by TranscriptSkimmer program  
 
-Usage: python tskm_pred_filter.py in.gff in.bam > filter.gff 
+based on the predicted splice-site consensus into account and length of the ORF 
+
+Usage: python tskm_pred_filter.py in.gff in.fasta > filter.gff 
 """
 
 import sys 
-import pysam 
 import collections
 from gfftools import GFFParser
-from bx.intervals.cluster import ClusterTree
-
 
 def __main__():
 
     try:
         gff_name = sys.argv[1]
-        bam_file = sys.argv[2]
+        fas_file = sys.argv[2]
     except:
         print __doc__
         sys.exit(-1) 
 
-    cluster_distance = 5 
-    min_entries = 1 
-
     gff_content = GFFParser.Parse(gff_name)
 
+    """
     cluster_trees = collections.defaultdict(lambda:ClusterTree(cluster_distance, min_entries))
 
     feat_id_map = dict() 
@@ -129,7 +126,7 @@ def __main__():
                         ex_cod[1], 
                         rec['strand'], 
                         tid[0])
-
+    """
 
 if __name__ == "__main__":
     __main__() 
