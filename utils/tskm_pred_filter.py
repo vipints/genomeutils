@@ -8,7 +8,9 @@ Usage: python tskm_pred_filter.py in.gff in.fasta > filter.gff
 """
 
 import sys 
+import numpy 
 import collections
+from Bio import SeqIO 
 from gfftools import GFFParser
 
 def __main__():
@@ -21,6 +23,63 @@ def __main__():
         sys.exit(-1) 
 
     gff_content = GFFParser.Parse(gff_name)
+    
+    # getting the spliced transcripts from the predicted gene list 
+    transcripts_region = collections.defaultdict(list)
+    for gene_recd in gff_content:
+        spliced_transcript = collections.defaultdict(list)
+
+        for idx, sub_rec in enumerate(gene_recd['transcripts']):
+            exon_cnt = len(gene_recd['exons'][idx])
+
+            if exon_cnt > 1: 
+                for idk, ex in enumerate(gene_recd['exons'][idx]):
+                    if idk == 0:
+                        ex[0] = None 
+                    if exon_cnt-1 == idk:
+                        ex[1] = None
+
+                    spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append(ex)
+
+        transcripts_region[gene_recd['chr']].append(spliced_transcript)
+
+    print len(transcripts_region)
+    
+    # check for consensus sequence 
+    for fas_rec in SeqIO.parse(fas_file, "fasta"):
+        if fas_rec.id in transcripts_region:
+            for details in transcripts_region[fas_rec.id]:
+                for genes, regions in details.items():
+
+                    print genes 
+                        
+                    for region in regions:
+                        print region
+
+                        if genes[-1] == '+':
+                            if not numpy.isnan(region[0]):
+                                acc_seq = fas_rec.seq[int(region[0])-3:int(region[0])-1]
+                                print acc_seq
+                            if not numpy.isnan(region[1]):
+                                don_seq = fas_rec.seq[int(region[1]):int(region[1])+2]
+                                print don_seq  
+
+                        elif genes[-1] == '-':
+                            if not numpy.isnan(region[0]):
+                                don_seq = fas_rec.seq[int(region[0])-3:int(region[0])-1]
+                                don_seq = don_seq.reverse_complement()
+                                print don_seq
+                            
+                            if not numpy.isnan(region[1]):
+                                acc_seq = fas_rec.seq[int(region[1]):int(region[1])+2]
+                                acc_seq = acc_seq.reverse_complement()
+                                print acc_seq
+
+
+
+
+
+
 
     """
     cluster_trees = collections.defaultdict(lambda:ClusterTree(cluster_distance, min_entries))
