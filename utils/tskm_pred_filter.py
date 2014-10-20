@@ -12,13 +12,13 @@ import sys
 import numpy 
 import collections
 from Bio import SeqIO 
-from gfftools import GFFParser
+from gfftools import GFFParser, helper 
 
 def __main__():
 
     try:
         gff_name = sys.argv[1]
-        fas_file = sys.argv[2]
+        fas_file = helper.open_file(sys.argv[2]) 
     except:
         print __doc__
         sys.exit(-1) 
