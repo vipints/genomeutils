@@ -23,10 +23,10 @@ def __main__():
         print __doc__
         sys.exit(-1) 
 
+    ## getting the genome annotation from GFF file 
     gff_content = GFFParser.Parse(gff_name)
-    #print len(gff_content) 
     
-    # getting the spliced transcripts from the predicted gene list 
+    ## getting the spliced transcripts from the predicted gene list 
     transcripts_region = collections.defaultdict(list)
     for gene_recd in gff_content:
         spliced_transcript = collections.defaultdict(list)
@@ -34,6 +34,7 @@ def __main__():
         for idx, sub_rec in enumerate(gene_recd['transcripts']):
             exon_cnt = len(gene_recd['exons'][idx])
 
+            ## skipping the single-exon transcripts 
             if exon_cnt > 1: 
                 for idk, ex in enumerate(gene_recd['exons'][idx]):
                     if idk == 0:
@@ -45,7 +46,7 @@ def __main__():
 
         transcripts_region[gene_recd['chr']].append(spliced_transcript)
 
-    # check for consensus sequence 
+    ## check for splice site consensus sequence of predicted transcripts 
     get_gene_models = collections.defaultdict()
     for fas_rec in SeqIO.parse(fas_file, "fasta"):
         if fas_rec.id in transcripts_region:
@@ -57,7 +58,7 @@ def __main__():
 
                     for region in regions:
                         if genes[-1] == '+':
-
+                            ## acceptor splice site 
                             if not numpy.isnan(region[0]):
                                 acc_seq = fas_rec.seq[int(region[0])-3:int(region[0])-1]
                                 if str(acc_seq).upper() == "AG":
@@ -69,6 +70,7 @@ def __main__():
                                     don_cons_cnt +=1 
 
                         elif genes[-1] == '-':
+                            ## donor splice site 
                             if not numpy.isnan(region[0]):
                                 don_seq = fas_rec.seq[int(region[0])-3:int(region[0])-1]
                                 don_seq = don_seq.reverse_complement()
@@ -80,21 +82,21 @@ def __main__():
                                 acc_seq = acc_seq.reverse_complement()
                                 if str(acc_seq).upper() == "AG":
                                     acc_cons_cnt += 1 
-
+                    ## check for half of the consensus sites 
                     if acc_cons_cnt > (len(regions)/2) and don_cons_cnt > (len(regions)/2):
                         get_gene_models[(fas_rec.id, genes[0], genes[1], genes[2])] = 1   
     
     gff_cont = GFFParser.Parse(gff_name)
-    # filter out the best gene models based on the consensus 
-    for recd in gff_cont:
 
+    ## filter out the best gene models based on the consensus 
+    for recd in gff_cont:
         trans_indices = [] 
+
         for idx, sub_rec in enumerate(recd['transcripts']):
             if (recd['chr'], recd['name'], sub_rec[0], recd['strand']) in get_gene_models:
                 trans_indices.append(idx)
 
         if trans_indices:
-
             chr_name = recd['chr']
             strand = recd['strand']
             start = recd['start']
@@ -122,7 +124,6 @@ def __main__():
                         print '%s\t%s\tthree_prime_UTR\t%d\t%d\t.\t%s\t.\tParent=%s' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0]) 
                     for ex_cod in recd['exons'][idz]:
                         print '%s\t%s\texon\t%d\t%d\t.\t%s\t.\tParent=%s' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0]) 
-
 
 
 if __name__ == "__main__":
