@@ -438,7 +438,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
     return true_label
 
 
-def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=4):
+def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample=3):
     """
     fetch the minus TIS signal label sequences 
 
@@ -760,7 +760,7 @@ def get_label_regions(gtf_content, signal):
     return dict(anno_db), feat_cnt, signal_point, trans_gene_map 
 
 
-def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=4):
+def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sample=2):
     """
     false splice signals
 
@@ -1018,7 +1018,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
     return true_label
 
 
-def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, sample=4):
+def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, sample=3):
     """
     fetch the minus TSS signal sequence label
 
