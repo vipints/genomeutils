@@ -141,7 +141,8 @@ def data_process(filename):
     for method, org_perf in myobj.items():
         methods.append(method) 
         
-        for name, perf_meas in org_perf.items():
+        #for name, perf_meas in org_perf.items():
+        for name, perf_meas in org_perf[0].items():
 
             # organme - method - mean of perfomance measure from different cross validation
             data_mat[name].append((method, perf_meas.mean(axis=0)))
