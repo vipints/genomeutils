@@ -15,6 +15,10 @@ from Bio import SeqIO
 from gfftools import GFFParser, helper 
 
 def __main__():
+    """
+    main function 
+    asking for input in GFF format genome prediction file and genome sequence file in fasta format.
+    """
 
     try:
         gff_name = sys.argv[1]
