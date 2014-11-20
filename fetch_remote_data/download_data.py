@@ -167,7 +167,7 @@ def download_sra_file(RUNID, download_path):
     return out_file_name
 
 
-def uncompress_sra_file(out_file_name=None, download_path=None, lib_type="pe", out_compress="bzip2"):
+def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compress="bzip2"):
     """
     Uncompress downloaded SRA file 
 
@@ -175,11 +175,15 @@ def uncompress_sra_file(out_file_name=None, download_path=None, lib_type="pe", o
     @type out_file_name: str 
     @args download_path: SRA file uncompressing path 
     @type download_path: str 
-    @args lib_type: Library layout 
+    @args lib_type: Library layout (default pe) 
     @type lib_type: str 
-    @args out_compress: compress format for result file  
+    @args out_compress: compress format for result file (default bzip2)
     @type out_compress: str 
+
+    NOTE: This module expects sratoolkit is available under PATH variable or add the path below line.
     """
+    ## add the installation path of sratoolkit  
+    #os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
 
     ## depends on the compress type and library protocol type
     if lib_type in ['pe', 'PE', 'paired-end']:
@@ -192,9 +196,6 @@ def uncompress_sra_file(out_file_name=None, download_path=None, lib_type="pe", o
         print '\tProgram cannot continue, Exiting...'
         sys.exit(-1)
 
-    ## add the installation path of sratoolkit  
-    os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
-
     ## split the .SRA format file based on the library layout
     sys.stdout.write('\trun %s \n' % cli)
     process = subprocess.Popen(cli, shell=True) 
@@ -204,14 +205,12 @@ def uncompress_sra_file(out_file_name=None, download_path=None, lib_type="pe", o
 """
 if __name__=="__main__":
     
-    try:
-        RUNID = sys.argv[1]
-        download_path = sys.argv[2]
-        lib_type = sys.argv[3]
-    except:
-        print __doc__
-        sys.exit(-1)
+    org_name = ""
+    sra_run_id = ""
+    data_path = ""
+    library_type = ""
+    compress_format = ""
 
-    sra_file = download_sra_file(RUNID, download_path)
-    uncompress_sra_file(sra_file, download_path)
+    sra_file = download_sra_file(sra_run_id, data_path)
+    uncompress_sra_file(sra_file, data_path, library_type, compress_format)
 """
