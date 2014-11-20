@@ -84,7 +84,7 @@ def fetch_ensembl_genome_seq(ensembl_release_version=None, download_path=None, s
     org_file.close()
 
 
-def download_sra_file(RUNID=None, download_path=None):
+def download_sra_file(RUNID, download_path):
     """
     Download the SRA file
 
@@ -94,6 +94,7 @@ def download_sra_file(RUNID=None, download_path=None):
     @type download_path: str 
     """
 
+    ## ncbi sra trace url 
     base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
 
     ## sanity check for run id 
