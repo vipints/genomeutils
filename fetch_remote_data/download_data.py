@@ -18,6 +18,73 @@ import subprocess
 class MyException( Exception ): 
     pass
 
+def fetch_phytozome_gff(release_version, species_name, download_path):
+    """
+    Download genome sequence from Phytozome ftp page.
+
+    @args release_version: release version 
+    @type release_version: str 
+    @args species_name: organism name 
+    @type species_name: str 
+    @args download_path: file download path 
+    @type download_path: str 
+    """
+    ## check the url for getting the recent version of the repository 
+    base_url_gff = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s/' % release_version
+    
+    try:
+        org_names = urllib2.urlopen(base_url_gff)
+    except urllib2.URLError, err_release:
+        print "phytozome_release_version %s is NOT found" % release_version
+        print err_release
+        sys.exit(-1)
+
+    for ORG in org_names:
+        ORG = ORG.strip("\n\r")
+
+        if ORG.split()[-1] != species_name:
+            continue
+
+        ## updating the base_url 
+        base_url_gff = '%s%s/annotation/' % (base_url_gff, species_name)
+        try:
+            gff_files = urllib2.urlopen(base_url_gff)
+        except urllib2.URLError, err_faseq:
+            print "phytozome_release genome annotation missing" % base_url_gff
+            print err_faseq
+            sys.exit(-1)
+
+        ## mapping to short names  Athaliana --> A_thaliana
+        org_short_name = "%s_%s" % (species_name[0], species_name[1:])
+
+        ## setting up the download path 
+        ## download the files in ex: /home/tmp/V_vinifera/phytozome_v9.0/Vvinifera_145.fa.gz
+        base_file_path = "%s/%s/phytozome_%s" % (download_path, org_short_name, release_version)
+        if not os.path.exists(base_file_path):
+            os.makedirs(base_file_path)
+
+        for gff_name in gff_files:
+            gff_name =gff_name.strip('\n\r')
+
+            if re.search(r'.*_\d+_gene.gff3.gz$', gff_name.split()[-1]):
+                tempfile=open("%s/%s" % (base_file_path, gff_name.split()[-1]), "wb")
+                
+                try:
+                    ftp_file=urllib2.urlopen(base_url_gff+gff_name.split()[-1])
+                except urllib2.URLError, err_file:
+                    print err_file
+                    sys.exit(-1)
+
+                sys.stdout.write('\tdownloading %s ... ' % gff_name.split()[-1])
+                shutil.copyfileobj(ftp_file, tempfile)
+
+                tempfile.close()
+                ftp_file.close()
+
+                sys.stdout.write("done\n")
+        gff_files.close()
+    org_names.close()
+
 
 def fetch_phytozome_fasta(release_version, species_name, download_path):
     """
@@ -294,4 +361,6 @@ if __name__=="__main__":
     
     fetch_ensembl_fasta(release_num, org_name, fasta_data_path)
     fetch_phytozome_fasta(release_num, org_name, fasta_data_path)
+
+    fetch_phytozome_gff(release_num, org_name, fasta_data_path)
 """
