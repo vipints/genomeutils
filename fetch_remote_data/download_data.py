@@ -141,7 +141,12 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
             ## include repeatmasked genome 
             if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
                 tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
-                ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
+
+                try:
+                    ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
+                except urllib2.URLError, err_file:
+                    print err_file
+                    sys.exit(-1)
 
                 sys.stdout.write('\tdownloading %s ... ' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
