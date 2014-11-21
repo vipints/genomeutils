@@ -30,15 +30,61 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
     @args download_path: file download path 
     @type download_path: str 
     """
+    ## check the url for getting the recent version of the repository 
+    base_url_fasta = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s/' % release_version
+    
+    try:
+        org_names = urllib2.urlopen(base_url_fasta)
+    except urllib2.URLError, err_release:
+        print "phytozome_release_version %s is NOT found" % release_version
+        print err_release
+        sys.exit(-1)
 
-    base_url = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s' % release_version
+    for ORG in org_names:
+        ORG = ORG.strip("\n\r")
 
-    org_names = urllib2.urlopen(base_url)
-    for org_name in org_names:
-        org_name = org_name.strip("\n\r")
-        print org_name.split()[-1]
+        if ORG.split()[-1] != species_name:
+            continue
 
-    org_file.close()
+        ## updating the base_url 
+        base_url_fasta = '%s%s/assembly/' % (base_url_fasta, species_name)
+        try:
+            fa_files = urllib2.urlopen(base_url_fasta)
+        except urllib2.URLError, err_faseq:
+            print "phytozome_release genome sequence missing" % base_url_fasta
+            print err_faseq
+            sys.exit(-1)
+
+        ## mapping to short names  Athaliana --> A_thaliana
+        org_short_name = "%s_%s" % (species_name[0], species_name[1:])
+
+        ## setting up the download path 
+        ## download the files in ex: /home/tmp/V_vinifera/phytozome_v9.0/Vvinifera_145.fa.gz
+        base_file_path = "%s/%s/phytozome_%s" % (download_path, org_short_name, release_version)
+        if not os.path.exists(base_file_path):
+            os.makedirs(base_file_path)
+
+        for fa_name in fa_files:
+            fa_name =fa_name.strip('\n\r')
+
+            if re.search(r'.*_\d+.fa.gz$', fa_name.split()[-1]):
+                tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
+                
+                try:
+                    ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
+                except urllib2.URLError, err_file:
+                    print err_file
+                    sys.exit(-1)
+
+                sys.stdout.write('\tdownloading %s ... ' % fa_name.split()[-1])
+                shutil.copyfileobj(ftp_file, tempfile)
+
+                tempfile.close()
+                ftp_file.close()
+
+                sys.stdout.write("done\n")
+        fa_files.close()
+    org_names.close()
 
 
 def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
@@ -52,7 +98,7 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     @args download_path: file download path 
     @type download_path: str 
     """
-
+    ## check the url for getting the recent version of the repository 
     base_url_fasta = "ftp://ftp.ensembl.org/pub/release-%s/fasta/" % ensembl_release_version 
 
     try:
@@ -85,7 +131,7 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
 
         ## setting up the download path 
         ## download the files in ex: /home/tmp/F_albicollis/ensembl_release-77/Ficedula_albicollis.FicAlb_1.4.dna_rm.toplevel.fa.gz
-        base_file_path = "%s/%s/ensembl_release-%s" % (download_path, org_short_name, ensembl_release_version)
+        base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, ensembl_release_version)
         if not os.path.exists(base_file_path):
             os.makedirs(base_file_path)
 
