@@ -19,7 +19,7 @@ class MyException( Exception ):
     pass
 
 
-def fetch_phytozome_genome_seq(release_version=None,download_path=None,species_name=None):
+def fetch_phytozome_fasta(release_version=None,download_path=None,species_name=None):
     """
     Download genome sequence from Phytozome ftp page.
 
@@ -41,45 +41,69 @@ def fetch_phytozome_genome_seq(release_version=None,download_path=None,species_n
     org_file.close()
 
 
-def fetch_ensembl_genome_seq(ensembl_release_version=None, download_path=None, species_name=None):
+def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     """
     Download genome sequence from ENSEMBL ftp page.
     
     @args ensembl_release_version: ensembl release version 
     @type ensembl_release_version: str 
+    @args species_name: organism name (example: homo_sapiens)
+    @type species_name: str 
     @args download_path: file download path 
     @type download_path: str 
-    @args species_name: organism name 
-    @type species_name: str 
     """
 
     base_url_fasta = "ftp://ftp.ensembl.org/pub/release-%s/fasta/" % ensembl_release_version 
 
-    org_file = urllib2.urlopen(base_url_fasta)
+    try:
+        org_file = urllib2.urlopen(base_url_fasta)
+    except urllib2.URLError, err_release:
+        print "ensembl_release_version %s is NOT found" % ensembl_release_version
+        print err_release
+        sys.exit(-1)
+
     for org_name in org_file:
         org_name=org_name.strip("\n\r")
-
-        ## check the ftp remote folder 
-        if org_name.split()[-1] != species_name: #in ['ailuropoda_melanoleuca', 'ancestral_alleles']:
+        
+        ## check the organism directory at ftp remote folder 
+        if org_name.split()[-1] != species_name: 
             continue
 
-        sub_path= '%s/dna/' % org_name.split()[-1]
-        print org_name.split()[-1]
+        ## updating the base url 
+        base_url_fasta = '%s%s/dna/' % (base_url_fasta, org_name.split()[-1])
+        
+        try:
+            fa_files = urllib2.urlopen(base_url_fasta)
+        except urllib2.URLError, err_faseq:
+            print "ensembl_release genome sequence missing" % base_url_fasta
+            print err_faseq
+            sys.exit(-1)
 
-        fa_files = urllib2.urlopen(base_url_fasta+sub_path)
+        ## mapping to short names  Arabidopsis_thaliana --> A_thaliana
+        genus, species = species_name.strip().split("_")
+        org_short_name = "%s_%s" % (genus[0].upper(), species)
+
+        ## setting up the download path 
+        ## download the files in ex: /home/tmp/F_albicollis/ensembl_release-77/Ficedula_albicollis.FicAlb_1.4.dna_rm.toplevel.fa.gz
+        base_file_path = "%s/%s/ensembl_release-%s" % (download_path, org_short_name, ensembl_release_version)
+        if not os.path.exists(base_file_path):
+            os.makedirs(base_file_path)
+
         for fa_name in fa_files:
             fa_name =fa_name.strip('\n\r')
 
-            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]):
-                os.makedirs("%s%s/ensembl_release-%s" % (download_path, org_name.split()[-1], ensembl_release_version))
-                tempfile=open("%s%s/ensembl_release-%s/%s" % (download_path, org_name.split()[-1], ensembl_release_version, fa_name.split()[-1]), "wb")
-                ftp_file=urllib2.urlopen(base_url_fasta+sub_path+fa_name.split()[-1])
+            ## include repeatmasked genome 
+            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
+                tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
+                ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
+
                 sys.stdout.write('\tdownloading %s ... ' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
+
                 tempfile.close()
                 ftp_file.close()
+
                 sys.stdout.write("done\n")
-                break
         fa_files.close()
     org_file.close()
 
