@@ -19,16 +19,16 @@ class MyException( Exception ):
     pass
 
 
-def fetch_phytozome_fasta(release_version=None,download_path=None,species_name=None):
+def fetch_phytozome_fasta(release_version, species_name, download_path):
     """
     Download genome sequence from Phytozome ftp page.
 
     @args release_version: release version 
     @type release_version: str 
-    @args download_path: file download path 
-    @type download_path: str 
     @args species_name: organism name 
     @type species_name: str 
+    @args download_path: file download path 
+    @type download_path: str 
     """
 
     base_url = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s' % release_version
@@ -229,12 +229,17 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
 """
 if __name__=="__main__":
     
-    org_name = ""
     sra_run_id = ""
-    data_path = ""
+    sra_data_path = ""
     library_type = ""
     compress_format = ""
 
-    sra_file = download_sra_file(sra_run_id, data_path)
+    sra_file = download_sra_file(sra_run_id, sra_data_path)
     uncompress_sra_file(sra_file, data_path, library_type, compress_format)
+
+    release_num = ""
+    org_name = ""
+    fasta_data_path = ""
+    
+    fetch_ensembl_fasta(release_num, org_name, fasta_data_path)
 """
