@@ -289,8 +289,9 @@ if __name__=="__main__":
     uncompress_sra_file(sra_file, data_path, library_type, compress_format)
 
     release_num = ""
-    org_name = ""
+    org_name = "" # homo_sapiens, Vcarteri
     fasta_data_path = ""
     
     fetch_ensembl_fasta(release_num, org_name, fasta_data_path)
+    fetch_phytozome_fasta(release_num, org_name, fasta_data_path)
 """
