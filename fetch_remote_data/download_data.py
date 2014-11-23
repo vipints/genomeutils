@@ -1,8 +1,13 @@
 #!/usr/bin/env python 
 """
-Download RNA-sequencing reads trace file from NCBI Short Read Archive repository based on Run ID. 
+modules for downloading RNA-sequencing reads trace file from 
+NCBI Short Read Archive, genome sequence and genome annotations 
+from ENEMBL and Phytozome server. 
 
-Usage: python download_data.py run_id out_dir pe/se{paired-end/single-end}  
+Usage: 
+import download_data as dl 
+dl.download_sra_file.__doc__
+dl.uncompress_sra_file.__doc__
 
 Requirement:
     fastq-dump - sratoolkit: http://www.ncbi.nlm.nih.gov/Traces/sra/?view=software
@@ -306,7 +311,6 @@ def download_sra_file(RUNID, download_path):
     @args download_path: SRA file download path 
     @type download_path: str 
     """
-
     ## ncbi sra trace url 
     base_url = "ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/"
 
@@ -337,7 +341,6 @@ def download_sra_file(RUNID, download_path):
         isinstance(int(RUNID[6:10]), int)
         ## adding sub - sub sub folder ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/SRR1050788/SRR1050788.sra
         base_url = '%s%s/%s.sra' % (base_url, RUNID[0:10], RUNID[0:10])
-   
     except:
         try:
             isinstance(int(RUNID[6:9]), int)
@@ -415,9 +418,10 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
     process.wait()
 
 
-"""
 if __name__=="__main__":
+    print __doc__
     
+"""
     sra_run_id = ""
     sra_data_path = ""
     library_type = ""
