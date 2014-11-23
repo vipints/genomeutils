@@ -154,6 +154,77 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
     org_names.close()
 
 
+def fetch_ensembl_gtf(release_version, species_name, download_path):
+    """
+    Download genome annotation from ENSEMBL ftp page.
+    
+    @args release_version: ensembl release version 
+    @type release_version: str 
+    @args species_name: organism name (example: homo_sapiens)
+    @type species_name: str 
+    @args download_path: file download path 
+    @type download_path: str 
+    """
+    ## check the url for getting the recent version of the repository 
+    base_url_gtf = "ftp://ftp.ensembl.org/pub/release-%s/gtf/" % release_version 
+
+    try:
+        org_file = urllib2.urlopen(base_url_gtf)
+    except urllib2.URLError, err_release:
+        print "ensembl_release_version %s is NOT found" % release_version
+        print err_release
+        sys.exit(-1)
+
+    for org_name in org_file:
+        org_name=org_name.strip("\n\r")
+        
+        ## check the organism directory at ftp remote folder 
+        if org_name.split()[-1] != species_name: 
+            continue
+
+        ## updating the base url 
+        base_url_gtf = '%s%s/' % (base_url_gtf, org_name.split()[-1])
+        
+        try:
+            gtf_files = urllib2.urlopen(base_url_gtf)
+        except urllib2.URLError, err_gtf:
+            print "ensembl_release genome annotation missing" % base_url_gtf
+            print err_gtf
+            sys.exit(-1)
+
+        ## mapping to short names  Arabidopsis_thaliana --> A_thaliana
+        genus, species = species_name.strip().split("_")
+        org_short_name = "%s_%s" % (genus[0].upper(), species)
+
+        ## setting up the download path 
+        ## download the files in ex: /home/tmp/F_albicollis/ensembl_release_77/Ficedula_albicollis.FicAlb_1.4.77.gtf.gz
+        base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, release_version)
+        if not os.path.exists(base_file_path):
+            os.makedirs(base_file_path)
+
+        for gtf_name in gtf_files:
+            gtf_name =gtf_name.strip('\n\r')
+
+            if re.search(r'.*.\d+.gtf.gz$', gtf_name.split()[-1]):
+                tempfile=open("%s/%s" % (base_file_path, gtf_name.split()[-1]), "wb")
+
+                try:
+                    ftp_file=urllib2.urlopen(base_url_gtf+gtf_name.split()[-1])
+                except urllib2.URLError, err_file:
+                    print err_file
+                    sys.exit(-1)
+
+                sys.stdout.write('\tdownloading %s ... ' % gtf_name.split()[-1])
+                shutil.copyfileobj(ftp_file, tempfile)
+
+                tempfile.close()
+                ftp_file.close()
+
+                sys.stdout.write("done\n")
+        gtf_files.close()
+    org_file.close()
+
+
 def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     """
     Download genome sequence from ENSEMBL ftp page.
