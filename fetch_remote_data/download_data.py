@@ -434,4 +434,5 @@ if __name__=="__main__":
     fetch_phytozome_fasta(release_num, org_name, fasta_data_path)
 
     fetch_phytozome_gff(release_num, org_name, fasta_data_path)
+    fetch_ensembl_gtf(release_num, org_name, fasta_data_path)
 """
