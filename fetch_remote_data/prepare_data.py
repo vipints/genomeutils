@@ -20,7 +20,7 @@ from gfftools import helper
 from gfftools import GFFParser
 
 
-def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=1):
+def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=1, onematelength=100):
     """
     Creating STAR genome index with or without using genome annotation
 
@@ -31,6 +31,8 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     @args genome_anno: genome annotation file (optional) 
     @type genome_anno: str 
     @args num_workers: number of threads to run (default value = 1)
+    @type num_workers: int 
+    @args onematelength: One Mate Length (default value=100) 
     @type num_workers: int 
     """
     
@@ -60,13 +62,22 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 
         ## according to the file type 
         if ftype:
-            cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d --sjdbGTFfile %s --sjdbGTFtagExonParentTranscript Parent' % (out_dir, fasta_file, num_workers, genome_anno) 
+            cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d --sjdbGTFfile %s --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
         else:
-            cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d --sjdbGTFfile %s' % (out_dir, fasta_file, num_workers, genome_anno) 
+            cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d --sjdbGTFfile %s --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
 
+    ## create downloadpath if doesnot exists 
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    
     ## start the index job 
-    process = subprocess.Popen(cli_cmd, shell=True) 
-    process.wait()
+    try:
+        process = subprocess.Popen(cli_cmd, shell=True) 
+        process.wait()
+    except:
+        print "error"
+        sys.exit(-1)
 
     print 
     print "STAR genome index files are stored at %s" % out_dir
