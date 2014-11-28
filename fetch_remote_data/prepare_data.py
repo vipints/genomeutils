@@ -4,11 +4,11 @@ generating standard genome indices.
 
 Usage: 
 import prepare_data as pd 
-.__doc__
-.__doc__
+pd.create_star_genome_index.__doc__
 
 Requirement:
-    STAR aligner 
+    STAR aligner: https://github.com/alexdobin/STAR 
+    gfftools: https://github.com/vipints/genomeutils/tree/master/gfftools 
 """
 
 import os 
@@ -69,7 +69,6 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     ## create downloadpath if doesnot exists 
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-
     
     ## start the index job 
     try:
