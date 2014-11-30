@@ -24,7 +24,11 @@ import helper as utils
 def attribute_tags(col9):
     """ 
     Split the key-value tags from the attribute column, it takes column number 9 from GTF/GFF file 
+
+    @args col9: attribute column from GFF file 
+    @type col9: str
     """
+
     info = defaultdict(list)
     is_gff = False
     
@@ -68,7 +72,11 @@ def attribute_tags(col9):
 def spec_features_keywd(gff_parts):
     """
     Specify the feature key word according to the GFF specifications
+
+    @args gff_parts: attribute field key 
+    @type gff_parts: str 
     """
+
     for t_id in ["transcript_id", "transcriptId", "proteinId"]:
         try:
             gff_parts["info"]["Parent"] = gff_parts["info"][t_id]
@@ -81,6 +89,7 @@ def spec_features_keywd(gff_parts):
             break
         except KeyError:
             pass
+
     ## TODO key words
     for flat_name in ["Transcript", "CDS"]:
         if gff_parts["info"].has_key(flat_name):
@@ -95,12 +104,17 @@ def spec_features_keywd(gff_parts):
                         "start_codon"]:
                 gff_parts["info"]["Parent"] = gff_parts["info"][flat_name]
             break
+
     return gff_parts
 
 def Parse(ga_file):
     """
     Parsing GFF/GTF file based on feature relationship, it takes the input file.
+
+    @args ga_file: input file name 
+    @type ga_file: str 
     """
+
     child_map = defaultdict(list)
     parent_map = dict()
 
@@ -132,7 +146,7 @@ def Parse(ga_file):
 
         gff_info = dict()
         gff_info['info'] = dict(tags)
-        #gff_info["is_gff3"] = ftype
+        gff_info["is_gff3"] = ftype
         gff_info['chr'] = parts[0]
         gff_info['score'] = parts[5]
 
@@ -190,7 +204,7 @@ def Parse(ga_file):
         parent_map, child_map = create_missing_feature_type(parent_map, child_map)    
     
     # connecting parent child relations  
-    # // essentially the parent child features are here from any type of GTF/GFF2/GFF3 file
+    # essentially the parent child features are here from any type of GTF/GFF2/GFF3 file
     gene_mat = format_gene_models(parent_map, child_map) 
 
     return gene_mat 
@@ -199,9 +213,12 @@ def format_gene_models(parent_nf_map, child_nf_map):
     """
     Genarate GeneObject based on the parsed file contents
 
-    parent_map: parent features with source and chromosome information 
-    child_map: transctipt and exon information are encoded 
+    @args parent_nf_map: parent features with source and chromosome information 
+    @type parent_nf_map: collections defaultdict
+    @args child_nf_map: transctipt and exon information are encoded 
+    @type child_nf_map: collections defaultdict
     """
+
     g_cnt = 0 
     gene = np.zeros((len(parent_nf_map),), dtype = utils.init_gene_GP())
 
