@@ -6,6 +6,10 @@ Usage: python feature_info.py in.gff
 
 Requirements:
     gfftools : https://github.com/vipints/genomeutils/blob/master/gfftools
+
+    TODO 
+    read alignment max intron length 
+    transcript prediction max exon length 
 """
 
 import re
