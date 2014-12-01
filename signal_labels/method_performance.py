@@ -43,14 +43,14 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
         offset += separator
         rects = [] 
         
-        print 'organism', org_name
+        #print 'organism', org_name
 
         #xlocations.append(offset + (width*(num_methods*7+2))/2)
         xlocations.append(offset + (width*(num_methods*1))/3)
 
         for idx, bundles in enumerate(details):
             method, perfs = bundles 
-            print '\t', method
+            #print '\t', method
 
             best_c = [] 
             for method_perf in perfs: 
@@ -76,9 +76,9 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     offset += width 
     rects_avg.append(pylab.bar(offset, sum(mean_perf['individual'])/len(labels), width, color = used_colors[1], edgecolor='white'))
     offset += width 
-    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtmkl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
     offset += width 
-    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[3], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtmkl'])/len(labels), width, color = used_colors[3], edgecolor='white'))
     offset += width 
 
     offset += separator
