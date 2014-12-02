@@ -28,7 +28,7 @@ def seq_viz(records,fname):
 
     color_matrix = numpy.zeros((num_seqs, len_seqs))
 
-    base_map = dict(A = 0, T = 1, G = 2, C = 3) 
+    base_map = dict(A = 0, T = 1, G = 2, C = 3, N = 4) 
 
     for ix, sequence in enumerate(records):
         for ij, nucleotide in enumerate(sequence):
