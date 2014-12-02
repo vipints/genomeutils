@@ -243,6 +243,8 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     """
     ## check the url for getting the recent version of the repository 
     base_url_fasta = "ftp://ftp.ensembl.org/pub/release-%s/fasta/" % ensembl_release_version 
+    # ,etazoan url 
+    # ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/apis_mellifera/dna/Apis_mellifera.GCA_000002195.1.24.dna.toplevel.fa.gz
 
     try:
         org_file = urllib2.urlopen(base_url_fasta)
