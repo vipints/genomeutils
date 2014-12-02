@@ -318,3 +318,32 @@ def make_Exon_cod(strand_p, five_p_utr, cds_cod, three_p_utr):
             for utr5 in five_p_utr:
                 exon_pos.append(utr5)
     return exon_pos
+    
+
+def print_exon_line(tinfo, out_file):
+    """
+    writing exon feature info in GFF form 
+
+    @args tinfo: GFFParser.Parse return object 
+    @type tinfo: 
+    @args out_file: out file 
+    @type out_file: str
+    """
+
+    for ent1 in tinfo:
+        for idx, tid in enumerate(ent1['transcripts']): # - transcripts
+            for idz, ex_cod in enumerate(ent1['exons'][idx]): # - exons 
+
+                out_print = [ent1['chr'],
+                            ent1['source'],
+                            'exon',
+                            str(int(ex_cod[0])),
+                            str(int(ex_cod[1])),
+                            '.',
+                            ent1['strand'], 
+                            '.',
+                            'Parent=%s' % tid[0]]
+
+                print '\t'.join(out_print) # - exon line  
+
+
