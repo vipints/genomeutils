@@ -230,6 +230,79 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
     org_file.close()
 
 
+def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
+    """
+    Download genome sequence from ensemblgenomes ftp page.
+    
+    @args release_version: ensembl release version 
+    @type release_version: str 
+    @args species_name: organism name (example: homo_sapiens)
+    @type species_name: str 
+    @args download_path: file download path 
+    @type download_path: str 
+    """
+
+    ## check the url for getting the recent version of the repository 
+    base_url_fasta = "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-%s/fasta/" % release_version 
+
+    try:
+        org_file = urllib2.urlopen(base_url_fasta)
+    except urllib2.URLError, err_release:
+        print "ensembl_release_version %s is NOT found" % release_version
+        print err_release
+        sys.exit(-1)
+
+    for org_name in org_file:
+        org_name=org_name.strip("\n\r")
+        
+        ## check the organism directory at ftp remote folder 
+        if org_name.split()[-1] != species_name: 
+            continue
+
+        ## updating the base url 
+        base_url_fasta = '%s%s/dna/' % (base_url_fasta, org_name.split()[-1])
+
+        try:
+            fa_files = urllib2.urlopen(base_url_fasta)
+        except urllib2.URLError, err_faseq:
+            print "ensembl_release genome sequence missing" % base_url_fasta
+            print err_faseq
+            sys.exit(-1)
+
+        ## mapping to short names  Arabidopsis_thaliana --> A_thaliana
+        genus, species = species_name.strip().split("_")
+        org_short_name = "%s_%s" % (genus[0].upper(), species)
+
+        ## download the files in ex: /home/tmp/F_albicollis/ensembl_release-77/Ficedula_albicollis.FicAlb_1.4.dna_rm.toplevel.fa.gz
+        base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, release_version)
+        if not os.path.exists(base_file_path):
+            os.makedirs(base_file_path)
+
+        for fa_name in fa_files:
+            fa_name =fa_name.strip('\n\r')
+
+            ## include repeatmasked genome 
+            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
+                tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
+
+                try:
+                    ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
+                except urllib2.URLError, err_file:
+                    print err_file
+                    sys.exit(-1)
+
+                sys.stdout.write('\tdownloading %s ... \n' % fa_name.split()[-1])
+                shutil.copyfileobj(ftp_file, tempfile)
+                sys.stdout.write('\tsaved at %s/%s \n' % (base_file_path, fa_name.split()[-1]))
+
+                tempfile.close()
+                ftp_file.close()
+
+        fa_files.close()
+    org_file.close()
+    # ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/apis_mellifera/dna/Apis_mellifera.GCA_000002195.1.24.dna.toplevel.fa.gz
+
+
 def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     """
     Download genome sequence from ENSEMBL ftp page.
@@ -243,8 +316,6 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     """
     ## check the url for getting the recent version of the repository 
     base_url_fasta = "ftp://ftp.ensembl.org/pub/release-%s/fasta/" % ensembl_release_version 
-    # ,etazoan url 
-    # ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/apis_mellifera/dna/Apis_mellifera.GCA_000002195.1.24.dna.toplevel.fa.gz
 
     try:
         org_file = urllib2.urlopen(base_url_fasta)
@@ -274,7 +345,6 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
         genus, species = species_name.strip().split("_")
         org_short_name = "%s_%s" % (genus[0].upper(), species)
 
-        ## setting up the download path 
         ## download the files in ex: /home/tmp/F_albicollis/ensembl_release-77/Ficedula_albicollis.FicAlb_1.4.dna_rm.toplevel.fa.gz
         base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, ensembl_release_version)
         if not os.path.exists(base_file_path):
