@@ -16,6 +16,18 @@ import re
 import sys
 import GFFParser
 
+def make_anno_db(gff_file): 
+    """
+    extract the features from a gtf/gff file and store efficiently to query 
+
+    @args gff_file: genome annotation file
+    @type gff_file: str 
+    """
+
+    gff_cont = GFFParser.Parse(gff_file)  
+
+
+
 def Intron_det(TDB):
     """
     get the intron feature details MaxIntronLength MinIntronLength
