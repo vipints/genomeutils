@@ -2,7 +2,7 @@
 """
 Fetch the details about the features explained in a GFF type file.
 
-Usage: python feature_info.py in.gff
+Usage: python gff_db.py in.gff
 
 Requirements:
     gfftools : https://github.com/vipints/genomeutils/blob/master/gfftools
