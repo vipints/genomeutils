@@ -16,8 +16,49 @@ import re
 import sys 
 import shutil
 import subprocess 
-from gfftools import helper
-from gfftools import GFFParser
+from gfftools import helper, GFFParser
+
+def make_anno_db(gff_file): 
+    """
+    extract the features from a gtf/gff file and store efficiently to query 
+
+    @args gff_file: genome annotation file
+    @type gff_file: str 
+    """
+
+    gff_cont = GFFParser.Parse(gff_file)  
+
+    intron_size = dict() 
+    exon_size = dict() 
+
+    for rec in gff_cont:
+        for idx, tid in enumerate(rec['transcripts']):
+
+            if not rec['exons'][idx].any():
+                continue
+
+            exon_cnt = len(rec['exons'][idx])
+
+            if exon_cnt > 1:
+                intron_start = 0 
+                
+                for xq, excod in enumerate(rec['exons'][idx]): 
+                    
+                    if xq > 0: 
+                        #print intron_start, excod[0]-1 
+                        if excod[0]-intron_start==1:
+                            intron_start = excod[1]+1
+                            exon_size[intron_start-excod[0]] = 1
+                            continue
+
+                        intron_size[excod[0]-intron_start] = 1 
+                        #print excod[0]-intron_start
+
+                    intron_start = excod[1]+1
+                    exon_size[intron_start-excod[0]] = 1
+
+                    #print intron_start-excod[0]
+    #return gff_cont
 
 
 def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=1, onematelength=100):
@@ -85,6 +126,6 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 
 if __name__=="__main__":
     print __doc__
-    
+
 """
 """
