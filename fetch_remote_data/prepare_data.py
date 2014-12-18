@@ -58,7 +58,17 @@ def make_anno_db(gff_file):
                     exon_size[intron_start-excod[0]] = 1
 
                     #print intron_start-excod[0]
-    #return gff_cont
+    if intron_size:
+        keys_int = sorted(intron_size)
+        print 'MinIntronLength %d %d %d', %(keys_int[0], keys_int[1], keys_int[2])
+        print 'MaxIntronLength %d %d %d', %(keys_int[-1], keys_int[-2], keys_int[-3])
+        print 
+        keys_ex = sorted(exon_size)
+        print 'MinExonLength %d %d %d', %(keys_ex[0], keys_ex[1], keys_ex[2]) 
+        print 'MaxExonLength %d %d %d', %(keys_ex[-1], keys_ex[-2], keys_ex[-3]) 
+    else:
+        print "Error in feature mapping, please check the source of parent child features" 
+        print "May be the sources are different for parents and child features of the parent Gene"
 
 
 def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=1, onematelength=100):
