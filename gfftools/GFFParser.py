@@ -4,7 +4,6 @@ Extract genome annotation from a GFF (a tab delimited format for storing sequenc
 
 Requirements: 
     Numpy :- http://numpy.org/ 
-    Scipy :- http://scipy.org/ 
 
 Copyright (C)	
 
@@ -17,9 +16,8 @@ import os
 import sys
 import urllib
 import numpy as np
-import scipy.io as sio
-from collections import defaultdict
 import helper as utils 
+from collections import defaultdict
 
 def attribute_tags(col9):
     """ 
@@ -220,13 +218,14 @@ def format_gene_models(parent_nf_map, child_nf_map):
     """
 
     g_cnt = 0 
-    gene = np.zeros((len(parent_nf_map),), dtype = utils.init_gene_GP())
+    gene = np.zeros((len(parent_nf_map),), dtype = utils.init_gene())
 
     for pkey, pdet in parent_nf_map.items():
 
         # considering only gene features 
-        if not re.search(r'gene', pdet.get('type', '')):
-            continue 
+        #if not re.search(r'gene', pdet.get('type', '')):
+        #    continue 
+
         # infer the gene start and stop if not there in the 
         if not pdet.get('location', []):
             GNS, GNE = [], []
@@ -237,8 +236,8 @@ def format_gene_models(parent_nf_map, child_nf_map):
             GNS.sort()
             GNE.sort()
             pdet['location'] = [GNS[0], GNE[-1]]
-        orient = pdet.get('strand', '')
 
+        orient = pdet.get('strand', '')
         gene[g_cnt]['id'] = g_cnt +1 
         gene[g_cnt]['chr'] = pkey[0]
         gene[g_cnt]['source'] = pkey[1]
@@ -422,6 +421,9 @@ def format_gene_models(parent_nf_map, child_nf_map):
 def NonetoemptyList(XS):
     """
     Convert a None type to empty list 
+
+    @args XS: None type
+    @type XS: str
     """
     return [] if XS is None else XS 
 
@@ -436,7 +438,13 @@ def create_missing_feature_type(p_feat, c_feat):
     chr21   hg19_knownGene  exon    9711935 9712038 0.000000        +       .       gene_id "uc011abu.2"; transcript_id "uc011abu.2"; 
 
     This function gets the parsed feature annotations. 
+
+    @args p_feat: Parent feature map
+    @type p_feat: collections defaultdict
+    @args c_feat: Child feature map
+    @type c_feat: collections defaultdict
     """
+
     child_n_map = defaultdict(list)
     for fid, det in c_feat.items():
         # get the details from grand child  
@@ -449,6 +457,8 @@ def create_missing_feature_type(p_feat, c_feat):
             EPOS.append(gchild.get('location', [])[1]) 
             STRD = gchild.get('strand', '')
             SCR = gchild.get('score', '')
+            if gchild.get('type', '') == "gene": ## gencode GTF file has this problem 
+                continue 
             TYP[gchild.get('type', '')] = 1
         SPOS.sort() 
         EPOS.sort()
