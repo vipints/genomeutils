@@ -28,7 +28,7 @@ def init_gene_DE():
 
     return gene_det
 
-def init_gene_GP():
+def init_gene():
     """
     Initializing the gene structure for GP 
     """
