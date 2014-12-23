@@ -37,7 +37,18 @@ def make_anno_db(gff_file):
             if not rec['exons'][idx].any():
                 continue
 
-            exon_cnt = len(rec['exons'][idx])
+            try: # (Pdb) rec['exons'][0] -> array(nan)
+                import numpy as np 
+                if np.isnan(rec['exons'][idx]):
+                    continue
+            except:
+                pass 
+                    
+            try:
+                exon_cnt = len(rec['exons'][idx])
+            except:
+                import pdb 
+                pdb.set_trace()
 
             if exon_cnt > 1:
                 intron_start = 0 
@@ -60,12 +71,12 @@ def make_anno_db(gff_file):
                     #print intron_start-excod[0]
     if intron_size:
         keys_int = sorted(intron_size)
-        print 'MinIntronLength %d %d %d', %(keys_int[0], keys_int[1], keys_int[2])
-        print 'MaxIntronLength %d %d %d', %(keys_int[-1], keys_int[-2], keys_int[-3])
+        print 'MinIntronLength %d %d %d'  %(keys_int[0], keys_int[1], keys_int[2])
+        print 'MaxIntronLength %d %d %d'  %(keys_int[-1], keys_int[-2], keys_int[-3])
         print 
         keys_ex = sorted(exon_size)
-        print 'MinExonLength %d %d %d', %(keys_ex[0], keys_ex[1], keys_ex[2]) 
-        print 'MaxExonLength %d %d %d', %(keys_ex[-1], keys_ex[-2], keys_ex[-3]) 
+        print 'MinExonLength %d %d %d'  %(keys_ex[0], keys_ex[1], keys_ex[2]) 
+        print 'MaxExonLength %d %d %d'  %(keys_ex[-1], keys_ex[-2], keys_ex[-3]) 
     else:
         print "Error in feature mapping, please check the source of parent child features" 
         print "May be the sources are different for parents and child features of the parent Gene"
