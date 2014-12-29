@@ -16,7 +16,53 @@ import re
 import sys 
 import shutil
 import subprocess 
+from Bio import SeqIO 
 from gfftools import helper, GFFParser
+
+
+def stop_err(msg):
+    """
+    stop the execution and print out the captured error message. 
+    """
+    sys.stderr.write('%s\n' % msg)
+    sys.exit(-1)
+
+
+def clean_genome_file(chr_names, fas_file, fas_out):
+    """
+    make a stable genome file with valid contigs 
+
+    @args chr_names: different contig names with a valid genome sequence 
+    @type chr_names: dict
+    @args fas_file: genome sequence in fasta file  
+    @type fas_file: str 
+    @args fas_out: new genome sequence file in fasta format 
+    @type fas_out: str 
+    """
+
+    # get the valid chromosome identifier from user as STDIN
+    chr_names = dict()
+    
+    # get the filehandler from input file
+    try:
+        fh = helper.open_file(fas_file)
+    except Exception, errmsg:
+        stop_err('error in reading file '+ errmsg) 
+
+    # check the out filehandler
+    try:
+        outfh = open(fas_out, "w")
+    except Exception, errmsg:
+        stop_err('error in writing file '+ errmsg) 
+
+    # writing stable contig genome sequence in FASTA format 
+    for rec in SeqIO.parse(fh, "fasta"):
+        if rec.id in chr_names:
+            outfh.write(rec.format("fasta"))
+
+    fh.close()
+    outfh.close()
+
 
 def make_anno_db(gff_file): 
     """
