@@ -41,6 +41,7 @@ def clean_genome_file(chr_names, fas_file, fas_out):
     """
 
     # get the valid chromosome identifier from user as STDIN
+    #TODO valid contig names to be passed to this unction as python dict form 
     chr_names = dict()
     
     # get the filehandler from input file
@@ -115,6 +116,9 @@ def make_anno_db(gff_file):
                     exon_size[intron_start-excod[0]] = 1
 
                     #print intron_start-excod[0]
+
+    #TODO function return to be decided 
+    # propose to return a dictionary with the details of intron exon maxlength
     if intron_size:
         keys_int = sorted(intron_size)
         print 'MinIntronLength %d %d %d'  %(keys_int[0], keys_int[1], keys_int[2])
