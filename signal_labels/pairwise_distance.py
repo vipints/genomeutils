@@ -36,8 +36,14 @@ def compute_distance_matrix(msa_file):
     ## writing the result to a csv file 
     csvfile = "distance_mat.csv"
 
+    csv_header_row = [header for header in master_dm.ids] 
+
     ## result as a list of list 
     with open(csvfile, "w") as output:
         writer = csv.writer(output, lineterminator="\n")
+
+        writer.writerows([csv_header_row])
         writer.writerows(master_dm)
+    
+    output.close() 
 
