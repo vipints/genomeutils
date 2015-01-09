@@ -6,6 +6,7 @@ Computing the distance between pairs of sequences which are derived from a multi
 Requirement:
     biopython :- http://biopython.org/
     scikit-bio :- https://github.com/biocore/scikit-bio
+    NINJA :- http://nimbletwist.com/software/ninja 
 """
 
 
@@ -47,3 +48,19 @@ def compute_distance_matrix(msa_file):
     
     output.close() 
 
+
+def run_ninja(msa_file, distance_mat="distance_matrix.csv"):
+    """
+    NINJA is software for inferring large-scale neighbor-joining phylogenies.
+
+    @args msa_file: multiple sequence alignment in fasta format 
+    @type msa_file: str 
+    @args distance_mat: output distance matrix file in csv format 
+    @type distance_mat: str 
+
+    NOTE: This module expects ninja is available under PATH variable or add the path below line.
+    """
+
+    cli = 'ninja --alph_type d --out_type d --corr_type n %s > %s' % (msa_file, distance_mat) 
+    process = subprocess.Popen(cli, shell=True) 
+    process.wait()
