@@ -209,6 +209,7 @@ def make_org_db(org_name_file, data_path, exp_path):
             org_db[short_name]['trsk'] = "%s/%s/trans_pred" % (exp_path, short_name)
             org_db[short_name]['labels'] = "%s/%s/signal_labels" % (exp_path, short_name)
             org_db[short_name]['bam'] = "%s/%s/read_mapping/unique.bam" % (exp_path, short_name)
+            org_db[short_name]['pred_gff'] = "%s/%s/trans_pred/ss_filter_predgenes.gff" % (exp_path, short_name)
 
             org_db[short_name]['fasta'] = "%s/%s" % (data_path, short_name) 
             if short_name in org_fasta_file:
