@@ -9,7 +9,8 @@ Requirement:
     NINJA :- http://nimbletwist.com/software/ninja 
 """
 
-
+import os 
+import subprocess
 from Bio import AlignIO, SeqIO
 from skbio import RNA, Alignment 
 
@@ -60,6 +61,8 @@ def run_ninja(msa_file, distance_mat="distance_matrix.csv"):
 
     NOTE: This module expects ninja is available under PATH variable or add the path below line.
     """
+
+    #os.environ['PATH'] += os.pathsep + '/home/share/software/ninja/'
 
     cli = 'ninja --alph_type d --out_type d --corr_type n %s > %s' % (msa_file, distance_mat) 
     process = subprocess.Popen(cli, shell=True) 
