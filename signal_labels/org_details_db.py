@@ -1,13 +1,22 @@
 #!/usr/bin/env python 
 """
 This program aims to locate the path for data storage and experiment runs for each organisms in a workflow.
+
+There are some predefined paths are loaded in this program statically. 
 """
 
 from collections import defaultdict
 
 def make_org_db(org_name_file, data_path, exp_path):
     """
-    function to collect details of the organisms 
+    function to collect details of each organism
+
+    @args org_fasta_file: text file containing organisms name
+    @type org_fasta_file: str 
+    @args data_path: data file storage path 
+    @type data_path: str 
+    @args exp_path: experiment related file path  
+    @type exp_path: str 
     """
 
     org_fasta_file = dict( A_carolinensis = '%s/A_carolinensis/STARgenome/Anolis_carolinensis.AnoCar2.0.69.stable_genome.fa' % data_path,
