@@ -78,8 +78,8 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     offset += width 
     rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
     offset += width 
-    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtmkl'])/len(labels), width, color = used_colors[3], edgecolor='white'))
-    offset += width 
+    #rects_avg.append(pylab.bar(offset, sum(mean_perf['mtmkl'])/len(labels), width, color = used_colors[3], edgecolor='white'))
+    #offset += width 
 
     offset += separator
 
