@@ -2,7 +2,7 @@
 """
 Computing the distance between pairs of sequences which are derived from a multiple sequence alignment. 
 
-    TODO 
+    
 Requirement:
     biopython :- http://biopython.org/
     scikit-bio :- https://github.com/biocore/scikit-bio
