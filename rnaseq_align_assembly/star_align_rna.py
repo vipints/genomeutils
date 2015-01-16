@@ -24,7 +24,7 @@ def uniq_mapped_reads(bam_file, multi_map=1):
 
     @args bam_file: binary file for storing the sequencing reads.
     @type bam_file: str 
-    @args multi_map: number of hits of a read  
+    @args multi_map: number of hits of a read (default 1) 
     @type multi_map: integer 
     """
 
