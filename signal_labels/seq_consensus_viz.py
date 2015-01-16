@@ -13,6 +13,40 @@ Requirements:
 import sys
 from Bio import SeqIO
 
+
+def nuc_freq_viz(fasta_file, label_seq_length=2401):
+    """
+    nucleotide frequency visualization 
+
+    @args fasta_file: label sequence in fasta format 
+    @type fasta_file: str 
+    @args label_seq_length: number of nucleotide in a label sequence (default 2401)
+    @type label_seq_length: int
+    """
+
+    from collections import defaultdict
+
+    nuc_freq_table = defaultdict() 
+
+    for xq in range(int(label_seq_length)):
+        nuc_freq_table[xq] = dict(A=0, T=0, C=0, G=0) 
+       
+    for rec in SeqIO.parse(fasta_file, "fasta"):
+        for xp, ntd in enumerate(rec.seq):
+            nuc_freq_table[xp][ntd] += 1
+
+    pos_pref = defaultdict() # max frequency nucleotide in the label sequence positions 
+
+    for xp, freq in nuc_freq_table.items():
+
+        freq_nt = max(freq, key=freq.get) 
+        pos_pref[xp] = {freq_nt : freq[freq_nt]}
+        break  
+        #TODO 
+
+    # TODO plot function 
+
+
 def seq_viz_stack(fasta_file, pdf_file_name):
     """
     color coded sequence visualization 
@@ -64,4 +98,4 @@ if __name__ == "__main__":
         print __doc__
         sys.exit(-1)
 
-    seq_viz(fas_name, res_name) 
+    seq_viz_stack(fas_name, res_name) 
