@@ -3,8 +3,10 @@ detailed bar plot to measure the performance of different methods
 """
 
 from __future__ import division
-from collections import defaultdict
 import numpy 
+from collections import defaultdict
+
+
 
 def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
     """
@@ -149,6 +151,113 @@ def data_process(filename):
             
     fh.close()
     return data_mat.keys(), methods, data_mat 
+
+
+def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
+    """
+    visualizing mean performance from different experiments
+
+    @args data_dir: experiment path 
+    @type data_dir: str 
+    @args alpha: different parameter value 
+    @type alpha: list 
+    """
+    
+    import os 
+    import re 
+
+    file_mean = defaultdict(list) 
+
+    for file in os.listdir(data_dir):
+
+        #FIXME adjust the next line to get the name from the file name  
+        #prefix = re.search('5.org_(\d+)_cleave.pickle', file).group(1) 
+        prefix = re.search('5.org_(.+)_cleave.pickle', file).group(1) 
+        
+        mean_perf = defaultdict(list) 
+        organisms, diff_methods, perfomance = data_process("%s/%s" % (data_dir, file)) 
+
+        for org_name, details in perfomance.items():
+        
+            for idx, bundles in enumerate(details):
+                method, perfs = bundles 
+                #print '\t', method
+
+                best_c = [] 
+                for method_perf in perfs: 
+                    best_c.append(method_perf)
+
+                best_c.sort() 
+                #min_max.append(best_c[-1])
+                mean_perf[method].append(best_c[-1]) # best c over organisms on each method 
+        
+        file_mean[prefix].append(sum(mean_perf['union'])/len(organisms)) 
+        file_mean[prefix].append(sum(mean_perf['individual'])/len(organisms)) 
+        file_mean[prefix].append(sum(mean_perf['mtl'])/len(organisms)) 
+
+    ## plotting function 
+    import pylab 
+
+    pylab.figure(figsize=(5, 10)) # custom form 
+    #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
+    pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
+
+    width = 0.20
+    separator = 0.15
+
+    offset = 0
+    num_methods = len(diff_methods)
+    
+    used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
+    xlocations = []
+
+    min_max = [] 
+    for parameter, mean_meth_perf in sorted(file_mean.items()):
+
+        offset += separator
+        rects = [] 
+
+        xlocations.append(offset + (width*(num_methods*1))/3)
+        
+        for idx, nb in enumerate(mean_meth_perf):
+            min_max.append(nb)
+            rects.append(pylab.bar(offset, nb, width, color=used_colors[idx], edgecolor='white'))
+            offset += width 
+
+    offset += separator
+            
+    min_max.sort() 
+    ymax = min_max[-1]*1.1
+    ymin = min_max[0]*0.9
+
+    tick_step = 0.05
+    ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
+    pylab.yticks(ticks)
+    labels = ['df=%s' % x for x in sorted(file_mean.keys())]
+    pylab.xticks(xlocations, labels, rotation="vertical") 
+
+    fontsize=17
+    ax = pylab.gca()
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label1.set_fontsize(fontsize)
+
+    pylab.xlim(0, offset)
+    pylab.ylim(ymin, ymax)
+    
+    plot_title = signal 
+    pylab.title(plot_title)
+    pylab.gca().get_xaxis().tick_bottom()
+    pylab.gca().get_yaxis().tick_left()
+
+    pylab.gca().get_yaxis().grid(True)
+    pylab.gca().get_xaxis().grid(False)
+
+    pylab.legend(tuple(rects), tuple(diff_methods))
+
+    ylabel = "auROC"
+    pylab.ylabel(ylabel, fontsize = 15)
+    pylab.savefig(res_file) 
+
 
 """
 from signal_labels import method_performance
