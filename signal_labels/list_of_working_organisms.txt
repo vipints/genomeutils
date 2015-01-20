@@ -54,6 +54,7 @@ taeniopygia_guttata
 takifugu_rubripes
 tarsius_syrichta
 tetraodon_nigroviridis
+thalassiosira_pseudonana
 tupaia_belangeri
 tursiops_truncatus
 vicugna_pacos
