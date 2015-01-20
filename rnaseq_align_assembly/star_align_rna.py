@@ -8,15 +8,57 @@ Requirement:
 """
 
 import os 
-import pysam
+import sys 
+import subprocess
 
-
-def run_star_alignment():
+def run_star_alignment(org_db, read_type='PE'):
     """
+    wrapper for running STAR program 
+
+    @args org_db: a python dictionary with all details about a single organism 
+    @type org_db: dict
+
     """
 
-    genome_dir = ""
-    
+    #os.environ['PATH'] += os.pathsep + '/home/share/software/STAR_2.3.0e.Linux_x86_64/'
+
+    genome_dir = org_db['index']
+    gtf_db = org_db['gtf']
+
+    if read_type == 'PE':
+        read_file = "%s %s" % (org_db['fastq'][0], org_db['fastq'][1])
+    else
+        read_file = org_db['fastq'][0]
+
+    compressed_form = "zcat" 
+
+    num_cpus = 1 
+    max_lenth_intron = 10000 
+    max_mates_gap_length = 10000
+
+    make_file_name = "mkfifo Aligned.out.sam"
+    process = subprocess.Popen(make_file_name, shell=True) 
+    make_bg_process = "cat Aligned.out.sam | samtools view -Shb - | samtools sort - Aligned.sort.out &"
+    process = subprocess.Popen(make_bg_process, shell=True) 
+
+    make_star_run = "STAR \
+    --genomeDir %s \
+    --readFilesIn %s \
+    --readFilesCommand %s \
+    --runThreadN %d \
+    --outFilterMultimapScoreRange 2 \
+    --outFilterMultimapNmax 100 \
+    --outFilterMismatchNmax 10 \
+    --alignIntronMax %d \
+    --sjdbGTFfile %s \
+    --sjdbScore 1 \
+    --sjdbOverhang 5 \
+    --genomeLoad LoadAndRemove" % (genome_dir, read_file, compressed_form, num_cpus, max_lenth_intron, gtf_db)
+
+    sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
+    process = subprocess.Popen(make_star_run, shell=True) 
+    process.wait()
+
 
 def uniq_mapped_reads(bam_file, multi_map=1):
     """
@@ -27,6 +69,8 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     @args multi_map: number of hits of a read (default 1) 
     @type multi_map: integer 
     """
+
+    import pysam
 
     ## indexing the in bam file 
     if not os.path.exists(bam_file + ".bai"):
