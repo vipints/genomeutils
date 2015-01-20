@@ -541,13 +541,19 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
 
     ## depends on the compress type and library protocol type
     if lib_type in ['pe', 'PE', 'paired-end']:
-        cli = 'fastq-dump --%s --split-3 --outdir %s %s' % (out_compress, download_path, out_file_name) 
+        cli = 'fastq-dump \
+        --%s \
+        --split-3 \
+        --outdir %s \
+        %s' % (out_compress, download_path, out_file_name) 
     elif lib_type in ['se', 'SE', 'single-end']:
-        cli = 'fastq-dump --%s --outdir %s %s' % (out_compress, download_path, out_file_name)
+        cli = 'fastq-dump \
+        --%s 
+        --outdir %s \
+        %s' % (out_compress, download_path, out_file_name)
     else:
         print 'Error! Library layout [PE/pe/paired-end|SE/se/single-end]'
         print '\tYour Library layout is ', lib_type
-        print '\tProgram cannot continue, Exiting...'
         sys.exit(-1)
 
     ## split the .SRA format file based on the library layout
