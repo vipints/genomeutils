@@ -149,7 +149,11 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     """
     
     if not genome_anno:
-        cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d' % (out_dir, fasta_file, num_workers) 
+        cli_cmd = 'STAR \
+        --runMode genomeGenerate \
+        --genomeDir %s \
+        --genomeFastaFiles %s \
+        --runThreadN %d' % (out_dir, fasta_file, num_workers) 
     else:
         ## check for the file type  
         gff_hand = helper.open_file(genome_anno)
@@ -174,9 +178,22 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 
         ## according to the file type 
         if ftype:
-            cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d --sjdbGTFfile %s --sjdbGTFtagExonParentTranscript Parent --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
+            cli_cmd = 'STAR \
+            --runMode genomeGenerate \
+            --genomeDir %s \
+            --genomeFastaFiles %s \
+            --runThreadN %d \
+            --sjdbGTFfile %s \
+            --sjdbGTFtagExonParentTranscript Parent \
+            --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
         else:
-            cli_cmd = 'STAR --runMode genomeGenerate --genomeDir %s --genomeFastaFiles %s --runThreadN %d --sjdbGTFfile %s --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
+            cli_cmd = 'STAR \
+            --runMode genomeGenerate \
+            --genomeDir %s \
+            --genomeFastaFiles %s \
+            --runThreadN %d \
+            --sjdbGTFfile %s \
+            --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
 
     ## create downloadpath if doesnot exists 
     if not os.path.exists(out_dir):
@@ -197,6 +214,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 
 if __name__=="__main__":
     print __doc__
+
 
 """
     fasta_file = "/home/data/C_elegans/ce10.fa"
