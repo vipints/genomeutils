@@ -11,8 +11,8 @@ def make_org_db(org_name_file, data_path, exp_path):
     """
     function to collect details of each organism
 
-    @args org_fasta_file: text file containing organisms name
-    @type org_fasta_file: str 
+    @args org_name_file: text file containing organisms name
+    @type org_name_file: str 
     @args data_path: data file storage path 
     @type data_path: str 
     @args exp_path: experiment related file path  
