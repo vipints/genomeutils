@@ -254,6 +254,14 @@ def make_org_db(org_name_file, data_path, exp_path):
             if short_name in org_gtf_file:
                 org_db[short_name]['gtf'] = org_gtf_file[short_name]
 
+                ## get the gtf feature lengths 
+                if os.path.isfile(org_gtf_file[short_name]):
+                    from fetch_remote_data import prepare_data as pd
+
+                    feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
+                    org_db[short_name]['max_intron'] = feat_len_db['max_intron']
+                    org_db[short_name]['max_exon'] = feat_len_db['max_exon']
+
     fh.close() 
     
     return org_db
