@@ -5,6 +5,7 @@ This program aims to locate the path for data storage and experiment runs for ea
 There are some predefined paths are loaded in this program statically. 
 """
 
+import os 
 from collections import defaultdict
 
 def make_org_db(org_name_file, data_path, exp_path):
@@ -61,6 +62,7 @@ def make_org_db(org_name_file, data_path, exp_path):
     C_brenneri = '%s/C_brenneri/STARgenome/Caenorhabditis_brenneri.C_brenneri-6.0.1b.22.dna_sm_stable.fa' % data_path,
     C_remanei = '%s/C_remanei/STARgenome/Caenorhabditis_remanei.C_remanei-15.0.1.22.dna_sm_stable.fa' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/STARgenome/Drosophila_pseudoobscura.HGSC2.22.dna_sm_stable.fasta' % data_path,
+    T_pseudonana = '%s/T_pseudonana/Thaps3/Thaps3_chromosomes_assembly_chromosomes_repeatmasked.fasta' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release-69/Tetraodon_nigroviridis.TETRAODON8.69.dna.toplevel.fa' % data_path
     )
 
@@ -106,6 +108,7 @@ def make_org_db(org_name_file, data_path, exp_path):
     C_brenneri = '%s/C_brenneri/STARgenome/' % data_path,
     C_remanei = '%s/C_remanei/STARgenome/' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/STARgenome/' % data_path,
+    T_pseudonana = '%s/T_pseudonana/STARgenome/' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/STARgenome/' % data_path
     )
 
@@ -151,6 +154,7 @@ def make_org_db(org_name_file, data_path, exp_path):
     C_brenneri = '%s/C_brenneri/ensembl_release-22/ens_gio/genome.config' % data_path,
     C_remanei = '%s/C_remanei/ensembl_release-22/ens_gio/genome.config' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/ens_gio/genome.config' % data_path,
+    T_pseudonana = '%s/T_pseudonana/Thaps3/Thaps3_gio/genome.config' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release-69/ens_gio/genome.config' % data_path
     )
 
@@ -196,6 +200,7 @@ def make_org_db(org_name_file, data_path, exp_path):
     C_brenneri = '%s/C_brenneri/ensembl_release-22/Caenorhabditis_brenneri.C_brenneri-6.0.1b.22.gff3' % data_path,
     C_remanei = '%s/C_remanei/ensembl_release-22/Caenorhabditis_remanei.C_remanei-15.0.1.22.gff3' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/Drosophila_pseudoobscura.HGSC2.22.gff3' % data_path,
+    T_pseudonana = '%s/T_pseudonana/Thaps3/Thaps3_chromosomes_geneModels_FilteredModels2.gff' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release-69/Tetraodon_nigroviridis.TETRAODON8.69.gtf' % data_path
     )
 
@@ -213,10 +218,23 @@ def make_org_db(org_name_file, data_path, exp_path):
              
             # adding details 
             org_db[short_name] = dict(name = name)  
-            org_db[short_name]['fastq'] = "%s/%s/source_data" % (exp_path, short_name)
-            org_db[short_name]['star'] = "%s/%s/read_mapping" % (exp_path, short_name)
-            org_db[short_name]['trsk'] = "%s/%s/trans_pred" % (exp_path, short_name)
-            org_db[short_name]['labels'] = "%s/%s/signal_labels" % (exp_path, short_name)
+            org_db[short_name]['short_name'] = short_name
+
+            sra_files = [] 
+            for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
+                file_prefix, ext = os.path.splitext(sra_file)
+                if ext == ".sra":
+                    continue 
+                sra_files.append("%s/%s/source_data/%s" % (exp_path, short_name, sra_file)) 
+
+            if not sra_files:
+                org_db[short_name]['fastq'] = "%s/%s/source_data" % (exp_path, short_name)
+            else:
+                org_db[short_name]['fastq'] = sra_files
+
+            org_db[short_name]['star_wd'] = "%s/%s/read_mapping" % (exp_path, short_name)
+            org_db[short_name]['trsk_wd'] = "%s/%s/trans_pred" % (exp_path, short_name)
+            org_db[short_name]['labels_wd'] = "%s/%s/signal_labels" % (exp_path, short_name)
             org_db[short_name]['bam'] = "%s/%s/read_mapping/unique.bam" % (exp_path, short_name)
             org_db[short_name]['pred_gff'] = "%s/%s/trans_pred/ss_filter_predgenes.gff" % (exp_path, short_name)
 
