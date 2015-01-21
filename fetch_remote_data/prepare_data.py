@@ -114,22 +114,24 @@ def make_anno_db(gff_file):
 
                     intron_start = excod[1]+1
                     exon_size[intron_start-excod[0]] = 1
-
                     #print intron_start-excod[0]
-
-    #TODO function return to be decided 
-    # propose to return a dictionary with the details of intron exon maxlength
+    
+    feat_db = dict() 
     if intron_size:
         keys_int = sorted(intron_size)
-        print 'MinIntronLength %d %d %d'  %(keys_int[0], keys_int[1], keys_int[2])
-        print 'MaxIntronLength %d %d %d'  %(keys_int[-1], keys_int[-2], keys_int[-3])
-        print 
         keys_ex = sorted(exon_size)
-        print 'MinExonLength %d %d %d'  %(keys_ex[0], keys_ex[1], keys_ex[2]) 
-        print 'MaxExonLength %d %d %d'  %(keys_ex[-1], keys_ex[-2], keys_ex[-3]) 
+        #print 'MaxIntronLength %d %d %d'  %(keys_int[-1], keys_int[-2], keys_int[-3])
+        feat_db['min_intron'] = int(keys_int[0])
+        feat_db['max_intron'] = int(keys_int[-3])
+
+        feat_db['min_exon'] = int(keys_ex[0])
+        feat_db['max_exon'] = int(keys_ex[-3])
+        #print 'MaxExonLength %d %d %d'  %(keys_ex[-1], keys_ex[-2], keys_ex[-3]) 
+
+        return feat_db 
     else:
-        print "Error in feature mapping, please check the source of parent child features" 
-        print "May be the sources are different for parents and child features of the parent Gene"
+        print "Error in feature mapping in file %s, please check the source of parent child features" % gff_file
+        sys.exit(-1)
 
 
 def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=1, onematelength=100):
