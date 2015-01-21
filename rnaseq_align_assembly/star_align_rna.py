@@ -11,7 +11,7 @@ import os
 import sys 
 import subprocess
 
-def run_star_alignment(org_db, read_type='PE'):
+def run_star_alignment(org_db, read_type='PE', num_cpus=1):
     """
     wrapper for running STAR program 
 
@@ -27,14 +27,15 @@ def run_star_alignment(org_db, read_type='PE'):
 
     if read_type == 'PE':
         read_file = "%s %s" % (org_db['fastq'][0], org_db['fastq'][1])
-    else
+    else:
         read_file = org_db['fastq'][0]
+    
+    ## getting the command to uncompress the read file, store the files in compressed form  
+    zip_type = {".gz" : "zcat", ".bz2" : "bzcat"} 
+    file_prefx, ext = os.path.splitext(org_db['fastq'][0])
 
-    compressed_form = "zcat" 
-
-    num_cpus = 1 
-    max_lenth_intron = 10000 
-    max_mates_gap_length = 10000
+    max_lenth_intron = org_db['max_intron']
+    max_mates_gap_length = 100000
 
     make_file_name = "mkfifo Aligned.out.sam"
     process = subprocess.Popen(make_file_name, shell=True) 
@@ -53,7 +54,7 @@ def run_star_alignment(org_db, read_type='PE'):
     --sjdbGTFfile %s \
     --sjdbScore 1 \
     --sjdbOverhang 5 \
-    --genomeLoad LoadAndRemove" % (genome_dir, read_file, compressed_form, num_cpus, max_lenth_intron, gtf_db)
+    --genomeLoad LoadAndRemove" % (genome_dir, read_file, zip_type[ext], num_cpus, max_lenth_intron, gtf_db)
 
     sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
     process = subprocess.Popen(make_star_run, shell=True) 
@@ -104,3 +105,15 @@ def uniq_mapped_reads(bam_file, multi_map=1):
 
     #time_taken = time.time() - t_start
     #print time_taken
+
+
+def calculate_insert_size(org_db):
+    """
+    calculate the insert-size from raw read sequence file
+    """
+
+    import re 
+    from glob import glob 
+
+
+
