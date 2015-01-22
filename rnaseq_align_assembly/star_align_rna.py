@@ -11,7 +11,7 @@ import os
 import sys 
 import subprocess
 
-def run_star_alignment(org_db, read_type='PE', num_cpus=1):
+def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=10000, num_cpus=1):
     """
     wrapper for running STAR program 
 
@@ -35,7 +35,6 @@ def run_star_alignment(org_db, read_type='PE', num_cpus=1):
     file_prefx, ext = os.path.splitext(org_db['fastq'][0])
 
     max_lenth_intron = org_db['max_intron']
-    max_mates_gap_length = 100000
 
     make_file_name = "mkfifo Aligned.out.sam"
     process = subprocess.Popen(make_file_name, shell=True) 
