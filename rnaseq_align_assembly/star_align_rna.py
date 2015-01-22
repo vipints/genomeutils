@@ -107,6 +107,14 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     #print time_taken
 
 
+def calculate_insert_size_from_bam(bam_file):
+    """
+    estimate the insert size from uniquely mapped reads in a BAM file 
+    """
+
+    import pysam 
+
+
 def calculate_insert_size(org_db):
     """
     calculate the insert-size from raw read sequence file
@@ -116,4 +124,20 @@ def calculate_insert_size(org_db):
     from glob import glob 
 
 
+    #FIXME 
+    """
+    vipin@gpu-3-9: /cbio/grlab/nobackup/SignalPrediction/SRA-rnaseq/S_enterica/source_data$ python ~/tmp/7281991/estimate-insert-sizes /cbio/grlab/share/databases/genomes/S_enterica/ensembl_release-21/Salmonella_enterica_subsp_enterica_serovar_typhimurium_str_lt2.GCA_000006945.1.21.dna.toplevel.fa SRR863221_1.fastq.bz2 SRR863221_2.fastq.bz2
+    Processing:
+     SRR863221_1.fastq.bz2
+      SRR863221_2.fastq.bz2
+      [M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 0, 0, 0)
+      [M::mem_pestat] skip orientation FF as there are not enough pairs
+      [M::mem_pestat] skip orientation FR as there are not enough pairs
+      [M::mem_pestat] skip orientation RF as there are not enough pairs
+      [M::mem_pestat] skip orientation RR as there are not enough pairs
+      Traceback (most recent call last):
+        File "/cbio/grlab/home/vipin/tmp/7281991/estimate-insert-sizes", line 100, in <module>
+            mean = most_likely[1]['mean']
+            KeyError: 'mean'
 
+    """
