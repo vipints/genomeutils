@@ -28,6 +28,43 @@ def stop_err(msg):
     sys.exit(-1)
 
 
+def read_genome_file(fas_file):
+    """
+    read genome file in fasta and return the list of chromosomes/contigs 
+
+    @args fas_file: genome sequence in fasta file  
+    @type fas_file: str 
+    """
+    
+    # get the filehandler from input file
+    try:
+        fh = helper.open_file(fas_file)
+    except Exception, errmsg:
+        stop_err('error in reading file '+ errmsg) 
+
+    chrom_names = [] 
+    for rec in SeqIO.parse(fh, "fasta"):
+        chrom_names.append((rec.id, len(rec.seq)))
+    
+    fh.close()
+    # retunr the list with chromosome identifier and its sequence length 
+    return chrom_names
+
+    """
+    based on eye inspection, the returned list can be trimmed and 
+    create a dictionary with the best chromosomes , something like: 
+
+    Take the list 0-15
+    chr_best = chrom_names[0:15]
+    
+    change to dict
+    chr_best = dict(chr_best) 
+
+    and finally this dictionary can be passed to the genome cleaning 
+    function - clean_genome_file
+    """
+
+
 def clean_genome_file(chr_names, fas_file, fas_out):
     """
     make a stable genome file with valid contigs 
@@ -40,10 +77,6 @@ def clean_genome_file(chr_names, fas_file, fas_out):
     @type fas_out: str 
     """
 
-    # get the valid chromosome identifier from user as STDIN
-    #TODO valid contig names to be passed to this unction as python dict form 
-    chr_names = dict()
-    
     # get the filehandler from input file
     try:
         fh = helper.open_file(fas_file)
