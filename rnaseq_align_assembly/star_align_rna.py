@@ -17,7 +17,12 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=10000, num_c
 
     @args org_db: a python dictionary with all details about a single organism 
     @type org_db: dict
-
+    @args read_type: library type - paired-end or single-end (default: PE)
+    @type read_type: str 
+    @args max_mates_gap_length: maximum insert size from the sample (default: 10000)
+    @type max_mates_gap_length: int 
+    @args num_cpus: number of threads to use for the run (default: 1)
+    @type num_cpus: int 
     """
 
     #os.environ['PATH'] += os.pathsep + '/home/share/software/STAR_2.3.0e.Linux_x86_64/'
