@@ -28,6 +28,52 @@ def stop_err(msg):
     sys.exit(-1)
 
 
+def clean_anno_file(chr_names, gtf_file, gtf_out):
+    """
+    make stable annotation file with valid contig name 
+
+    @args chr_names: different contig names with a valid genome sequence 
+    @type chr_names: dict
+    @args gtf_file: genome sequence in fasta file  
+    @type gtf_file: str 
+    @args gtf_out: new genome sequence file in fasta format 
+    @type gtf_out: str 
+    """
+
+    # get the filehandler from input file
+    try:
+        fh = helper.open_file(gtf_file)
+    except Exception, errmsg:
+        stop_err('error %s in reading file %s' % (errmsg, gtf_file)) 
+
+    # check the out filehandler
+    try:
+        outfh = open(gtf_out, "w")
+    except Exception, errmsg:
+        stop_err('error %s in writing file %s' % (errmsg, gtf_out)) 
+
+    for line in fh:
+        line = line.strip('\n\r')
+
+        ## preserving the fasta header if present 
+        if line[0] in  ['#', '>']:
+            outfh.write(line + '\n')
+            continue
+        ## preserving the genome sequence if present
+        if not re.search('\t', line):
+            outfh.write(line + '\n')
+            continue
+        ## looking for gtf/gff files 
+        fields = line.split('\t')
+        assert len(parts) >= 8, fields
+         
+        if fields[0] in chr_names:
+            outfh.write(line + '\n')
+
+    fh.close() 
+    outfh.close()
+
+
 def read_genome_file(fas_file):
     """
     read genome file in fasta and return the list of chromosomes/contigs 
