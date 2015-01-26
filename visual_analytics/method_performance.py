@@ -24,8 +24,8 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     
     import pylab 
 
-    pylab.figure(figsize=(5, 10)) # custom form 
-    #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
+    #pylab.figure(figsize=(5, 10)) # custom form 
+    pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
     width = 0.20
