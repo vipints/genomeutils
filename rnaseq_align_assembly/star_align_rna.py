@@ -111,6 +111,36 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     #print time_taken
 
 
+def read_directions_count(bam_file):
+    """
+    get the reads directions count from a bam file 
+
+    @args bam_file: binary file formt for storing sequencing reads information
+    @type bam_file: str 
+    """
+
+    import pysam 
+
+    ## indexing the in bam file 
+    if not os.path.exists(bam_file + ".bai"):
+        pysam.index(bam_file) 
+
+    reverse_cnt = 0 
+    forward_cnt = 0
+
+    bam_fh = pysam.Samfile(bam_file, "rb") 
+
+    for read in bam_fh.fetch():
+         if read.is_proper_pair and read.is_read1:
+            if read.is_reverse:
+                reverse_cnt += 1
+            else:
+                forward_cnt += 1 
+
+    bam_fh.close() 
+    return {'forward_reads_count': forward_cnt, 'reverse_reads_count': reverse_cnt} 
+
+
 def calculate_insert_size_from_bam(bam_file):
     """
     estimate the insert size from uniquely mapped reads in a BAM file 
