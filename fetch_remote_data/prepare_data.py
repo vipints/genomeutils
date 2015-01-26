@@ -65,7 +65,7 @@ def clean_anno_file(chr_names, gtf_file, gtf_out):
             continue
         ## looking for gtf/gff files 
         fields = line.split('\t')
-        assert len(parts) >= 8, fields
+        assert len(fields) >= 8, fields
          
         if fields[0] in chr_names:
             outfh.write(line + '\n')
