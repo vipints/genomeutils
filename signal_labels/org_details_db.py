@@ -14,6 +14,10 @@ def make_org_db(org_name_file, data_path, exp_path):
 
     @args org_name_file: text file containing organisms name
     @type org_name_file: str 
+        
+        ovis_aries      SRR645881       ensembl 78
+        capra_hircus      SRR645885       ensembl 78
+
     @args data_path: data file storage path 
     @type data_path: str 
     @args exp_path: experiment related file path  
@@ -206,31 +210,43 @@ def make_org_db(org_name_file, data_path, exp_path):
 
     org_db = defaultdict()
 
-    #get the organisms name 
+    ## get the organisms name and details on the experiment
     with open(org_name_file, "rU") as fh:
         for name in fh:
-            name = name.strip('\n\r')
+            name = name.strip('\n\r').split('\t')
+            #print name 
             
-            #name shortening 
-            token = name.split("_") 
+            ## name shortening 
+            token = name[0].split("_") 
             genus, species = token[0], token[-1]
             short_name = "%s_%s" % (genus[0].upper(), species.lower())  
              
-            # adding details 
-            org_db[short_name] = dict(name = name)  
+            ## adding details 
+            org_db[short_name] = dict(name = name[0])  
             org_db[short_name]['short_name'] = short_name
 
+            ## sequencing reads files 
             sra_files = [] 
-            for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
-                file_prefix, ext = os.path.splitext(sra_file)
-                if ext == ".sra":
-                    continue 
-                sra_files.append("%s/%s/source_data/%s" % (exp_path, short_name, sra_file)) 
-
-            if not sra_files:
-                org_db[short_name]['fastq'] = "%s/%s/source_data" % (exp_path, short_name)
+            if os.path.isdir("%s/%s/source_data" % (exp_path, short_name)):
+                for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
+                    file_prefix, ext = os.path.splitext(sra_file)
+                    if ext == ".sra":
+                        continue 
+                    sra_files.append(sra_file) 
             else:
-                org_db[short_name]['fastq'] = sra_files
+                # new organism, creating sub directories  
+                for sub_dir in ['source_data', 'read_mapping', 'signal_labels', 'trans_pred']:
+                    try:
+                        os.makedirs("%s/%s/%s" % (exp_path, short_name, sub_dir))
+                    except OSError:
+                        print "Skipping creation of %s/%s/%s because it exists already." % (exp_path, short_name, sub_dir) 
+                
+            org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
+            org_db[short_name]['fastq'] = sra_files
+
+            print org_db
+
+            break
 
             org_db[short_name]['star_wd'] = "%s/%s/read_mapping" % (exp_path, short_name)
             org_db[short_name]['trsk_wd'] = "%s/%s/trans_pred" % (exp_path, short_name)
