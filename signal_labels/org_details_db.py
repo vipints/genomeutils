@@ -244,32 +244,45 @@ def make_org_db(org_name_file, data_path, exp_path):
             org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
             org_db[short_name]['fastq'] = sra_files
 
-            print org_db
-
-            break
-
             org_db[short_name]['star_wd'] = "%s/%s/read_mapping" % (exp_path, short_name)
             org_db[short_name]['trsk_wd'] = "%s/%s/trans_pred" % (exp_path, short_name)
             org_db[short_name]['labels_wd'] = "%s/%s/signal_labels" % (exp_path, short_name)
-            org_db[short_name]['bam'] = "%s/%s/read_mapping/unique.bam" % (exp_path, short_name)
+
+            org_db[short_name]['bam'] = "%s/%s/read_mapping/unique_map.bam" % (exp_path, short_name)
             org_db[short_name]['pred_gff'] = "%s/%s/trans_pred/ss_filter_predgenes.gff" % (exp_path, short_name)
 
-            org_db[short_name]['fasta'] = "%s/%s" % (data_path, short_name) 
+            ## check for the genome sequence file 
             if short_name in org_fasta_file:
                 org_db[short_name]['fasta'] = org_fasta_file[short_name]
+            else:
+                if not os.path.isdir("%s/%s" % (data_path, short_name)):
+                    os.makedirs("%s/%s" % (data_path, short_name)) 
+                else:
+                    print "Skipping creation of %s/%s because it exists already. missing in dict org_fasta_file" % (data_path, short_name)
 
-            org_db[short_name]['index'] = "%s/%s/STARgenome/" % (data_path, short_name) 
+                org_db[short_name]['fasta'] = "%s/%s" % (data_path, short_name) 
+
+            ## check for the genome index file 
             if short_name in star_index_file:
                 org_db[short_name]['index'] = star_index_file[short_name]
+            else:
+                if not os.path.isdir("%s/%s/STARgenome/" % (data_path, short_name)):
+                    os.makedirs("%s/%s/STARgenome/" % (data_path, short_name))
+                else:    
+                    print "Skipping creation of %s/%s/STARgenome because it exists already. missing in dict star_index_file" % (data_path, short_name)
 
-            org_db[short_name]['gio'] = "%s/%s/" % (data_path, short_name) 
+                org_db[short_name]['index'] = "%s/%s/STARgenome/" % (data_path, short_name) 
+
+            ## TODO remove the dependency of gio from TSKM 
             if short_name in org_gio_file:
                 org_db[short_name]['gio'] = org_gio_file[short_name]
-            
-            org_db[short_name]['gtf'] = "%s/%s/" % (data_path, short_name) 
+            else:
+                print "GIO file path missing for %s " % short_name 
+                org_db[short_name]['gio'] = "%s/%s/" % (data_path, short_name) 
+
+            ## check the genome annotation 
             if short_name in org_gtf_file:
                 org_db[short_name]['gtf'] = org_gtf_file[short_name]
-
                 ## get the gtf feature lengths 
                 if os.path.isfile(org_gtf_file[short_name]):
                     from fetch_remote_data import prepare_data as pd
@@ -277,7 +290,27 @@ def make_org_db(org_name_file, data_path, exp_path):
                     feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
                     org_db[short_name]['max_intron'] = feat_len_db['max_intron']
                     org_db[short_name]['max_exon'] = feat_len_db['max_exon']
+            else:
+                print "GTF/GFF file path missing for %s " % short_name 
+                org_db[short_name]['gtf'] = "%s/%s/" % (data_path, short_name) 
+                org_db[short_name]['max_intron'] = None
+                org_db[short_name]['max_exon'] = None
+            
+            ## SRA/ENA run id 
+            try:
+                org_db[short_name]['sra_run_id'] = name[1]
+            except:
+                org_db[short_name]['sra_run_id'] = None 
+                print "SRA run_id missing"
 
+            ## genome annotation release number
+            try:
+                version = name[2].split(' ')
+                org_db[short_name]['release_num'] = version[-1]
+            except:
+                org_db[short_name]['release_num'] = None 
+                print "Genome annotation release number missing"
+                
     fh.close() 
     
     return org_db
