@@ -306,10 +306,12 @@ def make_org_db(org_name_file, data_path, exp_path):
             ## genome annotation release number
             try:
                 version = name[2].split(' ')
+                org_db[short_name]['release_db'] = version[0]
                 org_db[short_name]['release_num'] = version[-1]
             except:
+                org_db[short_name]['release_db'] = None
                 org_db[short_name]['release_num'] = None 
-                print "Genome annotation release number missing"
+                print "Genome annotation release database and number are missing"
                 
     fh.close() 
     
