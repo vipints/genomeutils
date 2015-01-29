@@ -95,13 +95,16 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
     """
     Download genome sequence from Phytozome ftp page.
 
-    @args release_version: release version 
+    @args release_version: release version (example: v9.0) 
     @type release_version: str 
-    @args species_name: organism name 
+    @args species_name: organism name (example: Vvinifera)
     @type species_name: str 
     @args download_path: file download path 
     @type download_path: str 
+    
+    %download_path/V_vinifera/phytozome_v9.0/Vvinifera_145.fa.gz
     """
+
     ## check the url for getting the recent version of the repository 
     base_url_fasta = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s/' % release_version
     
@@ -131,7 +134,6 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
         org_short_name = "%s_%s" % (species_name[0], species_name[1:])
 
         ## setting up the download path 
-        ## download the files in ex: /home/tmp/V_vinifera/phytozome_v9.0/Vvinifera_145.fa.gz
         base_file_path = "%s/%s/phytozome_%s" % (download_path, org_short_name, release_version)
         if not os.path.exists(base_file_path):
             os.makedirs(base_file_path)
@@ -140,7 +142,8 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
             fa_name =fa_name.strip('\n\r')
 
             if re.search(r'.*_\d+.fa.gz$', fa_name.split()[-1]):
-                tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
+                fasta_file = "%s/%s" % (base_file_path, fa_name.split()[-1])
+                tempfile=open(fasta_file, "wb")
                 
                 try:
                     ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
@@ -148,15 +151,16 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
                     print err_file
                     sys.exit(-1)
 
-                sys.stdout.write('\tdownloading %s ... ' % fa_name.split()[-1])
+                sys.stdout.write('\tdownloading %s ... \n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
 
                 tempfile.close()
                 ftp_file.close()
 
-                sys.stdout.write("done\n")
+                sys.stdout.write("\t... saved at %s \n" % fasta_file)
         fa_files.close()
     org_names.close()
+
 
 def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
     """
@@ -302,12 +306,14 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
     """
     Download genome sequence from ensemblgenomes ftp page.
     
-    @args release_version: ensembl release version 
+    @args release_version: ensembl release version (example: 22) 
     @type release_version: str 
-    @args species_name: organism name (example: homo_sapiens)
+    @args species_name: organism name (example: anopheles_gambiae)
     @type species_name: str 
     @args download_path: file download path 
     @type download_path: str 
+
+    %download_path/A_gambiae/ensembl_release_22/Anopheles_gambiae.AgamP3.22.dna_rm.toplevel.fa.gz
     """
 
     ## check the url for getting the recent version of the repository 
@@ -350,7 +356,8 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
 
             ## include repeatmasked genome 
             if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
-                tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
+                fasta_file = "%s/%s" % (base_file_path, fa_name.split()[-1])
+                tempfile=open(fasta_file, "wb")
 
                 try:
                     ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
@@ -360,7 +367,7 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
 
                 sys.stdout.write('\tdownloading %s ... \n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
-                sys.stdout.write('\tsaved at %s/%s \n' % (base_file_path, fa_name.split()[-1]))
+                sys.stdout.write('\t... saved at %s \n' % fasta_file)
 
                 tempfile.close()
                 ftp_file.close()
@@ -371,14 +378,16 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
 
 def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
     """
-    Download genome sequence from ENSEMBL ftp page.
+    Download genome sequence from ENSEMBL ftp page. 
     
-    @args ensembl_release_version: ensembl release version 
+    @args ensembl_release_version: ensembl release version (example: 78) 
     @type ensembl_release_version: str 
     @args species_name: organism name (example: homo_sapiens)
     @type species_name: str 
     @args download_path: file download path 
     @type download_path: str 
+
+    %download_path/H_sapiens/ensembl_release_78/Human_sapiens.Oar_v3.1.dna_rm.toplevel.fa.gz
     """
     ## check the url for getting the recent version of the repository 
     base_url_fasta = "ftp://ftp.ensembl.org/pub/release-%s/fasta/" % ensembl_release_version 
@@ -421,7 +430,8 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
 
             ## include repeatmasked genome 
             if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
-                tempfile=open("%s/%s" % (base_file_path, fa_name.split()[-1]), "wb")
+                fasta_file = "%s/%s" % (base_file_path, fa_name.split()[-1])
+                tempfile=open(fasta_file, "wb")
 
                 try:
                     ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
@@ -429,13 +439,13 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
                     print err_file
                     sys.exit(-1)
 
-                sys.stdout.write('\tdownloading %s ... ' % fa_name.split()[-1])
+                sys.stdout.write('\tdownloading %s ...\n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
 
                 tempfile.close()
                 ftp_file.close()
 
-                sys.stdout.write("done\n")
+                sys.stdout.write("\t... saved at %s\n" % fasta_file)
         fa_files.close()
     org_file.close()
 
