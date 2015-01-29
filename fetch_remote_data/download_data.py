@@ -548,7 +548,7 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
         %s' % (out_compress, download_path, out_file_name) 
     elif lib_type in ['se', 'SE', 'single-end']:
         cli = 'fastq-dump \
-        --%s 
+        --%s \
         --outdir %s \
         %s' % (out_compress, download_path, out_file_name)
     else:
