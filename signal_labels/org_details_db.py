@@ -255,21 +255,21 @@ def make_org_db(org_name_file, data_path, exp_path):
             if short_name in org_fasta_file:
                 org_db[short_name]['fasta'] = org_fasta_file[short_name]
             else:
-                if not os.path.isdir("%s/%s" % (data_path, short_name)):
-                    os.makedirs("%s/%s" % (data_path, short_name)) 
+                if not os.path.isdir("%s" % data_path):
+                    os.makedirs("%s" % data_path) 
                 else:
-                    print "Skipping creation of %s/%s because it exists already. missing in dict org_fasta_file" % (data_path, short_name)
+                    print "Skipping creation of %s because it exists already." % data_path
 
-                org_db[short_name]['fasta'] = "%s/%s" % (data_path, short_name) 
+                org_db[short_name]['fasta'] = "%s" % data_path
 
             ## check for the genome index file 
             if short_name in star_index_file:
                 org_db[short_name]['index'] = star_index_file[short_name]
             else:
-                if not os.path.isdir("%s/%s/STARgenome/" % (data_path, short_name)):
-                    os.makedirs("%s/%s/STARgenome/" % (data_path, short_name))
+                if not os.path.isdir("%s" % data_path):
+                    os.makedirs("%s" % data_path)
                 else:    
-                    print "Skipping creation of %s/%s/STARgenome because it exists already. missing in dict star_index_file" % (data_path, short_name)
+                    print "Skipping creation of %s because it exists already." % data_path
 
                 org_db[short_name]['index'] = "%s/%s/STARgenome/" % (data_path, short_name) 
 
@@ -277,8 +277,7 @@ def make_org_db(org_name_file, data_path, exp_path):
             if short_name in org_gio_file:
                 org_db[short_name]['gio'] = org_gio_file[short_name]
             else:
-                print "GIO file path missing for %s " % short_name 
-                org_db[short_name]['gio'] = "%s/%s/" % (data_path, short_name) 
+                org_db[short_name]['gio'] = "%s" % data_path
 
             ## check the genome annotation 
             if short_name in org_gtf_file:
@@ -291,8 +290,7 @@ def make_org_db(org_name_file, data_path, exp_path):
                     org_db[short_name]['max_intron'] = feat_len_db['max_intron']
                     org_db[short_name]['max_exon'] = feat_len_db['max_exon']
             else:
-                print "GTF/GFF file path missing for %s " % short_name 
-                org_db[short_name]['gtf'] = "%s/%s/" % (data_path, short_name) 
+                org_db[short_name]['gtf'] = data_path
                 org_db[short_name]['max_intron'] = None
                 org_db[short_name]['max_exon'] = None
             
@@ -308,6 +306,23 @@ def make_org_db(org_name_file, data_path, exp_path):
                 version = name[2].split(' ')
                 org_db[short_name]['release_db'] = version[0]
                 org_db[short_name]['release_num'] = version[-1]
+                
+                #sub_genome_folder = '%s/%s/%s_release_%s' % (data_path, short_name, version[0], version[-1]) 
+                ## updating the fasta/gtf/index file location 
+                #try:
+                #    os.makedirs(sub_genome_folder)
+                #    org_db[short_name]['fasta'] = sub_genome_folder
+                #    org_db[short_name]['gtf'] = sub_genome_folder
+                #    star_index_folder = '%s/STARgenome' % sub_genome_folder
+                #    try:
+                #        os.makedirs(star_index_folder)
+                #        org_db[short_name]['index'] = star_index_folder
+                #    except OSError:
+                #        print "skipping creation of %s star index dir" % star_index_folder
+
+                #except OSError:
+                #    print "skipping creation of %s genome version dir" % sub_genome_folder
+
             except:
                 org_db[short_name]['release_db'] = None
                 org_db[short_name]['release_num'] = None 
