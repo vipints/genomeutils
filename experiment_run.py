@@ -8,13 +8,13 @@ import sys
 
 from signal_labels import org_details_db as odb
 from fetch_remote_data import download_data as dld
+from fetch_remote_data import prepare_data as prd
 
 
 def download_fasta(org_details):
     """
     download fasta file from remote data publishing services
     """
-
     for org_name, det in org_details.items():
         if det['release_db'] == 'ensembl':
             dld.fetch_ensembl_fasta(det['release_num'], det['name'], det['fasta'])
@@ -30,7 +30,6 @@ def download_gtf(org_details):
     """
     download gtf/gff file from remote data publishing services
     """
-
     for org_name, det in org_details.items():
         if det['release_db'] == 'ensembl':
             dld.fetch_ensembl_gtf(det['release_num'], det['name'], det['gtf'])
@@ -41,6 +40,17 @@ def download_gtf(org_details):
         else:
             print "download gtf plugin for %s not available, module works with ensembl, ensembl_metazoa and phytozome." % det['release_db']
 
+
+def download_uncompress_sra_file(org_details):
+    """
+    download and uncompress the sra files 
+    """
+    for org_name, det in org_details.items():
+        sra_file = dld.download_sra_file(det['sra_run_id'], det['fastq_path'])
+        
+        library_type = "pe"
+        compress_format = "gzip"
+        dld.uncompress_sra_file(sra_file, det['fastq_path'], library_type, compress_format)
 
 
 if __name__=="__main":
@@ -54,5 +64,23 @@ if __name__=="__main":
     download_fasta(org_details) 
 
     download_gtf(org_details)     
-   
 
+    download_uncompress_sra_file(org_details)
+
+    #TODO
+    """
+    save a pickle file with organisms details with updated genome annotation and sra file, path informations 
+
+    the object will be passed to the next preprocessing manual tweeking
+    """
+
+    
+    #FIXME 
+    fas_file = ""
+    chr_names = prd.read_genome_file(fas_file) 
+
+    fas_out = "" 
+    prd.clean_genome_file(chr_names, fas_file, fas_out):
+
+    gtf_out = "" 
+    prd.clean_anno_file(chr_names, gtf_file, gtf_out)
