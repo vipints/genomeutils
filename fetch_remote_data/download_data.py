@@ -464,7 +464,7 @@ def download_sra_file(RUNID, download_path):
     """
     Download the SRA file
 
-    @args RUNID: SRA run ID 
+    @args RUNID: SRA run ID (example: SRR1050788) 
     @type RUNID: str 
     @args download_path: SRA file download path 
     @type download_path: str 
@@ -479,7 +479,6 @@ def download_sra_file(RUNID, download_path):
     if not RUNID[0:3] in ['DRR', 'SRR', 'ERR']:
         print 'Error! Experiment Run ID must start with DRR or SRR or ERR'
         print '\tYour Run ID start with ', RUNID[0:3], ' prefix'
-        print '\tProgram cannot continue, Exiting...'
         sys.exit(-1)
 
     ## adding sub folder 
@@ -490,7 +489,6 @@ def download_sra_file(RUNID, download_path):
     except:
         print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNN'
         print '\tYour Run ID is ', RUNID[0:6]
-        print '\tProgram cannot continue, Exiting...'
         sys.exit(-1)
     ## adding sub - sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR105/ 
     base_url = '%s%s/' % (base_url, RUNID[0:6]) 
@@ -505,7 +503,6 @@ def download_sra_file(RUNID, download_path):
         except:
             print 'Error! Experiment Run ID will be in the format {SRR/ERR/DRR}NNNNNN'
             print '\tYour Run ID is ', RUNID[0:9]
-            print '\tProgram cannot continue, Exiting...'
             sys.exit(-1)
 
         ## adding sub - sub sub folder - ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR548/SRR548309/SRR548309.sra 
@@ -533,7 +530,7 @@ def download_sra_file(RUNID, download_path):
     ## download job starts 
     sys.stdout.write('\tdownloading %s ...\n' % base_url)
     shutil.copyfileobj(sra_file, tempfile)
-    sys.stdout.write('\tsaved at %s done!\n' % out_file_name)
+    sys.stdout.write('\t... saved at %s\n' % out_file_name)
 
     tempfile.close()
     sra_file.close()
@@ -580,7 +577,18 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
     sys.stdout.write('\trun %s \n' % cli)
     process = subprocess.Popen(cli, shell=True) 
     process.wait()
+    
+    prefix, ext = os.path.splitext(out_file_name) 
+    extensions = dict(gzip = "gz", bzip2 = "bz2") 
 
+    if lib_type in ['pe', 'PE', 'paired-end']:
+        sys.stdout.write('\tsaved files at:\n')
+        sys.stdout.write('\t%s_1.fastq.%s\n' % (prefix, extensions[out_compress]))
+        sys.stdout.write('\t%s_2.fastq.%s\n' % (prefix, extensions[out_compress]))
+    else:
+        sys.stdout.write('\tsaved file at:\n')
+        sys.stdout.write('\t%s.fastq.%s\n' % (prefix, extensions[out_compress]))
+        
 
 if __name__=="__main__":
     print __doc__
