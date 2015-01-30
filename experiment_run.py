@@ -6,15 +6,37 @@ master script to execute the pipeline
 import os 
 import sys 
 
+from signal_labels import org_details_db as odb
+from fetch_remote_data import download_data as dld
+
+
+def download_fasta(org_details):
+    """
+    download fasta file from remote data publishing services
+    """
+
+    for org_name, det in org_details.items():
+        if det['release_db'] == 'ensembl':
+            dld.fetch_ensembl_fasta(det['release_num'], det['name'], det['fasta'])
+        elif det['release_db'] == 'phytozome':
+            dld.fetch_phytozome_fasta(det['release_num'], det['name'], det['fasta']) 
+        elif det['release_db'] == 'ensembl_metazoa':
+            dld.fetch_ensembl_metazoa_fasta(det['release_num'], det['name'], det['fasta'])
+        else:
+            print "download plugin for %s not available, module works with ensembl, ensembl_metazoa and phytozome." % det['release_db']
+
 
 if __name__=="__main":
     
     infile = ""
     data_path = ""
     exp_path = ""
-   
-    from signal_labels import org_details_db as odb
 
     org_details = odb.make_org_db(infile, data_path, exp_path) 
 
-    ## iterating through each organism 
+    download_fasta(org_details) 
+
+    
+   
+
+
