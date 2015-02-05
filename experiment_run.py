@@ -6,9 +6,41 @@ master script to execute the pipeline
 import os 
 import sys 
 
+from optparse import OptionParser
+
 from signal_labels import org_details_db as odb
 from fetch_remote_data import download_data as dld
 from fetch_remote_data import prepare_data as prd
+
+
+def main():
+    """
+    Managing the experiment run in different levels 
+
+    Options
+    
+    -1 different levels of run 
+    -2 
+    """
+
+    parser = OptionParser() 
+    parser.add_option( "-1", "--download_data", action="", dest="download_public_data", default=False, help="download public datasets")
+
+    ( options, args ) = parser.parse_args()
+
+    if options.download_data:
+        download_public_data()
+
+
+def download_public_data():
+    """
+    """
+    
+    infile = ""
+    data_path = ""
+    exp_path = ""
+    
+    print "here we are " 
 
 
 def download_fasta(org_details):
@@ -45,6 +77,7 @@ def download_uncompress_sra_file(org_details):
     """
     download and uncompress the sra files 
     """
+
     for org_name, det in org_details.items():
         sra_file = dld.download_sra_file(det['sra_run_id'], det['fastq_path'])
         
@@ -55,9 +88,9 @@ def download_uncompress_sra_file(org_details):
 
 if __name__=="__main":
     
-    infile = ""
-    data_path = ""
-    exp_path = ""
+    main() 
+
+    """
 
     org_details = odb.make_org_db(infile, data_path, exp_path) 
 
@@ -66,6 +99,7 @@ if __name__=="__main":
     download_gtf(org_details)     
 
     download_uncompress_sra_file(org_details)
+    """
 
     #TODO
     """
@@ -76,6 +110,7 @@ if __name__=="__main":
 
     
     #FIXME 
+    """
     fas_file = ""
     chr_names = prd.read_genome_file(fas_file) 
 
@@ -84,3 +119,4 @@ if __name__=="__main":
 
     gtf_out = "" 
     prd.clean_anno_file(chr_names, gtf_file, gtf_out)
+    """
