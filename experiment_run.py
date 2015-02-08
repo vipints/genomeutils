@@ -12,6 +12,7 @@ from signal_labels import org_details_db as odb
 from fetch_remote_data import download_data as dld
 from fetch_remote_data import prepare_data as prd
 
+assert sys.version_info[:2] >= ( 2, 4 )
 
 def main():
     """
@@ -20,16 +21,22 @@ def main():
     Options
     
     -1 different levels of run 
-    -2 
+    -2 genome cleaning  
     """
 
     parser = OptionParser() 
-    parser.add_option( "-1", "--download_data", action="", dest="download_public_data", default=False, help="download public datasets")
+    parser.add_option( "-1", "--download_public_data", action="store_true", dest="download_public_data", default=False, help="download public datasets")
+    parser.add_option( "-2", "--genome_cleaning", action="store_true", dest="genome_cleaning", default=False, help="cleaning genome sequence and annotation")
 
     ( options, args ) = parser.parse_args()
 
-    if options.download_data:
+    if not (options.download_public_data ^ options.genome_cleaning):
+        parser.print_help()
+        sys.exit(-1)
+
+    if options.download_public_data:
         download_public_data()
+
 
 
 def download_public_data():
@@ -86,7 +93,7 @@ def download_uncompress_sra_file(org_details):
         dld.uncompress_sra_file(sra_file, det['fastq_path'], library_type, compress_format)
 
 
-if __name__=="__main":
+if __name__=="__main__":
     
     main() 
 
