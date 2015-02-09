@@ -5,6 +5,7 @@ master script to execute the pipeline
 
 import os 
 import sys 
+import yaml 
 
 from optparse import OptionParser
 
@@ -25,10 +26,18 @@ def main():
     """
 
     parser = OptionParser() 
+
     parser.add_option( "-1", "--download_public_data", action="store_true", dest="download_public_data", default=False, help="download public datasets")
     parser.add_option( "-2", "--genome_cleaning", action="store_true", dest="genome_cleaning", default=False, help="cleaning genome sequence and annotation")
 
     ( options, args ) = parser.parse_args()
+    try:
+        config_file = args[0]
+    except:
+        print __doc__
+        sys.exit(-1)
+
+    #print config_file
 
     if not (options.download_public_data ^ options.genome_cleaning):
         parser.print_help()
@@ -54,6 +63,7 @@ def download_fasta(org_details):
     """
     download fasta file from remote data publishing services
     """
+
     for org_name, det in org_details.items():
         if det['release_db'] == 'ensembl':
             dld.fetch_ensembl_fasta(det['release_num'], det['name'], det['fasta'])
