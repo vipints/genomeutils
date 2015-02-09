@@ -44,19 +44,19 @@ def main():
         sys.exit(-1)
 
     if options.download_public_data:
-        download_public_data()
+        download_public_data(config_file)
 
 
 
-def download_public_data():
+def download_public_data(yaml_config):
     """
     """
-    
-    infile = ""
-    data_path = ""
-    exp_path = ""
-    
-    print "here we are " 
+
+    config_map = yaml.safe_load(open(yaml_config, "rU"))
+    #import ipdb 
+    #ipdb.set_trace()
+
+    print config_map
 
 
 def download_fasta(org_details):
@@ -108,7 +108,6 @@ if __name__=="__main__":
     main() 
 
     """
-
     org_details = odb.make_org_db(infile, data_path, exp_path) 
 
     download_fasta(org_details) 
@@ -116,18 +115,14 @@ if __name__=="__main__":
     download_gtf(org_details)     
 
     download_uncompress_sra_file(org_details)
-    """
 
     #TODO
-    """
     save a pickle file with organisms details with updated genome annotation and sra file, path informations 
 
     the object will be passed to the next preprocessing manual tweeking
-    """
 
     
     #FIXME 
-    """
     fas_file = ""
     chr_names = prd.read_genome_file(fas_file) 
 
