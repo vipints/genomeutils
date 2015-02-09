@@ -1,0 +1,17 @@
+# Example configuration for running a signal label generation
+# pipeline on public SRA run SRR645881 
+# ovis_aries genome with ensembl 78 dataset 
+# 
+
+genome_data_path:
+    dir:
+experiment_data_path:
+    dir:
+algorithms:
+    sra_unpack: fastq-dump
+    read_aligner:
+    transcript_reconstruction:
+experiment:
+    - organism_name:
+      sra_run_id:
+      genome_build_version:
