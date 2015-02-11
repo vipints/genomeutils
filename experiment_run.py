@@ -22,7 +22,7 @@ def main():
     Options
     
     -1 different levels of run 
-    -2 genome cleaning  
+    -2 this will be a manual step . 
     """
 
     parser = OptionParser() 
