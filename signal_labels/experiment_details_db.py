@@ -5,10 +5,11 @@ FIXME descriptions
 """
 
 import os 
+import re 
 import yaml 
 from collections import defaultdict
 
-def experiment_db(config_file, data_path, exp_path):
+def experiment_db(config_file):
     """
     function to collect details of each organism
 
@@ -20,6 +21,12 @@ def experiment_db(config_file, data_path, exp_path):
     @args exp_path: experiment related file path  
     @type exp_path: str 
     """
+
+    ## parsing the config file 
+    config_map = yaml.safe_load(open(config_file, "rU"))
+
+    data_path = config_map['genome_data_path']['dir']
+    exp_path = config_map['experiment_data_path']['dir']
 
     org_fasta_file = dict( A_carolinensis = '%s/A_carolinensis/ensembl_release-69/Anolis_carolinensis.AnoCar2.0.69.stable_genome.fa.bz2' % data_path,
     M_mulatta = "%s/M_mulatta/STARgenome/ensembl_release-69.fa" % data_path,
@@ -107,126 +114,61 @@ def experiment_db(config_file, data_path, exp_path):
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release-69/Tetraodon_nigroviridis.TETRAODON8.69.gtf' % data_path
     )
 
+    ## TODO algorithms details 
+
+    ## experiments 
     org_db = defaultdict()
-
-    ## get the organisms name and details on the experiment
-    with open(org_name_file, "rU") as fh:
-        for name in fh:
-            name = name.strip('\n\r').split('\t')
-            #print name 
-            
-            ## name shortening 
-            token = name[0].split("_") 
-            genus, species = token[0], token[-1]
-            short_name = "%s_%s" % (genus[0].upper(), species.lower())  
-             
-            ## adding details 
-            org_db[short_name] = dict(name = name[0])  
-            org_db[short_name]['short_name'] = short_name
-
-            ## sequencing reads files 
-            sra_files = [] 
-            if os.path.isdir("%s/%s/source_data" % (exp_path, short_name)):
-                for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
-                    file_prefix, ext = os.path.splitext(sra_file)
-                    if ext == ".sra":
-                        continue 
-                    sra_files.append(sra_file) 
-            else:
-                # new organism, creating sub directories  
-                for sub_dir in ['source_data', 'read_mapping', 'signal_labels', 'trans_pred']:
-                    try:
-                        os.makedirs("%s/%s/%s" % (exp_path, short_name, sub_dir))
-                    except OSError:
-                        print "Skipping creation of %s/%s/%s because it exists already." % (exp_path, short_name, sub_dir) 
-                
-            org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
-            org_db[short_name]['fastq'] = sra_files
-
-            org_db[short_name]['star_wd'] = "%s/%s/read_mapping" % (exp_path, short_name)
-            org_db[short_name]['trsk_wd'] = "%s/%s/trans_pred" % (exp_path, short_name)
-            org_db[short_name]['labels_wd'] = "%s/%s/signal_labels" % (exp_path, short_name)
-
-            org_db[short_name]['bam'] = "%s/%s/read_mapping/unique_map.bam" % (exp_path, short_name)
-            org_db[short_name]['pred_gff'] = "%s/%s/trans_pred/ss_filter_predgenes.gff" % (exp_path, short_name)
-
-            ## check for the genome sequence file 
-            if short_name in org_fasta_file:
-                org_db[short_name]['fasta'] = org_fasta_file[short_name]
-            else:
-                if not os.path.isdir("%s" % data_path):
-                    os.makedirs("%s" % data_path) 
-                else:
-                    print "Skipping creation of %s because it exists already." % data_path
-
-                org_db[short_name]['fasta'] = "%s" % data_path
-
-            ## check for the genome index file 
-            if short_name in star_index_file:
-                org_db[short_name]['index'] = star_index_file[short_name]
-            else:
-                if not os.path.isdir("%s" % data_path):
-                    os.makedirs("%s" % data_path)
-                else:    
-                    print "Skipping creation of %s because it exists already." % data_path
-
-                org_db[short_name]['index'] = "%s/%s/STARgenome/" % (data_path, short_name) 
-
-            ## TODO remove the dependency of gio from TSKM 
-            if short_name in org_gio_file:
-                org_db[short_name]['gio'] = org_gio_file[short_name]
-            else:
-                org_db[short_name]['gio'] = "%s" % data_path
-
-            ## check the genome annotation 
-            if short_name in org_gtf_file:
-                org_db[short_name]['gtf'] = org_gtf_file[short_name]
-                ## get the gtf feature lengths 
-                if os.path.isfile(org_gtf_file[short_name]):
-                    from fetch_remote_data import prepare_data as pd
-
-                    feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
-                    org_db[short_name]['max_intron'] = feat_len_db['max_intron']
-                    org_db[short_name]['max_exon'] = feat_len_db['max_exon']
-            else:
-                org_db[short_name]['gtf'] = data_path
-                org_db[short_name]['max_intron'] = None
-                org_db[short_name]['max_exon'] = None
-            
-            ## SRA/ENA run id 
-            try:
-                org_db[short_name]['sra_run_id'] = name[1]
-            except:
-                org_db[short_name]['sra_run_id'] = None 
-                print "SRA run_id missing"
-
-            ## genome annotation release number
-            try:
-                version = name[2].split(' ')
-                org_db[short_name]['release_db'] = version[0]
-                org_db[short_name]['release_num'] = version[-1]
-                
-                #sub_genome_folder = '%s/%s/%s_release_%s' % (data_path, short_name, version[0], version[-1]) 
-                ## updating the fasta/gtf/index file location 
-                #try:
-                #    os.makedirs(sub_genome_folder)
-                #    org_db[short_name]['fasta'] = sub_genome_folder
-                #    org_db[short_name]['gtf'] = sub_genome_folder
-                #    star_index_folder = '%s/STARgenome' % sub_genome_folder
-                #    try:
-                #        os.makedirs(star_index_folder)
-                #        org_db[short_name]['index'] = star_index_folder
-                #    except OSError:
-                #        print "skipping creation of %s star index dir" % star_index_folder
-
-                #except OSError:
-                #    print "skipping creation of %s genome version dir" % sub_genome_folder
-
-            except:
-                org_db[short_name]['release_db'] = None
-                org_db[short_name]['release_num'] = None 
-                print "Genome annotation release database and number are missing"
-                
-    fh.close() 
     
+    for ent in config_map['experiment']:
+        short_name = ent['organism_name'] 
+        sra_run_id = ent['sra_run_id']
+        genome_build_version = ent['genome_build_version']
+
+        org_db[short_name] = dict(short_name = short_name)  
+        org_db[short_name]['sra_run_id'] = sra_run_id
+        org_db[short_name]['genome_release_db'] = genome_build_version
+
+        ## sequencing reads files 
+        sra_files = [] 
+        if os.path.isdir("%s/%s/source_data" % (exp_path, short_name)):
+            for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
+                if re.search(sra_run_id, sra_file):
+                    sra_files.append(sra_file) 
+        else:
+            print "SRA files NOT found %s/%s/source_data" % (exp_path, short_name) 
+                
+        org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
+        org_db[short_name]['fastq'] = sra_files
+
+        org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
+        org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
+        org_db[short_name]['labels_dir'] = "%s/%s/signal_labels" % (exp_path, short_name)
+
+        ## check for the genome sequence file 
+        if short_name in org_fasta_file:
+            org_db[short_name]['fasta'] = org_fasta_file[short_name]
+        else:
+            org_db[short_name]['fasta'] = "%s/%s/%s" % (data_path, short_name, genome_build_version) 
+
+        if not os.path.isdir("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version)):
+            os.makedirs("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version))
+
+        org_db[short_name]['genome_index_dir'] = "%s/%s/%s/STARgenome/" % (data_path, short_name, genome_build_version) 
+
+        ## check the genome annotation 
+        if short_name in org_gtf_file:
+            org_db[short_name]['gtf'] = org_gtf_file[short_name]
+            ## get the gtf feature lengths 
+            if os.path.isfile(org_gtf_file[short_name]):
+                from fetch_remote_data import prepare_data as pd
+                feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
+                org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
+                org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
+        else:
+                org_db[short_name]['gtf'] = "%s/%s/%s" % (data_path, short_name, genome_build_version)
+                org_db[short_name]['max_intron_len'] = None
+                org_db[short_name]['max_exon_len'] = None
+        
+        print "fetched details for %s" % short_name 
+            
     return org_db
