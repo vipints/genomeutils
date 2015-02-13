@@ -290,6 +290,9 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
         except Exception, e:
             print e 
     
+    ## changing the working dir to run STAR 
+    os.chdir(out_dir)
+
     ## start the indexing job 
     try:
         process = subprocess.Popen(cli_cmd, shell=True) 
