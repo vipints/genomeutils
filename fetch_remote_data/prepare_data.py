@@ -3,12 +3,11 @@
 modules for large scale experiment runs, example: generating standard genome indices. 
 
 Usage: 
-import prepare_data as pd 
-pd.create_star_genome_index.__doc__
 
 Requirement:
     STAR aligner: https://github.com/alexdobin/STAR 
     gfftools: https://github.com/vipints/genomeutils/tree/master/gfftools 
+    Biopython: http://biopython.org
 """
 
 import os 
@@ -296,11 +295,3 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 if __name__=="__main__":
     print __doc__
 
-
-"""
-    fasta_file = "/home/data/C_elegans/ce10.fa"
-    out_dir = "/home/data/genome/"
-    genome_anno = "/home/data/ce10.gff"
-
-    create_star_genome_index(fasta_file, out_dir, genome_anno, num_workers=1, onematelength=100):
-"""
