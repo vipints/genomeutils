@@ -7,6 +7,8 @@ import os
 import sys 
 import yaml 
 
+import libpyjobrunner as pg
+
 from optparse import OptionParser
 
 from fetch_remote_data import download_data as dld
@@ -49,11 +51,24 @@ def main():
         sys.exit(-1)
 
     if options.download_public_data:
+        print 'Operation selected: Download public genome dataset and Sequencing experiment files'
         download_public_data(config_file)
 
     if options.genome_index:
+        print 'Operation selected: Create genome index'
         create_genome_index(config_file)
 
+
+def call_genome_index(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+
+    fasta_file, out_dir, genome_anno, num_workers, onematelength = args_list
+
+    ppd.create_star_genome_index(fasta_file, out_dir, genome_anno, num_workers, onematelength)
+
+    return 'done'
 
 
 def create_genome_index(yaml_config):
@@ -65,14 +80,27 @@ def create_genome_index(yaml_config):
 
     orgdb = expdb.experiment_db(yaml_config)
 
+    Jobs = []
     for org_name, det in orgdb.items():
-        
-        ## TODO parallel submission with pygrid
+        ## arguments to pygrid 
+        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 1, det['read_length']-1]]
 
-        ppd.create_star_genome_index(det['fasta'], det['genome_index_dir'], det['gtf'], 1, det['read_length']-1)
-
-        print 'Index generated for genome %s' % org_name
+        job = pg.cBioJob(call_genome_index, arg) 
     
+        job.mem="8gb"
+        job.vmem="8gb"
+        job.pmem="8gb"
+        job.pvmem="8gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "01:00:00"
+        
+        Jobs.append(job)
+
+    print 
+    print "sending jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def download_public_data(yaml_config):
