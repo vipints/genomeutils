@@ -7,6 +7,8 @@ FIXME descriptions
 import os 
 import re 
 import yaml 
+from Bio import SeqIO
+from gfftools import helper 
 from collections import defaultdict
 
 def experiment_db(config_file):
@@ -139,6 +141,16 @@ def experiment_db(config_file):
                 
         org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
         org_db[short_name]['fastq'] = sra_files
+
+        readlength = 0 
+        if sra_files:
+            fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
+            fh = helper.open_file(fqfile)
+            for rec in SeqIO.parse(fh, "fastq"):
+                readlength = len(rec.seq)
+                break
+            fh.close() 
+        org_db[short_name]['read_length'] = readlength
 
         org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
         org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
