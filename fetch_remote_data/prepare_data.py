@@ -273,6 +273,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
             --genomeFastaFiles %s \
             --runThreadN %d \
             --sjdbGTFfile %s \
+            --sjdbGTFfeatureExon exon \
             --sjdbOverhang %d' % (out_dir, fasta_file, num_workers, genome_anno, onematelength) 
 
     ## create downloadpath if doesnot exists 
