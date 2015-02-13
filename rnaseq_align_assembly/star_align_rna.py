@@ -10,13 +10,16 @@ Requirement:
 import os 
 import sys 
 import subprocess
+from collections import defaultdict
+from gfftools import helper, GFFParser
 
-def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=10000, num_cpus=1):
+
+def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_cpus=1):
     """
     wrapper for running STAR program 
 
     @args org_db: a python dictionary with all details about a single organism 
-    @type org_db: dict
+    @type org_db: defaultdict
     @args read_type: library type - paired-end or single-end (default: PE)
     @type read_type: str 
     @args max_mates_gap_length: maximum insert size from the sample (default: 10000)
@@ -25,40 +28,84 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=10000, num_c
     @type num_cpus: int 
     """
 
-    #os.environ['PATH'] += os.pathsep + '/home/share/software/STAR_2.3.0e.Linux_x86_64/'
-
-    genome_dir = org_db['index']
+    ## genome indices and annotation file
+    genome_dir = org_db['genome_index_dir']
     gtf_db = org_db['gtf']
 
+    ## check for the file type  
+    gff_hand = helper.open_file(gtf_db)
+    for rec in gff_hand:
+        rec = rec.strip('\n\r')
+        # skip empty line fasta identifier and commented line
+        if not rec or rec[0] in  ['#', '>']:
+            continue
+        # skip the genome sequence 
+        if not re.search('\t', rec):
+            continue
+        parts = rec.split('\t')
+        assert len(parts) >= 8, rec
+        ftype, tags = GFFParser.attribute_tags(parts[-1])
+        break 
+    gff_hand.close() 
+
+    ## library type 
     if read_type == 'PE':
-        read_file = "%s %s" % (org_db['fastq'][0], org_db['fastq'][1])
+        read_file = "%s/%s %s/%s" % (org_db['fastq_path'], org_db['fastq'][0], org_db['fastq_path'], org_db['fastq'][1])
     else:
-        read_file = org_db['fastq'][0]
+        read_file = "%s/%s" % (org_db['fastq_path'], org_db['fastq'][0])
     
-    ## getting the command to uncompress the read file, store the files in compressed form  
-    zip_type = {".gz" : "zcat", ".bz2" : "bzcat"} 
+    ## getting the command to uncompress the read file
+    zip_type = {".gz" : "gzip -c", ".bz2" : "bzip2 -c"} 
     file_prefx, ext = os.path.splitext(org_db['fastq'][0])
 
-    max_lenth_intron = org_db['max_intron']
+    ## genomic feature information 
+    max_lenth_intron = org_db['max_intron_len']
 
-    make_file_name = "mkfifo Aligned.out.sam"
-    process = subprocess.Popen(make_file_name, shell=True) 
-    make_bg_process = "cat Aligned.out.sam | samtools view -Shb - | samtools sort - Aligned.sort.out &"
-    process = subprocess.Popen(make_bg_process, shell=True) 
+    out_prefix = '%s/%s_' % (org_db['read_map_dir'], org_db['short_name'])
 
-    make_star_run = "STAR \
-    --genomeDir %s \
-    --readFilesIn %s \
-    --readFilesCommand %s \
-    --runThreadN %d \
-    --outFilterMultimapScoreRange 2 \
-    --outFilterMultimapNmax 100 \
-    --outFilterMismatchNmax 10 \
-    --alignIntronMax %d \
-    --sjdbGTFfile %s \
-    --sjdbScore 1 \
-    --sjdbOverhang 5 \
-    --genomeLoad LoadAndRemove" % (genome_dir, read_file, zip_type[ext], num_cpus, max_lenth_intron, gtf_db)
+    ## according to the file type 
+    if ftype:
+        make_star_run = "STAR \
+        --genomeDir %s \
+        --readFilesIn %s \
+        --readFilesCommand %s \
+        --outFileNamePrefix %s \
+        --runThreadN %d \
+        --outFilterMultimapScoreRange 2 \
+        --outFilterMultimapNmax 30 \
+        --outFilterMismatchNmax 5 \
+        --alignIntronMax %d \
+        --sjdbGTFfile %s \
+        --sjdbGTFtagExonParentTranscript Parent \
+        --sjdbScore 1 \
+        --sjdbOverhang 5 \
+        --alignMatesGapMax %d\
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs RemoveNoncanonical \
+        --outSAMtype BAM SortedByCoordinate \
+        --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
+            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
+    else:
+        make_star_run = "STAR \
+        --genomeDir %s \
+        --readFilesIn %s \
+        --readFilesCommand %s \
+        --outFileNamePrefix %s \
+        --runThreadN %d \
+        --outFilterMultimapScoreRange 2 \
+        --outFilterMultimapNmax 30 \
+        --outFilterMismatchNmax 4 \
+        --alignIntronMax %d \
+        --sjdbGTFfile %s \
+        --sjdbGTFfeatureExon exon \
+        --sjdbScore 1 \
+        --sjdbOverhang 5 \
+        --alignMatesGapMax %d\
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs RemoveNoncanonical \
+        --outSAMtype BAM SortedByCoordinate \
+        --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
+            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
 
     sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
     process = subprocess.Popen(make_star_run, shell=True) 
