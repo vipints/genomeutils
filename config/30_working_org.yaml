@@ -1,0 +1,107 @@
+# Configuration file for running signal label generation pipeline for 30 organisms 
+# 
+genome_data_path:
+    dir: /databases/genomes/
+experiment_data_path:
+    dir: /SRA-rnaseq/
+algorithms:
+    sra_unpack: 
+        tool: fastq-dump
+        version: 2.3.1
+    read_aligner:
+        tool: STAR
+        version: 2.4.0f1
+    transcript_reconstruction: 
+        tool: TranscriptSkimmer
+        version: 4237130 
+experiment:
+  - organism_name: H_sapiens
+    sra_run_id: SRR534327
+    genome_build_version: ensembl_release-69
+  - organism_name: P_troglodytes
+    sra_run_id: SRR544874 
+    genome_build_version: ensembl_release-69
+  - organism_name: M_mulatta 
+    sra_run_id: SRR389099
+    genome_build_version: ensembl_release-69 
+  - organism_name: R_norvegicus 
+    sra_run_id: SRR594424
+    genome_build_version: ensembl_release-69 
+  - organism_name: M_musculus 
+    sra_run_id: SRR549333
+    genome_build_version: ensembl_release-69 
+  - organism_name: O_cuniculus 
+    sra_run_id: SRR401040
+    genome_build_version: ensembl_release-69
+  - organism_name: E_caballus
+    sra_run_id: SRR495385
+    genome_build_version: ensembl_release-69 
+  - organism_name: B_taurus 
+    sra_run_id: SRR594477
+    genome_build_version: ensembl_release-69 
+  - organism_name: C_familiaris 
+    sra_run_id: SRR606329
+    genome_build_version: ensembl_release-69 
+  - organism_name: S_scrofa 
+    sra_run_id: SRR167669
+    genome_build_version: ensembl_release-69 
+  - organism_name: G_gallus 
+    sra_run_id: SRR594504
+    genome_build_version: ensembl_release-69 
+  - organism_name: M_gallopavo 
+    sra_run_id: SRR478416
+    genome_build_version: ensembl_release-69 
+  - organism_name: A_carolinensis
+    sra_run_id: SRR389085 
+    genome_build_version: ensembl_release-69
+  - organism_name: T_nigroviridis 
+    sra_run_id: SRR579565
+    genome_build_version: ensembl_release-69
+  - organism_name: O_latipes 
+    sra_run_id: SRR1029906
+    genome_build_version: ensembl_release-74
+  - organism_name: D_rerio 
+    sra_run_id: SRR519725
+    genome_build_version: ensembl_release-69 
+  - organism_name: X_tropicalis 
+    sra_run_id: SRR579560
+    genome_build_version: JGIv4-1 
+  - organism_name: M_domestica 
+    sra_run_id: SRR449433
+    genome_build_version: ensembl_release-69 
+  - organism_name: A_gambiae 
+    sra_run_id: SRR520427
+    genome_build_version: anoGam1_ucsc
+  - organism_name: A_mellifera 
+    sra_run_id: SRR849282
+    genome_build_version: apiMel3_ucsc
+  - organism_name: D_melanogaster 
+    sra_run_id: SRR525180
+    genome_build_version: ensembl_release-69 
+  - organism_name: D_simulans 
+    sra_run_id: SRR166813
+    genome_build_version: ensembl_release-22 
+  - organism_name: C_elegans 
+    sra_run_id: SRR548309
+    genome_build_version: ensembl_release-69 
+  - organism_name: C_briggsae 
+    sra_run_id: SRR359074 
+    genome_build_version: ensembl_release-22 
+  - organism_name: O_sativa 
+    sra_run_id: SRR037738
+    genome_build_version: phytozome_v9.0 
+  - organism_name: Z_mays 
+    sra_run_id: SRR354212
+    genome_build_version: phytozome_v9.0 
+  - organism_name: G_max 
+    sra_run_id: SRR639172
+    genome_build_version: phytozome_v9.0 
+  - organism_name: B_rapa 
+    sra_run_id: ERR117406
+    genome_build_version: phytozome_v9.0 
+  - organism_name: V_vinifera 
+    sra_run_id: SRR522298
+    genome_build_version: phytozome_v9.0 
+  - organism_name: A_thaliana
+    sra_run_id: SRR391051
+    genome_build_version: arabidopsis_tair10
