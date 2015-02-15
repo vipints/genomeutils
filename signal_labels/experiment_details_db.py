@@ -93,7 +93,7 @@ def experiment_db(config_file):
     X_tropicalis = '%s/X_tropicalis/JGIv4-1/JGIv4-1.gtf' % data_path,
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release-22/Drosophila_simulans.WUGSC1.22.gff3' % data_path,
-    H_sapiens = '%s/H_sapiens/ensembl_release-69/Homo_sapiens.GRCh37.69_stable.gtf.bz2' % data_path,
+    H_sapiens = '%s/H_sapiens/ensembl_release-69/Homo_sapiens.GRCh37.69_stable.gtf' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release-69/' % data_path,
     P_troglodytes = '%s/P_troglodytes/ensembl_release-69/Pan_troglodytes.CHIMP2.1.4.69.gtf' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
