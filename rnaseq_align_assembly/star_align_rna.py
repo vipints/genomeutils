@@ -8,6 +8,7 @@ Requirement:
 """
 
 import os 
+import re
 import sys 
 import subprocess
 from collections import defaultdict
@@ -55,7 +56,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         read_file = "%s/%s" % (org_db['fastq_path'], org_db['fastq'][0])
     
     ## getting the command to uncompress the read file
-    zip_type = {".gz" : "gzip -c", ".bz2" : "bzip2 -c"} 
+    zip_type = {".gz" : "zcat", ".bz2" : "bzcat"} 
     file_prefx, ext = os.path.splitext(org_db['fastq'][0])
 
     ## genomic feature information 
@@ -73,7 +74,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --runThreadN %d \
         --outFilterMultimapScoreRange 2 \
         --outFilterMultimapNmax 30 \
-        --outFilterMismatchNmax 5 \
+        --outFilterMismatchNmax 4 \
         --alignIntronMax %d \
         --sjdbGTFfile %s \
         --sjdbGTFtagExonParentTranscript Parent \
@@ -83,6 +84,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM SortedByCoordinate \
+        --limitBAMsortRAM 8000000000 \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
             zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
     else:
@@ -104,6 +106,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM SortedByCoordinate \
+        --limitBAMsortRAM 8000000000 \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
             zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
 
