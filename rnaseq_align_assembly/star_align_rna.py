@@ -5,6 +5,7 @@ Program to align rnaseq transcriptome reads to the genome using STAR aligner
 Requirement: 
     STAR - https://github.com/alexdobin/STAR/releases
     pysam - http://code.google.com/p/pysam/ 
+    mmr - https://github.com/ratschlab/mmr 
 """
 
 import os 
@@ -13,6 +14,25 @@ import sys
 import subprocess
 from collections import defaultdict
 from gfftools import helper, GFFParser
+
+
+def run_mmr(org_name, read_map_dir, threads=3):
+    """
+    a pythonic wrapper for multiple mapper resolution program
+    """
+    
+    bam_file = "%s/%s_Aligned.sortedByCoord.out.bam" % (read_map_dir, org_name) 
+    outFile = "%s/%s_Aligned_mmr.bam" % (read_map_dir, org_name) 
+
+    iterations = 3 
+    cli_mmr = "module load gcc; mmr -v -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
+    sys.stdout.write('\trun mmr as: %s \n' % cli_mmr)
+
+    ## changing the working dir to run mmr 
+    os.chdir(read_map_dir)
+
+    process = subprocess.Popen(cli_mmr, shell=True) 
+    process.wait()
 
 
 def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_cpus=1):
