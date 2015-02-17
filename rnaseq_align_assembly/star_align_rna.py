@@ -19,6 +19,13 @@ from gfftools import helper, GFFParser
 def run_mmr(org_name, read_map_dir, threads=3):
     """
     a pythonic wrapper for multiple mapper resolution program
+
+    @args org_name: Organism name, example case A_thaliana 
+    @type org_name: str 
+    @args read_map_dir: directory where the STAR bam (aligned reads) file located
+    @type read_map_dir: str 
+    @args threads: number of threads to use for the run (default: 3)
+    @type threads: int  
     """
     
     bam_file = "%s/%s_Aligned.sortedByCoord.out.bam" % (read_map_dir, org_name) 
