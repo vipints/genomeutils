@@ -28,8 +28,10 @@ def main():
         uncompressing the SRA file 
         manual cleaning of downloaded genome 
         create the genome genome indices
-
+        calculate the insert size 
     -2 rnaseq read mapping process     
+        multiple mapper issue 
+        uniquely mapped reads 
     """
 
     parser = OptionParser() 
@@ -37,6 +39,7 @@ def main():
     parser.add_option( "-1", "--download_public_data", action="store_true", dest="download_public_data", default=False, help="download public datasets")
     parser.add_option( "-a", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads.")
     parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR.")
+    parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads.")
 
     ( options, args ) = parser.parse_args()
     try:
@@ -48,7 +51,7 @@ def main():
     print 'Using config file %s for the experiment.' % config_file
 
     if not (options.download_public_data ^ options.genome_index ^ \
-            options.read_mapping):
+            options.read_mapping ^ options.multi_map_resolve):
         parser.print_help()
         sys.exit(-1)
 
@@ -63,6 +66,51 @@ def main():
     if options.read_mapping: 
         print 'Operation selected: Read alignment with STAR'
         align_rnaseq_reads(config_file)
+
+    if options.multi_map_resolve:
+        print 'Operation selected: Multiple read mapper resolution with MMR'
+        alignment_filter(config_file) 
+
+
+def call_alignment_filter(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+
+    from rnaseq_align_assembly import star_align_rna as filter
+    org_name, out_dir, num_cpus = args_list
+    filter.run_mmr(org_name, out_dir, num_cpus)
+    return "done"
+    
+
+def alignment_filter(yaml_config):
+    """
+    run multimapper resolution program 
+    """
+
+    orgdb = expdb.experiment_db(yaml_config)
+    Jobs = []
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        arg = [[det['short_name'], det['read_map_dir'], 4]]
+
+        job = pg.cBioJob(call_alignment_filter, arg) 
+
+        ## native specifications 
+        job.mem="24gb"
+        job.vmem="24gb"
+        job.pmem="6gb"
+        job.pvmem="6gb"
+        job.nodes = 1
+        job.ppn = 4
+        job.walltime = "12:00:00"
+
+        Jobs.append(job)
+
+    print 
+    print "sending jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def call_align_reads(args_list):
@@ -92,13 +140,13 @@ def align_rnaseq_reads(yaml_config):
 
         job = pg.cBioJob(call_align_reads, arg) 
     
-        job.mem="32gb"
-        job.vmem="32gb"
-        job.pmem="8gb"
-        job.pvmem="8gb"
+        job.mem="48gb"
+        job.vmem="48gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
         job.nodes = 1
         job.ppn = 4
-        job.walltime = "08:00:00"
+        job.walltime = "24:00:00"
         
         Jobs.append(job)
 
@@ -132,13 +180,13 @@ def create_genome_index(yaml_config):
 
         job = pg.cBioJob(call_genome_index, arg) 
     
-        job.mem="8gb"
-        job.vmem="8gb"
-        job.pmem="8gb"
-        job.pvmem="8gb"
+        job.mem="32gb"
+        job.vmem="32gb"
+        job.pmem="32gb"
+        job.pvmem="32gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "01:00:00"
+        job.walltime = "16:00:00"
         
         Jobs.append(job)
 
