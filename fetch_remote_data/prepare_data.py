@@ -295,6 +295,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     os.chdir(out_dir)
 
     ## start the indexing job 
+    sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
     try:
         process = subprocess.Popen(cli_cmd, shell=True) 
         process.wait()
