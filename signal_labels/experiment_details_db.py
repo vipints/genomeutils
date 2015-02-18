@@ -90,7 +90,7 @@ def experiment_db(config_file):
     M_truncatula = '%s/M_truncatula/' % data_path,
     P_pacificus = '%s/P_pacificus/ensembl_release-22/Pristionchus_pacificus.P_pacificus-5.0.22.gtf' % data_path,
     S_scrofa = '%s/S_scrofa/ensembl_release-69/Sus_scrofa.Sscrofa10.2.69.gtf' % data_path,
-    X_tropicalis = '%s/X_tropicalis/JGIv4-1/JGIv4-1.gtf' % data_path,
+    X_tropicalis = '%s/X_tropicalis/JGIv4-1/JGIv4-1.gff' % data_path,
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release-22/Drosophila_simulans.WUGSC1.22.gff3' % data_path,
     H_sapiens = '%s/H_sapiens/ensembl_release-69/Homo_sapiens.GRCh37.69_stable.gtf' % data_path,
