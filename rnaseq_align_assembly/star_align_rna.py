@@ -32,12 +32,14 @@ def run_mmr(org_name, read_map_dir, threads=3):
     outFile = "%s/%s_Aligned_mmr.bam" % (read_map_dir, org_name) 
 
     iterations = 3 
-    cli_mmr = "module load gcc; mmr -v -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
-    sys.stdout.write('\trun mmr as: %s \n' % cli_mmr)
+    ## -P parse_complete bam file option is ON 
+    ## this requires the BAM file in memory, otherwise provide a bam file sorted by read id
+    cli_mmr = "module load gcc; mmr -v -b -p -V -P -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
 
     ## changing the working dir to run mmr 
     os.chdir(read_map_dir)
 
+    sys.stdout.write('\trun MMR as: %s \n' % cli_mmr)
     process = subprocess.Popen(cli_mmr, shell=True) 
     process.wait()
 
