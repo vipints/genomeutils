@@ -11,8 +11,8 @@ import libpyjobrunner as pg
 
 from optparse import OptionParser
 
-from fetch_remote_data import download_data as dld
 from fetch_remote_data import prepare_data as ppd
+from fetch_remote_data import download_data as dld
 
 from signal_labels import experiment_details_db as expdb
 
@@ -136,7 +136,7 @@ def align_rnaseq_reads(yaml_config):
         lib_type = 'PE'
         lib_type = 'SE' if len(det['fastq'])==1 else lib_type
 
-        arg = [[det, lib_type, 100000, 4]]
+        arg = [[det, lib_type, 100000, 16]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
@@ -176,7 +176,7 @@ def create_genome_index(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 1, det['read_length']-1]]
+        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 4, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
     
@@ -193,7 +193,7 @@ def create_genome_index(yaml_config):
     print 
     print "sending jobs to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs)
+    processedJobs = pg.process_jobs(Jobs, "True", 4)
 
 
 def download_public_data(yaml_config):
