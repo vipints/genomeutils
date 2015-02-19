@@ -92,7 +92,7 @@ def alignment_filter(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['short_name'], det['read_map_dir'], 4]]
+        arg = [[det['short_name'], det['read_map_dir'], 8]]
 
         job = pg.cBioJob(call_alignment_filter, arg) 
 
