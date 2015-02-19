@@ -28,13 +28,15 @@ def run_mmr(org_name, read_map_dir, threads=3):
     @type threads: int  
     """
     
-    bam_file = "%s/%s_Aligned.sortedByCoord.out.bam" % (read_map_dir, org_name) 
+    #bam_file = "%s/%s_Aligned.sortedByCoord.out.bam" % (read_map_dir, org_name) 
+    #bam_file = "%s/%s_Aligned.out.bam" % (read_map_dir, org_name) 
+    bam_file = "%s/%s_Aligned.sortedByName.out.bam" % (read_map_dir, org_name) 
     outFile = "%s/%s_Aligned_mmr.bam" % (read_map_dir, org_name) 
 
     iterations = 3 
     ## -P parse_complete bam file option is ON 
     ## this requires the BAM file in memory, otherwise provide a bam file sorted by read id
-    cli_mmr = "module load gcc; mmr -v -b -p -V -P -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
+    cli_mmr = "module load gcc; mmr -v -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
 
     ## changing the working dir to run mmr 
     os.chdir(read_map_dir)
@@ -112,8 +114,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --alignMatesGapMax %d\
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
-        --outSAMtype BAM SortedByCoordinate \
-        --limitBAMsortRAM 8000000000 \
+        --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
             zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
     else:
@@ -134,8 +135,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --alignMatesGapMax %d\
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
-        --outSAMtype BAM SortedByCoordinate \
-        --limitBAMsortRAM 8000000000 \
+        --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
             zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
 
