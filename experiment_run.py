@@ -32,6 +32,8 @@ def main():
     -2 rnaseq read mapping process     
         multiple mapper issue 
         uniquely mapped reads 
+    -3 transcript assembly  
+        cufflinks prediction 
     """
 
     parser = OptionParser() 
@@ -40,6 +42,7 @@ def main():
     parser.add_option( "-a", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads.")
     parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR.")
     parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads.")
+    parser.add_option( "-3", "--transcript_assembly", action="store_true", dest="transcript_assembly", default=False, help="Transcript assembly using TranscriptSkimmer.")
 
     ( options, args ) = parser.parse_args()
     try:
@@ -51,7 +54,8 @@ def main():
     print 'Using config file %s for the experiment.' % config_file
 
     if not (options.download_public_data ^ options.genome_index ^ \
-            options.read_mapping ^ options.multi_map_resolve):
+            options.read_mapping ^ options.multi_map_resolve ^ \
+            options.transcript_assembly):
         parser.print_help()
         sys.exit(-1)
 
@@ -70,6 +74,51 @@ def main():
     if options.multi_map_resolve:
         print 'Operation selected: Multiple read mapper resolution with MMR'
         alignment_filter(config_file) 
+
+    if options.transcript_assembly:
+        print 'Operation selected: Transcript assembly based on mapped RNASeq read data with TranscriptSkimmer'
+        transcript_prediction_trsk(config_file)
+
+
+def call_transcript_prediction_trsk(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+
+    from rnaseq_align_assembly import transcript_assembly as trassembly
+    org_db = args_list
+    trassembly.run_trsk(org_db)
+    return "done"
+    
+
+def transcript_prediction_trsk(yaml_config):
+    """
+    transcript prediction using TranscriptSkimmer
+    """
+
+    orgdb = expdb.experiment_db(yaml_config)
+    Jobs = []
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        arg = [det]
+
+        job = pg.cBioJob(call_transcript_prediction_trsk, arg) 
+
+        ## native specifications 
+        job.mem="12gb"
+        job.vmem="12gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "6:00:00"
+
+        Jobs.append(job)
+
+    print 
+    print "sending transcript assembly jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def call_alignment_filter(args_list):
