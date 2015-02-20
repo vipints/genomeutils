@@ -34,6 +34,8 @@ def main():
         uniquely mapped reads 
     -3 transcript assembly  
         cufflinks prediction 
+        filter gene models 
+    -4 extract signal labels 
     """
 
     parser = OptionParser() 
@@ -43,6 +45,9 @@ def main():
     parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR.")
     parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads.")
     parser.add_option( "-3", "--transcript_assembly", action="store_true", dest="transcript_assembly", default=False, help="Transcript assembly using TranscriptSkimmer.")
+    parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks.")
+    parser.add_option( "-f", "--filter_genes", action="store_true", dest="filter_genes", default=False, help="Filter out genes from annotation file based on the consensus signal sequence.")
+    parser.add_option( "-4", "--extract_signal_labels", action="store_true", dest="extract_signal_labels", default=False, help="Extract training labels for different genomic signals.")
 
     ( options, args ) = parser.parse_args()
     try:
@@ -55,7 +60,8 @@ def main():
 
     if not (options.download_public_data ^ options.genome_index ^ \
             options.read_mapping ^ options.multi_map_resolve ^ \
-            options.transcript_assembly):
+            options.transcript_assembly ^ options.cufflinks_prediction ^ \
+            options.filter_genes ^ options.extract_signal_labels):
         parser.print_help()
         sys.exit(-1)
 
@@ -78,6 +84,103 @@ def main():
     if options.transcript_assembly:
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data with TranscriptSkimmer'
         transcript_prediction_trsk(config_file)
+
+    if options.cufflinks_prediction:
+        print 'Operation selected: Transcript assembly based on mapped RNASeq read data with Cufflinks'
+        transcript_prediction_cuff(config_file)
+
+    if options.filter_genes:
+        print 'Operation selected: Filter out gene models from annotation file based on the splice-site consensus into account and length of the ORF'
+        filter_genes(config_file)
+
+
+
+def call_filter_genes(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+
+    from rnaseq_align_assembly import refine_transcript_models  
+    gtf_file, fasta_file, result_file = args_list
+    filter_gene_file = refine_transcript_models.filter_gene_models(gtf_file, fasta_file, result_file)
+    print "filtered gene models stored at %s" % filter_gene_file
+    
+    return "done"
+
+
+def filter_genes(yaml_config):
+    """
+    filter out invalid gene models from annotation
+    """
+
+    orgdb = expdb.experiment_db(yaml_config)
+
+    Jobs = []
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        ## creating a custom gene annotation file based on the filtering of annotated transcripts. example: A_thaliana_arabidopsis-tair10.gff  
+        outFile = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
+        arg = [[det['gtf'], det['fasta'], outFile]]
+
+        job = pg.cBioJob(call_filter_genes, arg) 
+
+        ## native specifications 
+        job.mem="6gb"
+        job.vmem="6gb"
+        job.pmem="6gb"
+        job.pvmem="6gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "2:00:00"
+
+        Jobs.append(job)
+
+    print 
+    print "sending filter gene models jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
+
+
+def call_transcript_prediction_cuff(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    
+    from rnaseq_align_assembly import transcript_assembly as trassembly
+    org_db, num_threads = args_list
+    trassembly.run_cufflinks(org_db, num_threads)
+    return "done"
+
+
+def transcript_prediction_cuff(yaml_config):
+    """
+    transcript prediction using cufflinks
+    """
+
+    orgdb = expdb.experiment_db(yaml_config)
+
+    Jobs = []
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        arg = [[det, 4]]
+
+        job = pg.cBioJob(call_transcript_prediction_cuff, arg) 
+
+        ## native specifications 
+        job.mem="12gb"
+        job.vmem="12gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
+        job.nodes = 1
+        job.ppn = 4
+        job.walltime = "12:00:00"
+
+        Jobs.append(job)
+
+    print 
+    print "sending transcript assembly jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def call_transcript_prediction_trsk(args_list):
