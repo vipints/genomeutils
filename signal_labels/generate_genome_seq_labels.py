@@ -104,8 +104,6 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
         print 'selecting %d RANDOM %s signal regions' % (nCOUNT, signal) 
 
         diff_features = fetch_unique_labels(posLabel, negLabel) 
-        import ipdb 
-        ipdb.set_trace()
 
         label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal) 
@@ -143,6 +141,7 @@ def fetch_unique_labels(firstLabel, secondLabel):
     for chrom, feat_loc_1 in firstLabel.items():
         if chrom in secondLabel:
             feat_loc_2 = secondLabel[chrom]
+            #TODO better way 
             ## getting the uniq ids from second round of labels 
             diff_keys = set(feat_loc_2[0].keys()) - set(feat_loc_1[0].keys()) 
             ## fetch those keys details
@@ -151,9 +150,8 @@ def fetch_unique_labels(firstLabel, secondLabel):
                 if ft in feat_loc_2[0]:
                     ftdet[ft] = feat_loc_2[0][ft] 
             unique_label_loc[chrom].append(ftdet) 
-            print unique_label_loc
-            break
-
+           
+    return unique_label_loc
 
 
 def chrom_name_consistency(fasta_fname, gff_content):
