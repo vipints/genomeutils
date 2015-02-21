@@ -59,25 +59,21 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
     # FIXME required input variables including the result path   
     #base_path = ''
 
-    print 
-    print 'processing genome annotation %s' % gfname
+    print 'processing genome annotation %s...' % gfname
     print 
     anno_file_content = GFFParser.Parse(gfname) # extract genome annotation from gtf/gff type file 
-    print 
-    print 'processed genome annotation'
+    print '...done.'
     print 
     
     # check the consistency of chr names in fasta and gff file 
     chrom_name_consistency(faname, anno_file_content) 
     
     gtf_db, feature_cnt, signal_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
-    print 
     print 'extracted %d %s signal regions' % (feature_cnt, signal)
     print 
 
     posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-    print 
-    print 'selecting %d RANDOM %s signal regions' % (COUNT, signal) 
+    print 'selecting %d RANDOM %s signal regions...' % (COUNT, signal) 
     print 
 
     if signal == 'splice':
@@ -92,24 +88,28 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
     elif signal == 'tis':
         label_count_plus = true_tis_seq_fetch(faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
+        print 
 
         label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
-        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
+        label_count_plus, label_ids_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
+        print 
 
         negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        print 'selecting %d RANDOM %s signal regions' % (nCOUNT, signal) 
+        print 'selecting %d RANDOM %s signal regions...' % (nCOUNT, signal) 
+        print 
 
-        diff_features = fetch_unique_labels(posLabel, negLabel) 
+        diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
 
         label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal) 
+        print 
 
     elif signal == "cleave":
-        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
+        label_count_plus, label_ids_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
 
         label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
@@ -986,7 +986,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=1):
     """
     fetch the minus TSS signal sequence label
 
@@ -1241,10 +1241,12 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
 
     out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
     true_label = 0 
+    truelabelseq = defaultdict(list)
 
     foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
+            truelabelids = dict() 
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
 
@@ -1266,10 +1268,12 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
                     fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                     out_pos_fh.write(fseq.format("fasta"))
                     true_label += 1 
+                    truelabelids[fid] = 0 
+            truelabelseq[rec.id].append(truelabelids) ## true labels identity 
 
     out_pos_fh.close()
     foh.close()
-    return true_label
+    return true_label, truelabelseq
 
 
 def select_labels(feat_db, feat_count, label_cnt):
