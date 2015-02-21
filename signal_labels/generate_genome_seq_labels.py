@@ -100,7 +100,14 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
 
-        label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
+        negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
+        print 'selecting %d RANDOM %s signal regions' % (nCOUNT, signal) 
+
+        diff_features = fetch_unique_labels(posLabel, negLabel) 
+        import ipdb 
+        ipdb.set_trace()
+
+        label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal) 
 
     elif signal == "cleave":
@@ -124,6 +131,29 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minu
     # signal label processing over 
     print '%s signal done.' % signal
     print 
+
+
+def fetch_unique_labels(firstLabel, secondLabel):
+    """
+    fetch separate set of positive and negative training labels 
+    """
+
+    unique_label_loc = defaultdict(list) 
+
+    for chrom, feat_loc_1 in firstLabel.items():
+        if chrom in secondLabel:
+            feat_loc_2 = secondLabel[chrom]
+            ## getting the uniq ids from second round of labels 
+            diff_keys = set(feat_loc_2[0].keys()) - set(feat_loc_1[0].keys()) 
+            ## fetch those keys details
+            ftdet = dict() 
+            for ft in list(diff_keys):
+                if ft in feat_loc_2[0]:
+                    ftdet[ft] = feat_loc_2[0][ft] 
+            unique_label_loc[chrom].append(ftdet) 
+            print unique_label_loc
+            break
+
 
 
 def chrom_name_consistency(fasta_fname, gff_content):
@@ -153,7 +183,7 @@ def chrom_name_consistency(fasta_fname, gff_content):
     
     if cnt == len(chrom_fasta):
         print 
-        print 'Warning: chromosome/contig names are different in provided fasta and gff file, cannot continue.'
+        print 'error: chromosome/contig names are different in provided fasta and gff file.'
         print 
         sys.exit(-1)
 
@@ -332,7 +362,7 @@ def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100
     @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
     @type Label: dict 
     @args cdsstop_check: cdsstop signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
-    @type cdsstop_check: defraultdict(list)
+    @type cdsstop_check: defaultdict(list)
     @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
     @type tr_gene_mp: dict  
     @args boundary: flanking region to the signal position
@@ -451,7 +481,7 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
     @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
     @type Label: dict 
     @args tis_check: tis signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
-    @type tis_check: defraultdict(list)
+    @type tis_check: defaultdict(list)
     @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
     @type tr_gene_mp: dict  
     @args boundary: flanking region to the signal position
@@ -702,6 +732,7 @@ def get_label_regions(gtf_content, signal):
                                 feature['strand'], 
                                 (int(feature['start']), int(feature['stop']))
                                 )
+                    break  ## considering only one transcript from a region 
         elif signal == 'tis':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
@@ -773,7 +804,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
     @type Label: dict 
     @args don_acc_check: splice signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
-    @type don_acc_check: defraultdict(list)
+    @type don_acc_check: defaultdict(list)
     @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
     @type tr_gene_mp: dict  
     @args boundary: flanking region to the signal position
@@ -966,7 +997,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
     @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
     @type Label: dict 
     @args tss_check: tss signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
-    @type tss_check: defraultdict(list)
+    @type tss_check: defaultdict(list)
     @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
     @type tr_gene_mp: dict  
     @args boundary: flanking region to the signal position
@@ -1031,7 +1062,7 @@ def minus_cleave_seq_fetch(fnam, Label, cleave_check, tr_gene_mp, boundary=100, 
     @args Label: signal sequence in the genome <chrom<transcript:(location, strand)>>
     @type Label: dict 
     @args cleave_check: tss signals from different transcripts of the same gene <transcript:[exon_end_locations]>  
-    @type cleave_check: defraultdict(list)
+    @type cleave_check: defaultdict(list)
     @args tr_gene_mp: transcript to gene id mapping <transcript:gene_name>
     @type tr_gene_mp: dict  
     @args boundary: flanking region to the signal position
@@ -1226,8 +1257,8 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
                         motif_seq = motif_seq.reverse_complement()
 
                     # sanity check for the fetched sequence 
-                    if len(motif_seq) != boundary*2: 
-                        continue
+                    #if len(motif_seq) != boundary*2: 
+                    #    continue
                     if not motif_seq:
                         continue
                     if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
@@ -1268,8 +1299,8 @@ def select_labels(feat_db, feat_count, label_cnt):
             break
         print '    still trying ... %d' % counter
 
-
     return LSet, counter
+
 
 def recursive_fn(f_db, lb_cnt, apt_prob):
     """
