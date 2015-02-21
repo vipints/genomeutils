@@ -7,6 +7,8 @@ import os
 import sys 
 import yaml 
 
+import subprocess 
+
 import libpyjobrunner as pg
 
 from optparse import OptionParser
@@ -44,7 +46,7 @@ def main():
     parser.add_option( "-a", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads.")
     parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR.")
     parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads.")
-    parser.add_option( "-3", "--transcript_assembly", action="store_true", dest="transcript_assembly", default=False, help="Transcript assembly using TranscriptSkimmer.")
+    parser.add_option( "-3", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer.")
     parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks.")
     parser.add_option( "-f", "--filter_genes", action="store_true", dest="filter_genes", default=False, help="Filter out genes from annotation file based on the consensus signal sequence.")
     parser.add_option( "-4", "--extract_signal_labels", action="store_true", dest="extract_signal_labels", default=False, help="Extract training labels for different genomic signals.")
@@ -60,7 +62,7 @@ def main():
 
     if not (options.download_public_data ^ options.genome_index ^ \
             options.read_mapping ^ options.multi_map_resolve ^ \
-            options.transcript_assembly ^ options.cufflinks_prediction ^ \
+            options.trsk_prediction ^ options.cufflinks_prediction ^ \
             options.filter_genes ^ options.extract_signal_labels):
         parser.print_help()
         sys.exit(-1)
@@ -81,7 +83,7 @@ def main():
         print 'Operation selected: Multiple read mapper resolution with MMR'
         alignment_filter(config_file) 
 
-    if options.transcript_assembly:
+    if options.trsk_prediction:
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data with TranscriptSkimmer'
         transcript_prediction_trsk(config_file)
 
@@ -93,6 +95,80 @@ def main():
         print 'Operation selected: Filter out gene models from annotation file based on the splice-site consensus into account and length of the ORF'
         filter_genes(config_file)
 
+    if options.extract_signal_labels:
+        print 'Operation selected: Extract different genomic signal label sequences'
+        fetch_db_signals(config_file)
+
+
+def call_fetch_db_signals(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    
+    from signal_labels import generate_genome_seq_labels as fetch_labels 
+
+    fasta_file, gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts, out_dir = args_list
+    os.chdir(out_dir)
+
+    fetch_labels.main(fasta_file, gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts)
+    return "done" 
+
+
+def fetch_db_signals(yaml_config):
+    """
+    get the genomic signal labels bases on the annotation from external database
+    """
+    orgdb = expdb.experiment_db(yaml_config)
+
+    Jobs = []
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
+       
+        ## new label sequence dir 
+        out_dir = "%s/db_labels" % det['labels_dir']
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+        ## cleaning the existing one 
+        for the_file in os.listdir(out_dir):
+            file_path = os.path.join(out_dir, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception, e:
+                print e 
+    
+        ## get the label count for each organisms, essentially the max number of genes available 
+        cmd = "grep -P \"\tgene\t\" %s | wc -l" % gff_file
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        count, err = proc.communicate() 
+        count = int(count.strip())
+
+        signal_type = "tss"
+        poslabels_cnt = 1000 
+        neglabels_cnt = 3000
+        flank_nts = 1200 
+
+        arg = [[det['fasta'], gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts, out_dir]]
+
+        job = pg.cBioJob(call_fetch_db_signals, arg) 
+
+        ## native specifications 
+        job.mem="6gb"
+        job.vmem="6gb"
+        job.pmem="6gb"
+        job.pvmem="6gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "3:00:00"
+
+        Jobs.append(job)
+
+    print 
+    print "sending genomic signal fetch jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def call_filter_genes(args_list):
@@ -162,7 +238,7 @@ def transcript_prediction_cuff(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det, 4]]
+        arg = [[det, 8]]
 
         job = pg.cBioJob(call_transcript_prediction_cuff, arg) 
 
@@ -172,7 +248,7 @@ def transcript_prediction_cuff(yaml_config):
         job.pmem="12gb"
         job.pvmem="12gb"
         job.nodes = 1
-        job.ppn = 4
+        job.ppn = 8
         job.walltime = "12:00:00"
 
         Jobs.append(job)
