@@ -6,6 +6,13 @@ Requirement:
     TransriptSkimmer - 
     cufflinks - 
 
+Standard python libraries: 
+    numpy 
+    pysam 
+    biopython 
+    gfftools 
+
+    TODO sync the validate_pred_gene_models function to the refine_ module 
 """
 
 from __future__ import division
@@ -21,6 +28,85 @@ import collections
 from Bio import SeqIO 
 from gfftools import GFFParser, helper 
 
+
+def run_cufflinks(org_db, num_cpus=4):
+    """
+    run cufflinks program on mapped reads 
+    """
+     
+    org_name = org_db['short_name'] 
+    print "preparing for cufflinks run for organism %s" % org_name
+
+    min_isoform_frac = 0.25
+    max_intron_length = org_db['max_intron_len']
+    min_intron_length = 20
+
+    result_dir = org_db['read_assembly_dir']
+
+    bam_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (org_db['read_map_dir'], org_name)
+    if not os.path.isfile(bam_file):
+        print "failed to fetch sorted mmr BAM file for organism: %s, trying to get the mmr file..." % org_name
+        
+        bam_file = "%s/%s_Aligned_mmr.bam" % (org_db['read_map_dir'], org_name)
+        if not os.path.isfile(bam_file):
+            print "error: failed to fetch mmr BAM file for organism %s" % org_name
+            sys.exit(-1)
+        
+        ## sorting, indexing the bam file 
+        file_prefix, ext = os.path.splitext(bam_file)
+        sorted_bam = "%s_sortbyCoord" % file_prefix
+
+        print "trying to sort based by the coordinates with output prefix as: %s" % sorted_bam
+        if not os.path.isfile("%s.bam" % sorted_bam):
+            print 'sorting...'
+            pysam.sort(bam_file, sorted_bam)
+            
+        sorted_bam = "%s.bam" % sorted_bam
+        print "now creating the index for %s " % sorted_bam
+        if not os.path.exists(sorted_bam + ".bai"):
+            print 'indexing...'
+            pysam.index(sorted_bam) 
+
+        bam_file = sorted_bam 
+        print "done"
+
+    print "using bam file from %s" % bam_file
+
+    ## always use quiet mode to avoid problems with storing log output.
+    cli_cuff = "cufflinks -q --no-update-check \
+        -F %.2f \
+        -I %d \
+        --min-intron-length %d \
+        --library-type fr-unstranded \
+        -p %d \
+        -o %s \
+        %s" % (min_isoform_frac, max_intron_length, min_intron_length, num_cpus, result_dir, bam_file)
+  
+    sys.stdout.write('\trun cufflinks as %s \n' % cli_cuff)
+    
+    try:
+        os.chdir(result_dir)
+        ## run the command
+        process = subprocess.Popen(cli_cuff, shell=True) 
+        process.wait()
+
+        ## cleaning 
+        print "cleaning the predicted transcript models"
+        out_file = "%s_cufflinks_genes.gff" % org_name
+        
+        genome_seq_file = org_db['fasta']
+        
+        out_cuff_gtf = "%s/transcripts.gtf" % result_dir
+        ## transcripts.gtf default file for cufflinks prediction 
+        final_transcripts = validate_pred_gene_models(out_cuff_gtf, genome_seq_file, out_file)
+
+        print 'cufflinks predicted transcripts are stored at %s/%s' % (result_dir, final_transcripts) 
+        os.unlink("%s/%s" % (result_dir, "transcripts.gtf"))
+
+    except Exception, e:
+        print 'Error running cufflinks.\n%s' %  str( e )
+        
+    
 
 def run_trsk(org_db, out_gff_file="_tmp_trsk_genes.gff"):
     """
