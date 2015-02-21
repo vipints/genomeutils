@@ -142,7 +142,7 @@ def filter_gene_models(gff_name, fas_file, outFile):
                     for ex_cod in recd['exons'][idz]:
                         out_fh.write('%s\t%s\texon\t%d\t%d\t.\t%s\t.\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
     out_fh.close()
-    return out_fname
+    return outFile
 
 
 if __name__ == "__main__":
