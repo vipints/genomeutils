@@ -31,7 +31,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname=None, gfname=None, signal='tss', label_cnt=40, plus_cnt=10, minus_cnt=30, flanks=1000):
+def main(faname=None, gfname=None, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit
 
@@ -986,7 +986,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=1):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
     """
     fetch the minus TSS signal sequence label
 
@@ -1257,8 +1257,8 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
                         motif_seq = motif_seq.reverse_complement()
 
                     # sanity check for the fetched sequence 
-                    #if len(motif_seq) != boundary*2: 
-                    #    continue
+                    if len(motif_seq) != boundary*2: 
+                        continue
                     if not motif_seq:
                         continue
                     if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
