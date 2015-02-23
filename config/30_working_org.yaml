@@ -11,9 +11,14 @@ algorithms:
     read_aligner:
         tool: STAR
         version: 2.4.0f1
+    multimapper_resolution:
+        tool: mmr 
+        version: 688921a
     transcript_reconstruction: 
         tool: TranscriptSkimmer
         version: 4237130 
+        tool: cufflinks
+        version: 2.2.1
 experiment:
   - organism_name: H_sapiens
     sra_run_id: SRR534327
