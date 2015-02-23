@@ -31,7 +31,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname=None, gfname=None, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit
 
@@ -133,7 +133,12 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=5000, plus_cnt=1000, 
 
 def fetch_unique_labels(firstLabel, secondLabel):
     """
-    fetch separate set of positive and negative training labels 
+    fetch separate set of negative training labels 
+
+    @args firstLabel: identifiers from positive labels. example chr2:[{ATG001:0, ATG002:0}]
+    @type firstLabel: defaultdict(list)
+    @args secondLabel: random labels selected for the second time. example chr2:[{ATG001:(10, 20, +), ATG002:(20, 40, -)}]
+    @type secondLabel: defaultdict(list) 
     """
 
     unique_label_loc = defaultdict(list) 
@@ -986,7 +991,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=2):
     """
     fetch the minus TSS signal sequence label
 
