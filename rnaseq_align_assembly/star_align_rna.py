@@ -35,7 +35,8 @@ def run_mmr(org_name, read_map_dir, threads=3):
 
     iterations = 3 
     ## this requires the BAM file in memory, otherwise provide a bam file sorted by read id
-    cli_mmr = "module load gcc; mmr -v -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
+    #cli_mmr = "module load gcc; mmr -v -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
+    cli_mmr = "module load gcc; mmr -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
 
     ## changing the working dir to run mmr 
     os.chdir(read_map_dir)
