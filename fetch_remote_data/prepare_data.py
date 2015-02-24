@@ -297,17 +297,24 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     ## start the indexing job 
     sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
     try:
+        #
+        # Run command.
+        #
         process = subprocess.Popen(cli_cmd, shell=True) 
-        process.wait()
-    except:
-        print "error"
-        sys.exit(-1)
+        returncode = process.wait()
 
-    print 
-    print "STAR genome index files are stored at %s" % out_dir
-    print 
+        # Error checking.
+        if returncode != 0:
+            raise Exception, "return code = %i" % returncode
+        
+        print 
+        print "STAR genome index files are stored at %s" % out_dir
+        print 
+
+    except Exception, e:
+        print 'Error running STAR.\n%s' %  str( e )
+
 
 
 if __name__=="__main__":
     print __doc__
-
