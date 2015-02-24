@@ -8,7 +8,7 @@ Requirements:
 Copyright (C)	
 
 2009-2012 Friedrich Miescher Laboratory of the Max Planck Society, Tubingen, Germany. 
-2012-2014 Memorial Sloan Kettering Cancer Center, New York City, USA.
+2012-2015 Memorial Sloan Kettering Cancer Center, New York City, USA.
 """
 
 import re
@@ -194,7 +194,7 @@ def Parse(ga_file):
                                             name = tags.get('Name', [''])[0])
             elif rec_category == 'record':
                 #TODO how to handle plain records?
-                c = 1 
+                ftype = None
     ga_handle.close()
     
     # depends on file type create parent feature  
