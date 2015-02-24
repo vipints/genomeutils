@@ -61,16 +61,13 @@ def run_cufflinks(org_db, num_cpus=4):
             print 'sorting...'
             pysam.sort(bam_file, sorted_bam)
             
-        sorted_bam = "%s.bam" % sorted_bam
-        print "now creating the index for %s " % sorted_bam
-        if not os.path.exists(sorted_bam + ".bai"):
-            print 'indexing...'
-            pysam.index(sorted_bam) 
+        bam_file = "%s.bam" % sorted_bam
 
-        bam_file = sorted_bam 
-        print "done"
-
-    print "using bam file from %s" % bam_file
+    print 'using bam file from %s' % bam_file
+    if not os.path.exists(bam_file + ".bai"):
+        sys.stdout.write('indexing... ')
+        pysam.index(bam_file) 
+        sys.stdout.write(' ...done\n')
 
     ## always use quiet mode to avoid problems with storing log output.
     cli_cuff = "cufflinks -q --no-update-check \
@@ -106,7 +103,6 @@ def run_cufflinks(org_db, num_cpus=4):
     except Exception, e:
         print 'Error running cufflinks.\n%s' %  str( e )
         
-    
 
 def run_trsk(org_db, out_gff_file="_tmp_trsk_genes.gff"):
     """
