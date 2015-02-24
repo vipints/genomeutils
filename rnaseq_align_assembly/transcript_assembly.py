@@ -143,16 +143,13 @@ def run_trsk(org_db, out_gff_file="_tmp_trsk_genes.gff"):
             print 'sorting...'
             pysam.sort(bam_file, sorted_bam)
             
-        sorted_bam = "%s.bam" % sorted_bam
-        print "now creating the index for %s " % sorted_bam
-        if not os.path.exists(sorted_bam + ".bai"):
-            print 'indexing...'
-            pysam.index(sorted_bam) 
-
-        bam_file = sorted_bam 
-        print "done"
-
+        bam_file = "%s.bam" % sorted_bam
+        
     print 'using bam file from %s' % bam_file
+    if not os.path.exists(bam_file + ".bai"):
+        sys.stdout.write('indexing... ')
+        pysam.index(bam_file) 
+        sys.stdout.write(' ...done\n')
 
     max_intron_length = org_db['max_intron_len']
     max_exon_length = org_db['max_exon_len'] 
