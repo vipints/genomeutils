@@ -202,7 +202,6 @@ def Parse(ga_file):
         parent_map, child_map = create_missing_feature_type(parent_map, child_map)    
     
     # connecting parent child relations  
-    # essentially the parent child features are here from any type of GTF/GFF2/GFF3 file
     gene_mat = format_gene_models(parent_map, child_map) 
 
     return gene_mat 
@@ -496,22 +495,3 @@ def create_missing_feature_type(p_feat, c_feat):
                                             gene_id = '' ))
     return p_feat, child_n_map 
 
-
-## General instruction to use the above functions:
-## Usage: GFFParser.py in.gff3 out.mat 
-
-#
-#gff_file = 'in.gff3'
-#out_mat = 'out.mat'
-#
-
-#
-#gene_struct = Parse(gff_file)
-#
-
-#
-#sio.savemat(out_mat, 
-#       mdict = dict(genes = gene_struct), 
-#       format = '5', 
-#       oned_as = 'row')
-#
