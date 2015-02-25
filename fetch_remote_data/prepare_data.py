@@ -172,6 +172,7 @@ def make_anno_db(gff_file):
             try:
                 exon_cnt = len(rec['exons'][idx])
             except:
+                #TODO fix the issue
                 import pdb 
                 pdb.set_trace()
 
@@ -297,13 +298,11 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     ## start the indexing job 
     sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
     try:
-        #
-        # Run command.
-        #
+        ## Run command.
         process = subprocess.Popen(cli_cmd, shell=True) 
         returncode = process.wait()
 
-        # Error checking.
+        ## Error checking.
         if returncode != 0:
             raise Exception, "return code = %i" % returncode
         
