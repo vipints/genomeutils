@@ -94,7 +94,7 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, 
         print 'selected %d negative %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
-        label_count_plus, label_ids_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
+        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
         print 
 
@@ -102,6 +102,8 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, 
         print 'selecting %d RANDOM %s signal regions...' % (nCOUNT, signal) 
         print 
 
+        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
+        #TODO shutil copy bkp file to fas 
         diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
 
         label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
@@ -123,8 +125,7 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, 
         print 'selected %d negative %s signal lables' % (label_count, signal)
 
     # remove the extra labels fetched from the previous step 
-    plus_label_cleanup([signal], plus_cnt, label_count_plus)
-    minus_label_cleanup([signal], minus_cnt, label_count)
+    label_id_minus = minus_label_cleanup([signal], minus_cnt, label_count)
 
     # signal label processing over 
     print '%s signal done.' % signal
@@ -135,26 +136,24 @@ def fetch_unique_labels(firstLabel, secondLabel):
     """
     fetch separate set of negative training labels 
 
-    @args firstLabel: identifiers from positive labels. example chr2:[{ATG001:0, ATG002:0}]
-    @type firstLabel: defaultdict(list)
+    @args firstLabel: identifiers from positive labels. example {ATG001:0, ATG002:0}
+    @type firstLabel: dict() 
     @args secondLabel: random labels selected for the second time. example chr2:[{ATG001:(10, 20, +), ATG002:(20, 40, -)}]
     @type secondLabel: defaultdict(list) 
     """
 
     unique_label_loc = defaultdict(list) 
 
-    for chrom, feat_loc_1 in firstLabel.items():
-        if chrom in secondLabel:
-            feat_loc_2 = secondLabel[chrom]
-            #TODO better way 
-            ## getting the uniq ids from second round of labels 
-            diff_keys = set(feat_loc_2[0].keys()) - set(feat_loc_1[0].keys()) 
-            ## fetch those keys details
-            ftdet = dict() 
-            for ft in list(diff_keys):
-                if ft in feat_loc_2[0]:
-                    ftdet[ft] = feat_loc_2[0][ft] 
-            unique_label_loc[chrom].append(ftdet) 
+    for chrom, feat_loc_2 in secondLabel.items():
+        #TODO better way 
+        ## getting the uniq ids from second round of labels 
+        diff_keys = set(feat_loc_2[0].keys()) - set(firstLabel.keys()) 
+        ## fetch those keys details
+        ftdet = dict() 
+        for ft in list(diff_keys):
+            if ft in feat_loc_2[0]:
+                ftdet[ft] = feat_loc_2[0][ft] 
+        unique_label_loc[chrom].append(ftdet) 
            
     return unique_label_loc
 
@@ -242,7 +241,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         accept_prob = 0.97
 
         while True: # to ensure that we are considering every element 
-            counter = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
+            counter, label_seq_ids = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
             if minus_label_cnt <= counter:
                 break
             print '    still trying ... %d' % counter
@@ -250,6 +249,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
         os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
         print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (counter, signal, signal)
+
+        return label_seq_ids
 
 
 def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
@@ -303,7 +304,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         accept_prob = 0.97
 
         while True: # to ensure that we are considering every element 
-            counter = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
+            counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
             if plus_label_cnt <= counter:
                 break
             print '    still trying ... %d' % counter
@@ -311,6 +312,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         #os.system('mv ' + out_path + '/' + signal +'_sig_plus_label.bkp '+ out_path + "/"+ signal + "_sig_plus_label.fa")
         os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal)
+
+        return label_seq_ids
 
 
 def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
@@ -330,6 +333,8 @@ def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
     """
 
     cnt = 0 
+    label_seq_ids = dict()
+
     #fasta_out_plus = open(out_path + "/" + signal +"_sig_plus_label.bkp", 'w')
     fasta_out_plus = open("%s_sig_%s_label.bkp" % (signal, plus_minus), 'w')
 
@@ -350,10 +355,13 @@ def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
             SeqIO.write([rec], fasta_out_plus, "fasta")
             cnt += 1
 
+            desc = rec.description.split(' ')
+            label_seq_ids[desc[-1]] = 0
+
     plus_hd.close()
     fasta_out_plus.close()
     
-    return cnt 
+    return cnt, label_seq_ids 
 
 
 def false_cdsStop_seq_fetch(fnam, Label, cdsstop_check, tr_gene_mp, boundary=100, sample=2):
@@ -1246,12 +1254,12 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
 
     out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
     true_label = 0 
-    truelabelseq = defaultdict(list)
+    #truelabelseq = defaultdict(list)
 
     foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
-            truelabelids = dict() 
+            #truelabelids = dict() 
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
 
@@ -1273,12 +1281,13 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
                     fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                     out_pos_fh.write(fseq.format("fasta"))
                     true_label += 1 
-                    truelabelids[fid] = 0 
-            truelabelseq[rec.id].append(truelabelids) ## true labels identity 
+                    #truelabelids[fid] = 0 
+            #truelabelseq[rec.id].append(truelabelids) ## true labels identity 
 
     out_pos_fh.close()
     foh.close()
-    return true_label, truelabelseq
+    return true_label
+    #, truelabelseq
 
 
 def select_labels(feat_db, feat_count, label_cnt):
