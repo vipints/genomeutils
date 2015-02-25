@@ -31,7 +31,7 @@ def experiment_db(config_file):
     O_cuniculus = "%s/O_cuniculus/ensembl_release-69/ensembl_release-69.fa" % data_path,
     M_gallopavo = "%s/M_gallopavo/ensembl_release-69/ensembl_release-69.fa" % data_path, 
     B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis_str_a0193.GCA_000181915.1.21.dna.toplevel.fa' % data_path,
-    C_familiaris = '%s/C_familiaris/ensembl_release-69/Canis_familiaris.CanFam3.1.69.dna.toplevel.fa' % data_path,
+    C_familiaris = '%s/C_familiaris/ensembl_release-69/ensembl_release-69.fa' % data_path,
     D_melanogaster = '%s/D_melanogaster/ensembl_release-69/Drosophila_melanogaster.BDGP5.69.dna.toplevel.fa' % data_path,
     E_caballus = '%s/E_caballus/ensembl_release-69/Equus_caballus.EquCab2.69_stable.fa' % data_path,
     M_domestica = '%s/M_domestica/ensembl_release-69/Monodelphis_domestica.BROADO5.69.dna.toplevel.fa' % data_path,
@@ -138,6 +138,7 @@ def experiment_db(config_file):
         org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
         org_db[short_name]['fastq'] = sra_files
 
+        ## calculate the sequence read length
         readlength = 0 
         if sra_files:
             fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
@@ -148,6 +149,7 @@ def experiment_db(config_file):
             fh.close() 
         org_db[short_name]['read_length'] = readlength
 
+        ## define the sub folder structures for each organisms
         org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
         org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
         org_db[short_name]['labels_dir'] = "%s/%s/signal_labels" % (exp_path, short_name)
