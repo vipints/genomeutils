@@ -332,7 +332,7 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
     try:
         org_file = urllib2.urlopen(base_url_fasta)
     except urllib2.URLError, err_release:
-        print "ensembl_release_version %s is NOT found" % release_version
+        print "ensembl_metazoa_release_version %s is NOT found" % release_version
         print err_release
         sys.exit(-1)
 
@@ -349,7 +349,7 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
         try:
             fa_files = urllib2.urlopen(base_url_fasta)
         except urllib2.URLError, err_faseq:
-            print "ensembl_release genome sequence missing" % base_url_fasta
+            print "ensembl_metazoa_release genome sequence missing" % base_url_fasta
             print err_faseq
             sys.exit(-1)
 
@@ -365,7 +365,10 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
             fa_name =fa_name.strip('\n\r')
 
             ## include repeatmasked genome 
-            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
+            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or \
+                re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]) or \
+                re.search(r'.*.dna_sm.toplevel.fa.gz$', fa_name.split()[-1]):
+
                 fasta_file = "%s/%s" % (base_file_path, fa_name.split()[-1])
                 tempfile=open(fasta_file, "wb")
 
@@ -439,7 +442,10 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
             fa_name =fa_name.strip('\n\r')
 
             ## include repeatmasked genome 
-            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]):
+            if re.search(r'.*.dna.toplevel.fa.gz$', fa_name.split()[-1]) or \
+                re.search(r'.*.dna_rm.toplevel.fa.gz$', fa_name.split()[-1]) or \
+                re.search(r'.*dna_sm.toplevel.fa.gz$', fa_name.split()[-1]):
+
                 fasta_file = "%s/%s" % (base_file_path, fa_name.split()[-1])
                 tempfile=open(fasta_file, "wb")
 
