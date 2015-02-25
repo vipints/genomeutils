@@ -194,9 +194,9 @@ def Parse(ga_file):
                                             name = tags.get('Name', [''])[0])
             elif rec_category == 'record':
                 #TODO how to handle plain records?
-                ftype = None
+                considering_soon = 1 
     ga_handle.close()
-    
+
     # depends on file type create parent feature  
     if not ftype:
         parent_map, child_map = create_missing_feature_type(parent_map, child_map)    
