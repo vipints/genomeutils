@@ -27,7 +27,10 @@ def run_mmr(org_name, read_map_dir, threads=3):
     @args threads: number of threads to use for the run (default: 3)
     @type threads: int  
     """
-    
+    #TODO 
+    #
+    #check the file exists before runing mmr / if the unsorted file from star aligner then sort by read id and run mmr 
+    #
     #bam_file = "%s/%s_Aligned.sortedByCoord.out.bam" % (read_map_dir, org_name) 
     #bam_file = "%s/%s_Aligned.out.bam" % (read_map_dir, org_name) 
     bam_file = "%s/%s_Aligned.sortedByName.out.bam" % (read_map_dir, org_name) 
