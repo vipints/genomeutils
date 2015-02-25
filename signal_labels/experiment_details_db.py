@@ -85,7 +85,7 @@ def experiment_db(config_file):
     A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel2_ucsc.gtf' % data_path,
     B_taurus = '%s/B_taurus/ensembl_release-69/Bos_taurus.UMD3.1.69.gtf' % data_path,
     C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.gff3' % data_path,
-    D_rerio = '%s/D_rerio/ensembl_release-69/Danio_rerio.Zv9.69.gtf' % data_path,
+    D_rerio = '%s/D_rerio/ensembl_release-69/ensembl_release-69.gtf' % data_path,
     G_max = '%s/G_max/phytozome_v9.0/Gmax_189_gene.gff3' % data_path,
     M_truncatula = '%s/M_truncatula/' % data_path,
     P_pacificus = '%s/P_pacificus/ensembl_release-22/Pristionchus_pacificus.P_pacificus-5.0.22.gtf' % data_path,
@@ -174,6 +174,9 @@ def experiment_db(config_file):
                 feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
                 org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
                 org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
+            else:
+                print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
+                sys.exit(-1)
         else:
                 org_db[short_name]['gtf'] = "%s/%s/%s" % (data_path, short_name, genome_build_version)
                 org_db[short_name]['max_intron_len'] = None
