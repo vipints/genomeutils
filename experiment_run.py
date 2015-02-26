@@ -120,14 +120,16 @@ def fetch_db_signals(yaml_config):
     """
     get the genomic signal labels bases on the annotation from external database
     """
+
+    operation_seleted = "4"
     orgdb = expdb.experiment_db(yaml_config)
 
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
         #gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-        #gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
-        gff_file = "%s/%s_trsk_genes_ta.gff" % (det['read_assembly_dir'], org_name)
+        gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
+        #gff_file = "%s/%s_trsk_genes_ta.gff" % (det['read_assembly_dir'], org_name)
         
         ## check the file present or not  
         if not os.path.isfile(gff_file):
@@ -136,8 +138,8 @@ def fetch_db_signals(yaml_config):
        
         ## new label sequence dir 
         #out_dir = "%s/db_labels" % det['labels_dir']
-        #out_dir = "%s/cuff_labels" % det['labels_dir']
-        out_dir = "%s/trsk_labels" % det['labels_dir']
+        out_dir = "%s/cuff_labels" % det['labels_dir']
+        #out_dir = "%s/trsk_labels" % det['labels_dir']
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
@@ -156,7 +158,7 @@ def fetch_db_signals(yaml_config):
         #count, err = proc.communicate() 
         #count = int(count.strip())
 
-        count = 5000
+        count = 7400
         signal_type = "tss"
         poslabels_cnt = 1000 
         neglabels_cnt = 3000
@@ -201,7 +203,8 @@ def filter_genes(yaml_config):
     filter out invalid gene models from annotation
     """
 
-    orgdb = expdb.experiment_db(yaml_config)
+    operation_seleted = "f"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
@@ -246,7 +249,8 @@ def transcript_prediction_cuff(yaml_config):
     transcript prediction using cufflinks
     """
 
-    orgdb = expdb.experiment_db(yaml_config)
+    operation_seleted = "c"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
@@ -287,8 +291,8 @@ def transcript_prediction_trsk(yaml_config):
     """
     transcript prediction using TranscriptSkimmer
     """
-
-    orgdb = expdb.experiment_db(yaml_config)
+    operation_seleted = "3"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
@@ -328,8 +332,8 @@ def alignment_filter(yaml_config):
     """
     run multimapper resolution program 
     """
-
-    orgdb = expdb.experiment_db(yaml_config)
+    operation_seleted = "m"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
@@ -370,7 +374,9 @@ def align_rnaseq_reads(yaml_config):
     wrapper for aligning rnaseq reads using 
     """
 
-    orgdb = expdb.experiment_db(yaml_config)
+    operation_seleted = "2"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
@@ -411,8 +417,8 @@ def create_genome_index(yaml_config):
     """
     wrapper for calling genome index function 
     """
-
-    orgdb = expdb.experiment_db(yaml_config)
+    operation_seleted = "a"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
@@ -440,12 +446,14 @@ def create_genome_index(yaml_config):
 def download_public_data(yaml_config):
     """
     """
+    operation_seleted = "1"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+    print orgdb
 
-    config_map = yaml.safe_load(open(yaml_config, "rU"))
+
     #import ipdb 
     #ipdb.set_trace()
 
-    print config_map
 
 
 def download_fasta(org_details):
