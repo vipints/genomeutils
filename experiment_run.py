@@ -26,11 +26,13 @@ def main():
 
     Options
     
+    TODO    
     -1 download_public_data from SRA ENSEMBL Phytozome
         uncompressing the SRA file 
         manual cleaning of downloaded genome 
         create the genome genome indices
         calculate the insert size 
+
     -2 rnaseq read mapping process     
         multiple mapper issue 
         uniquely mapped reads 
@@ -42,14 +44,14 @@ def main():
 
     parser = OptionParser() 
 
-    parser.add_option( "-1", "--download_public_data", action="store_true", dest="download_public_data", default=False, help="download public datasets")
-    parser.add_option( "-a", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads.")
-    parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR.")
-    parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads.")
-    parser.add_option( "-3", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer.")
-    parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks.")
-    parser.add_option( "-f", "--filter_genes", action="store_true", dest="filter_genes", default=False, help="Filter out genes from annotation file based on the consensus signal sequence.")
-    parser.add_option( "-4", "--extract_signal_labels", action="store_true", dest="extract_signal_labels", default=False, help="Extract training labels for different genomic signals.")
+    parser.add_option( "-1", "--download_public_data", action="store_true", dest="download_public_data", default=False, help="download public datasets" )
+    parser.add_option( "-a", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads." )
+    parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR." )
+    parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads." )
+    parser.add_option( "-3", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer." )
+    parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks." )
+    parser.add_option( "-f", "--filter_genes", action="store_true", dest="filter_genes", default=False, help="Filter out genes from annotation file based on the consensus signal sequence." )
+    parser.add_option( "-4", "--extract_signal_labels", action="store_true", dest="extract_signal_labels", default=False, help="Extract training labels for different genomic signals." )
 
     ( options, args ) = parser.parse_args()
     try:
@@ -123,10 +125,19 @@ def fetch_db_signals(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
+        #gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
+        #gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
+        gff_file = "%s/%s_trsk_genes_ta.gff" % (det['read_assembly_dir'], org_name)
+        
+        ## check the file present or not  
+        if not os.path.isfile(gff_file):
+            print "error"
+            sys.exit(-1)
        
         ## new label sequence dir 
-        out_dir = "%s/db_labels" % det['labels_dir']
+        #out_dir = "%s/db_labels" % det['labels_dir']
+        #out_dir = "%s/cuff_labels" % det['labels_dir']
+        out_dir = "%s/trsk_labels" % det['labels_dir']
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
@@ -140,11 +151,12 @@ def fetch_db_signals(yaml_config):
                 print e 
     
         ## get the label count for each organisms, essentially the max number of genes available 
-        cmd = "grep -P \"\tgene\t\" %s | wc -l" % gff_file
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        count, err = proc.communicate() 
-        count = int(count.strip())
+        #cmd = "grep -P \"\tgene\t\" %s | wc -l" % gff_file
+        #proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #count, err = proc.communicate() 
+        #count = int(count.strip())
 
+        count = 5000
         signal_type = "tss"
         poslabels_cnt = 1000 
         neglabels_cnt = 3000
@@ -193,6 +205,7 @@ def filter_genes(yaml_config):
 
     Jobs = []
     for org_name, det in orgdb.items():
+        print det 
         ## arguments to pygrid 
         ## creating a custom gene annotation file based on the filtering of annotated transcripts. example: A_thaliana_arabidopsis-tair10.gff  
         outFile = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
@@ -238,18 +251,18 @@ def transcript_prediction_cuff(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det, 8]]
+        arg = [[det, 4]]
 
         job = pg.cBioJob(call_transcript_prediction_cuff, arg) 
 
         ## native specifications 
-        job.mem="12gb"
-        job.vmem="12gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.mem="72gb"
+        job.vmem="72gb"
+        job.pmem="18gb"
+        job.pvmem="18gb"
         job.nodes = 1
-        job.ppn = 8
-        job.walltime = "12:00:00"
+        job.ppn = 4
+        job.walltime = "18:00:00"
 
         Jobs.append(job)
 
@@ -284,10 +297,10 @@ def transcript_prediction_trsk(yaml_config):
         job = pg.cBioJob(call_transcript_prediction_trsk, arg) 
 
         ## native specifications 
-        job.mem="12gb"
-        job.vmem="12gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.mem="16gb"
+        job.vmem="16gb"
+        job.pmem="16gb"
+        job.pvmem="16gb"
         job.nodes = 1
         job.ppn = 1
         job.walltime = "6:00:00"
@@ -320,18 +333,18 @@ def alignment_filter(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['short_name'], det['read_map_dir'], 8]]
+        arg = [[det['short_name'], det['read_map_dir'], 3]]
 
         job = pg.cBioJob(call_alignment_filter, arg) 
 
         ## native specifications 
-        job.mem="24gb"
-        job.vmem="24gb"
-        job.pmem="6gb"
-        job.pvmem="6gb"
+        job.mem="36gb"
+        job.vmem="36gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
         job.nodes = 1
-        job.ppn = 4
-        job.walltime = "12:00:00"
+        job.ppn = 3
+        job.walltime = "24:00:00"
 
         Jobs.append(job)
 

@@ -43,7 +43,7 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, 
     @type signal: str
     @args label_cnt: number of random labels to be selected 
     @type label_cnt: integer
-    @args plus_cnt: plus label count  
+    @args plus_cnt: plus label count TODO default parameter details 
     @type plus_cnt: integer
     @args minus_cnt: minus label count 
     @type minus_cnt: integer
@@ -999,7 +999,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=2):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=1):
     """
     fetch the minus TSS signal sequence label
 
@@ -1345,6 +1345,7 @@ def recursive_fn(f_db, lb_cnt, apt_prob):
         pLabel[chrom].append(tmp_db)
 
     return cnt, dict(pLabel)
+
 
 if __name__=="__main__":
 
