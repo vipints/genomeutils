@@ -11,7 +11,7 @@ from Bio import SeqIO
 from gfftools import helper 
 from collections import defaultdict
 
-def experiment_db(config_file):
+def experiment_db(config_file, opt_action):
     """
     function to collect details of each organism
 
@@ -114,7 +114,7 @@ def experiment_db(config_file):
 
     ## TODO algorithms details 
 
-    ## experiments 
+    ## experiment details  
     org_db = defaultdict()
     
     for ent in config_map['experiment']:
@@ -133,31 +133,33 @@ def experiment_db(config_file):
                 if re.search(sra_run_id, sra_file):
                     sra_files.append(sra_file) 
         else:
-            print "SRA files NOT found %s/%s/source_data" % (exp_path, short_name) 
+            print "warning: didn't find sequencing read files %s/%s/source_data" % (exp_path, short_name) 
                 
         org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
         org_db[short_name]['fastq'] = sra_files
 
-        ## calculate the sequence read length
-        readlength = 0 
-        if sra_files:
-            fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
-            fh = helper.open_file(fqfile)
-            for rec in SeqIO.parse(fh, "fastq"):
-                readlength = len(rec.seq)
-                break
-            fh.close() 
-        org_db[short_name]['read_length'] = readlength
-
-        ## define the sub folder structures for each organisms
+        ## read mapping, read assembly and label generation working folders 
         org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
         org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
         org_db[short_name]['labels_dir'] = "%s/%s/signal_labels" % (exp_path, short_name)
+
+        ## calculate the sequence read length
+        readlength = 0 
+        if opt_action in ["a", "2", "3"]: ## perform this action only for selected options 
+            if sra_files:
+                fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
+                fh = helper.open_file(fqfile)
+                for rec in SeqIO.parse(fh, "fastq"):
+                    readlength = len(rec.seq)
+                    break
+                fh.close() 
+        org_db[short_name]['read_length'] = readlength
 
         ## check for the genome sequence file 
         if short_name in org_fasta_file:
             org_db[short_name]['fasta'] = org_fasta_file[short_name]
         else:
+            print "warning: didn't find genome sequence file fasta/fa for organism %s" % short_name
             org_db[short_name]['fasta'] = "%s/%s/%s" % (data_path, short_name, genome_build_version) 
 
         if not os.path.isdir("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version)):
@@ -168,16 +170,19 @@ def experiment_db(config_file):
         ## check the genome annotation 
         if short_name in org_gtf_file:
             org_db[short_name]['gtf'] = org_gtf_file[short_name]
-            ## get the gtf feature lengths 
-            if os.path.isfile(org_gtf_file[short_name]):
-                from fetch_remote_data import prepare_data as pd
-                feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
-                org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
-                org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
-            else:
-                print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
-                sys.exit(-1)
+
+            if opt_action in ["a", "2", "3"]: ## perform this action only for selected options 
+                ## get the gtf feature lengths 
+                if os.path.isfile(org_gtf_file[short_name]):
+                    from fetch_remote_data import prepare_data as pd
+                    feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
+                    org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
+                    org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
+                else:
+                    print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
+                    sys.exit(-1)
         else:
+                print "warning: didn't find an annotation file gtf/gff for organism %s" % short_name
                 org_db[short_name]['gtf'] = "%s/%s/%s" % (data_path, short_name, genome_build_version)
                 org_db[short_name]['max_intron_len'] = None
                 org_db[short_name]['max_exon_len'] = None
