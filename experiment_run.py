@@ -122,7 +122,7 @@ def fetch_db_signals(yaml_config):
     """
 
     operation_seleted = "4"
-    orgdb = expdb.experiment_db(yaml_config)
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
