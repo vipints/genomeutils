@@ -238,7 +238,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         print accept_prob
 
         ## default acceptance probability 
-        accept_prob = 0.97
+        accept_prob = 0.98
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
@@ -301,7 +301,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
 
         print accept_prob
         ## default acceptance probability 
-        accept_prob = 0.97
+        accept_prob = 0.98
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
@@ -999,7 +999,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=1):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=2):
     """
     fetch the minus TSS signal sequence label
 
