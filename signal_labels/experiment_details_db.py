@@ -42,7 +42,7 @@ def experiment_db(config_file, opt_action):
     G_gallus = '%s/G_gallus/ensembl_release-69/Gallus_gallus.WASHUC2.69_stable.fa' % data_path,
     M_musculus = '%s/M_musculus/ensembl_release-69/Mus_musculus.GRCm38.69_stable.fa' % data_path,  
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/Vvinifera_145.fa' % data_path,
-    A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel3_rm.fasta' % data_path,
+    A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel3_sm.fasta' % data_path,
     B_taurus = '%s/B_taurus/ensembl_release-69/ensembl_release-69.fa' % data_path,
     C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.fa.gz' % data_path,
     D_rerio = '%s/D_rerio/ensembl_release-69/ensembl_release-69.fa' % data_path,
