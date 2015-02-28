@@ -191,7 +191,6 @@ def run_trsk(org_db, out_gff_file="_tmp_trsk_genes.gff"):
     shutil.rmtree(gio_path_temp)
     os.unlink("%s/%s" % (result_dir, out_gff_file))
 
-
 def make_gio(in_file_name, gio_path):
 	"""
     make_gio builds a genome information object for an input fasta file. 
