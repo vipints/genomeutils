@@ -129,7 +129,7 @@ def fetch_db_signals(yaml_config):
         ## arguments to pygrid 
         #gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
         gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
-        #gff_file = "%s/%s_trsk_genes_ta.gff" % (det['read_assembly_dir'], org_name)
+        #gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
         
         ## check the file present or not  
         if not os.path.isfile(gff_file):
@@ -158,7 +158,7 @@ def fetch_db_signals(yaml_config):
         #count, err = proc.communicate() 
         #count = int(count.strip())
 
-        count = 7400
+        count = 4000
         signal_type = "tss"
         poslabels_cnt = 1000 
         neglabels_cnt = 3000
@@ -208,10 +208,9 @@ def filter_genes(yaml_config):
 
     Jobs = []
     for org_name, det in orgdb.items():
-        print det 
-        ## arguments to pygrid 
         ## creating a custom gene annotation file based on the filtering of annotated transcripts. example: A_thaliana_arabidopsis-tair10.gff  
         outFile = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
+        ## arguments to pygrid 
         arg = [[det['gtf'], det['fasta'], outFile]]
 
         job = pg.cBioJob(call_filter_genes, arg) 
