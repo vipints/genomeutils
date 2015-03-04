@@ -70,16 +70,16 @@ experiment:
     genome_build_version: ensembl_release-69 
   - organism_name: C_jacchus
     sra_run_id: SRR866208
-    genome_build_version: ensembl_release-69
+    genome_build_version: ensembl_release_69
   - organism_name: O_aries
     sra_run_id: SRR645881
-    genome_build_version: ensembl_release-78
+    genome_build_version: ensembl_release_78
   - organism_name: A_gambiae 
     sra_run_id: SRR520427
     genome_build_version: anoGam1_ucsc
   - organism_name: N_vitripennis
     sra_run_id: SRR940321
-    genome_build_version: ensembl_release-22
+    genome_build_version: ensembl_release_22
   - organism_name: D_melanogaster 
     sra_run_id: SRR525180
     genome_build_version: ensembl_release-69 
