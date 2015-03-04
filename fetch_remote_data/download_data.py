@@ -412,13 +412,15 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
         print err_release
         sys.exit(-1)
 
+    org_name_valid = False 
     for org_name in org_file:
         org_name=org_name.strip("\n\r")
         
         ## check the organism directory at ftp remote folder 
         if org_name.split()[-1] != species_name: 
             continue
-
+    
+        org_name_valid = True 
         ## updating the base url 
         base_url_fasta = '%s%s/dna/' % (base_url_fasta, org_name.split()[-1])
         
@@ -464,6 +466,11 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
                 sys.stdout.write("\t... saved at %s\n" % fasta_file)
         fa_files.close()
     org_file.close()
+
+    if not org_name_valid:
+        print 
+        print "error: fasta file for %s is not present in ensembl release version %s" % (species_name, ensembl_release_version)   
+        print "URL checked %s/%s" % (base_url_fasta, species_name) 
 
 
 def download_sra_file(RUNID, download_path):
