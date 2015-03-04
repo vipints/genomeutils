@@ -36,7 +36,6 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
 
     %download_path/V_vinifera/phytozome_v9/Vvinifera_145_gene.gff3.gz
     """
-
     ## check the url for getting the recent version of the repository 
     base_url_gff = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s/' % release_version
     
@@ -47,12 +46,14 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
         print err_release
         sys.exit(-1)
 
+    org_name_valid = False 
     for ORG in org_names:
         ORG = ORG.strip("\n\r")
 
         if ORG.split()[-1] != species_name:
             continue
-
+        
+        org_name_valid = True
         ## updating the base_url 
         base_url_gff = '%s%s/annotation/' % (base_url_gff, species_name)
         try:
@@ -93,6 +94,11 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
         gff_files.close()
     org_names.close()
 
+    if not org_name_valid:
+        print 
+        print "error: gff file for %s is not present in phytozome release version %s" % (species_name, release_version)   
+        print "URL checked %s/%s" % (base_url_gff, species_name) 
+
 
 def fetch_phytozome_fasta(release_version, species_name, download_path):
     """
@@ -107,7 +113,6 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
     
     %download_path/V_vinifera/phytozome_v9.0/Vvinifera_145.fa.gz
     """
-
     ## check the url for getting the recent version of the repository 
     base_url_fasta = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s/' % release_version
     
@@ -118,12 +123,14 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
         print err_release
         sys.exit(-1)
 
+    org_name_valid = False
     for ORG in org_names:
         ORG = ORG.strip("\n\r")
 
         if ORG.split()[-1] != species_name:
             continue
 
+        org_name_valid = True
         ## updating the base_url 
         base_url_fasta = '%s%s/assembly/' % (base_url_fasta, species_name)
         try:
@@ -164,6 +171,11 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
         fa_files.close()
     org_names.close()
 
+    if not org_name_valid:
+        print 
+        print "error: fasta file for %s is not present in phytozome release version %s" % (species_name, release_version)   
+        print "URL checked %s/%s" % (base_url_fasta, species_name) 
+
 
 def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
     """
@@ -178,7 +190,6 @@ def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
     
     %download_path/A_gambiae/ensembl_release_22/Anopheles_gambiae.AgamP3.22.gtf.gz
     """
-
     ## check the url for getting the recent version of the repository 
     base_url_gtf = "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-%s/gtf/" % release_version 
     
@@ -188,14 +199,16 @@ def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
         print "ensembl_release_version %s is NOT found" % release_version
         print err_release
         sys.exit(-1)
-
+    
+    org_name_valid = False
     for org_name in org_file:
         org_name=org_name.strip("\n\r")
 
         ## check the organism directory at ftp remote folder 
         if org_name.split()[-1] != species_name: 
             continue
-
+        
+        org_name_valid = True
         ## updating the base url 
         base_url_gtf = '%s%s/' % (base_url_gtf, org_name.split()[-1])
 
@@ -237,6 +250,11 @@ def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
         gtf_files.close()
     org_file.close()
 
+    if not org_name_valid:
+        print 
+        print "error: fasta file for %s is not present in ensemblgenomes release version %s" % (species_name, release_version)   
+        print "URL checked %s/%s" % (base_url_gtf, species_name) 
+
 
 def fetch_ensembl_gtf(release_version, species_name, download_path):
     """
@@ -251,7 +269,6 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
 
     %download_path/H_sapiens/ensembl_release_78/Homo_sapiens.GRCh38.78.gtf.gz
     """
-
     ## check the url for getting the recent version of the repository 
     base_url_gtf = "ftp://ftp.ensembl.org/pub/release-%s/gtf/" % release_version 
 
@@ -262,6 +279,7 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
         print err_release
         sys.exit(-1)
 
+    org_name_valid = False 
     for org_name in org_file:
         org_name=org_name.strip("\n\r")
         
@@ -269,6 +287,7 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
         if org_name.split()[-1] != species_name: 
             continue
 
+        org_name_valid = True 
         ## updating the base url 
         base_url_gtf = '%s%s/' % (base_url_gtf, org_name.split()[-1])
         
@@ -311,6 +330,11 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
         gtf_files.close()
     org_file.close()
 
+    if not org_name_valid:
+        print 
+        print "error: gtf file for %s is not present in ensembl release version %s" % (species_name, release_version)   
+        print "URL checked %s/%s" % (base_url_gtf, species_name) 
+
 
 def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
     """
@@ -325,7 +349,6 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
 
     %download_path/A_gambiae/ensembl_release_22/Anopheles_gambiae.AgamP3.22.dna_rm.toplevel.fa.gz
     """
-
     ## check the url for getting the recent version of the repository 
     base_url_fasta = "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-%s/fasta/" % release_version 
 
@@ -336,6 +359,7 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
         print err_release
         sys.exit(-1)
 
+    org_name_valid = False
     for org_name in org_file:
         org_name=org_name.strip("\n\r")
         
@@ -343,6 +367,7 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
         if org_name.split()[-1] != species_name: 
             continue
 
+        org_name_valid = True
         ## updating the base url 
         base_url_fasta = '%s%s/dna/' % (base_url_fasta, org_name.split()[-1])
 
@@ -387,6 +412,11 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
 
         fa_files.close()
     org_file.close()
+
+    if not org_name_valid:
+        print 
+        print "error: fasta file for %s is not present in ensembl release version %s" % (species_name, ensembl_release_version)   
+        print "URL checked %s/%s" % (base_url_fasta, species_name) 
 
 
 def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
