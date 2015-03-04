@@ -72,8 +72,8 @@ experiment:
     sra_run_id: SRR866208
     genome_build_version: ensembl_release-69
   - organism_name: O_aries
-    sra_run_id: SRR1013877
-    genome_build_version: ensembl_release-69 
+    sra_run_id: SRR645881
+    genome_build_version: ensembl_release-78
   - organism_name: A_gambiae 
     sra_run_id: SRR520427
     genome_build_version: anoGam1_ucsc
