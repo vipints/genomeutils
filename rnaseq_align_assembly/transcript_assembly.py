@@ -375,6 +375,7 @@ def validate_pred_gene_models(gff_name, fas_file, out_fname="trsk_genes.gff"):
                         get_gene_models[(fas_rec.id, genes[0], genes[1], genes[2])] = 1   
     
     gff_cont = GFFParser.Parse(gff_name)
+    #TODO check for the length of orf region and filter the transcripts based on that
 
     ## filter out the best gene models based on the consensus 
     print "writing the fine tuned transctipts to the the file"
