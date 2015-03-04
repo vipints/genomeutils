@@ -55,10 +55,13 @@ def experiment_db(config_file, opt_action):
     D_simulans = '%s/D_simulans/ensembl_release-22/Drosophila_simulans.WUGSC1.22.dna_sm.dna.fa' % data_path,
     H_sapiens = '%s/H_sapiens/hg19_bowtie/hg19.fa' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release-69/Ornithorhynchus_anatinus.OANA5.69-filtered_dna.fa' % data_path,
+    N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis_dna_sm.fa' % data_path,
     P_troglodytes = '%s/P_troglodytes/ensembl_release-69/Pan_troglodytes.CHIMP2.1.4.69_stable.fa' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206.fa' % data_path,
     Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181.fa' % data_path,
     A_thaliana = '%s/A_thaliana/arabidopsis_tair10/sequences/TAIR9_chr_all.fas' % data_path,
+    O_aries = '%s/O_aries/ensembl_release_78/O_aries_dna_sm.fa' % data_path,
+    C_jacchus = '%s/C_jacchus/ensembl_release_69/C_jacchus_dna_sm.fa' % data_path,
     C_elegans = '%s/C_elegans/ensembl_release-69/Caenorhabditis_elegans.WBcel215.69.dna.toplevel.fa' % data_path,
     O_latipes = '%s/O_latipes/ensembl_release-74/ensembl_release-74.fa' % data_path,
     R_norvegicus = '%s/R_norvegicus/ensembl_release-69/Rattus_norvegicus.RGSC3.4.69.dna.toplevel.fa' % data_path,
@@ -84,9 +87,12 @@ def experiment_db(config_file, opt_action):
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/Vvinifera_145_gene.gff3' % data_path,
     A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel2_ucsc.gtf' % data_path,
     B_taurus = '%s/B_taurus/ensembl_release-69/Bos_taurus.UMD3.1.69.gtf' % data_path,
+    C_jacchus = '%s/C_jacchus/ensembl_release_69/C_jacchus.gff' % data_path,
     C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.gff3' % data_path,
     D_rerio = '%s/D_rerio/ensembl_release-69/ensembl_release-69.gtf' % data_path,
     G_max = '%s/G_max/phytozome_v9.0/Gmax_189_gene.gff3' % data_path,
+    N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis.gtf' % data_path,
+    O_aries = '%s/O_aries/ensembl_release_78/O_aries.gtf' % data_path,
     M_truncatula = '%s/M_truncatula/' % data_path,
     P_pacificus = '%s/P_pacificus/ensembl_release-22/Pristionchus_pacificus.P_pacificus-5.0.22.gtf' % data_path,
     S_scrofa = '%s/S_scrofa/ensembl_release-69/Sus_scrofa.Sscrofa10.2.69.gtf' % data_path,
@@ -130,6 +136,9 @@ def experiment_db(config_file, opt_action):
         sra_files = [] 
         if os.path.isdir("%s/%s/source_data" % (exp_path, short_name)):
             for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
+                file_prefx, ext = os.path.splitext(sra_file)
+                if ext == ".sra": ## skipping the original .sra binary file 
+                    continue
                 if re.search(sra_run_id, sra_file):
                     sra_files.append(sra_file) 
         else:
@@ -148,6 +157,7 @@ def experiment_db(config_file, opt_action):
         if opt_action in ["c", "a", "2", "3"]: ## perform this action only for selected options 
             if sra_files:
                 fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
+                print 'using sequencing read file %s to determine readLength' % fqfile
                 fh = helper.open_file(fqfile)
                 for rec in SeqIO.parse(fh, "fastq"):
                     readlength = len(rec.seq)
