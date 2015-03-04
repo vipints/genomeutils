@@ -13,8 +13,8 @@ Requirement:
 from __future__ import division
 import sys 
 import numpy 
-import collections
 from Bio import SeqIO 
+from collections import defaultdict
 from gfftools import GFFParser, helper 
 
 
@@ -30,19 +30,26 @@ def filter_gene_models(gff_name, fas_file, outFile):
     @type outFile: str 
     """
     
+    print 
     print 'using genome sequence file %s' % fas_file
     print 'using genome annotation file %s' % gff_name
     print 
+    sys.stdout.write("parsing ...")
     ## getting the genome annotation from GFF file 
     gff_content = GFFParser.Parse(gff_name)
+    sys.stdout.write(" ... done\n")
     
-    ## getting the spliced transcripts from the predicted gene list 
-    transcripts_region = collections.defaultdict(list)
+    spliced_cand = 0 
+    sing_exon_gen = 0
+
+    print "screening for spliced transcripts..."
+    print 
+    transcripts_region = defaultdict(list)
+    ## screening the spliced transcripts
     for gene_recd in gff_content:
-        spliced_transcript = collections.defaultdict(list)
+        spliced_transcript = defaultdict(list)
 
         for idx, sub_rec in enumerate(gene_recd['transcripts']):
-            
             try:
                 exon_cnt = len(gene_recd['exons'][idx])
             except:
@@ -50,6 +57,7 @@ def filter_gene_models(gff_name, fas_file, outFile):
 
             ## skipping the single-exon transcripts 
             if exon_cnt > 1: 
+                spliced_cand +=1
                 for idk, ex in enumerate(gene_recd['exons'][idx]):
                     if idk == 0:
                         ex[0] = None 
@@ -57,12 +65,20 @@ def filter_gene_models(gff_name, fas_file, outFile):
                         ex[1] = None
 
                     spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append(ex)
-
-        transcripts_region[gene_recd['chr']].append(spliced_transcript)
+            else:
+                sing_exon_gen +=1 
+        
+        if spliced_transcript: 
+            transcripts_region[gene_recd['chr']].append(spliced_transcript)
+    
+    print "considering %d spliced transcripts" % spliced_cand
+    print 
+    print "discarding %d single exon transcripts" % sing_exon_gen
+    print 
 
     print "check for the splice site consensus for predicted transcripts"
     ## check for splice site consensus sequence of predicted transcripts 
-    get_gene_models = collections.defaultdict()
+    get_gene_models = defaultdict()
     for fas_rec in SeqIO.parse(fas_file, "fasta"):
         if fas_rec.id in transcripts_region:
             for details in transcripts_region[fas_rec.id]:
