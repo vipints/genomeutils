@@ -68,18 +68,18 @@ experiment:
   - organism_name: D_rerio 
     sra_run_id: SRR519725
     genome_build_version: ensembl_release-69 
-  - organism_name: X_tropicalis 
-    sra_run_id: SRR579560
-    genome_build_version: JGIv4-1 
-  - organism_name: M_domestica 
-    sra_run_id: SRR449433
+  - organism_name: C_jacchus
+    sra_run_id: SRR866208
+    genome_build_version: ensembl_release-69
+  - organism_name: O_aries
+    sra_run_id: SRR1013877
     genome_build_version: ensembl_release-69 
   - organism_name: A_gambiae 
     sra_run_id: SRR520427
     genome_build_version: anoGam1_ucsc
-  - organism_name: A_mellifera 
-    sra_run_id: SRR849282
-    genome_build_version: apiMel3_ucsc
+  - organism_name: N_vitripennis
+    sra_run_id: SRR940321
+    genome_build_version: ensembl_release-22
   - organism_name: D_melanogaster 
     sra_run_id: SRR525180
     genome_build_version: ensembl_release-69 
