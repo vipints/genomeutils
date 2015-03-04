@@ -128,8 +128,8 @@ def fetch_db_signals(yaml_config):
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
         #gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-        gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
-        #gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
+        #gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
+        gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
         
         ## check the file present or not  
         if not os.path.isfile(gff_file):
@@ -138,8 +138,10 @@ def fetch_db_signals(yaml_config):
        
         ## new label sequence dir 
         #out_dir = "%s/db_labels" % det['labels_dir']
-        out_dir = "%s/cuff_labels" % det['labels_dir']
-        #out_dir = "%s/trsk_labels" % det['labels_dir']
+        #out_dir = "%s/cuff_labels" % det['labels_dir']
+        out_dir = "%s/trsk_labels" % det['labels_dir']
+        #out_dir = "%s/trsk_tot_labels" % det['labels_dir']
+        #out_dir = "%s/cuff_tot_labels" % det['labels_dir']
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
@@ -158,9 +160,9 @@ def fetch_db_signals(yaml_config):
         #count, err = proc.communicate() 
         #count = int(count.strip())
 
-        count = 4000
+        count = 5000
         signal_type = "tss"
-        poslabels_cnt = 1000 
+        poslabels_cnt = 1000
         neglabels_cnt = 3000
         flank_nts = 1200 
 
@@ -190,17 +192,16 @@ def call_filter_genes(args_list):
     wrapper for submitting jobs to pygrid
     """
 
-    from rnaseq_align_assembly import refine_transcript_models  
+    from rnaseq_align_assembly import refine_transcript_models as filter_tool 
     gtf_file, fasta_file, result_file = args_list
-    filter_gene_file = refine_transcript_models.filter_gene_models(gtf_file, fasta_file, result_file)
+    filter_gene_file = filter_tool.filter_gene_models(gtf_file, fasta_file, result_file)
     print "filtered gene models stored at %s" % filter_gene_file
-    
     return "done"
 
 
 def filter_genes(yaml_config):
     """
-    filter out invalid gene models from annotation
+    filter out invalid gene models from the provided genome annotation
     """
 
     operation_seleted = "f"
@@ -208,8 +209,11 @@ def filter_genes(yaml_config):
 
     Jobs = []
     for org_name, det in orgdb.items():
-        ## creating a custom gene annotation file based on the filtering of annotated transcripts. example: A_thaliana_arabidopsis-tair10.gff  
+
+        ## creating a output file based on the filtering of annotated transcripts. 
+        ## example: A_thaliana_arabidopsis-tair10.gff  
         outFile = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
+
         ## arguments to pygrid 
         arg = [[det['gtf'], det['fasta'], outFile]]
 
