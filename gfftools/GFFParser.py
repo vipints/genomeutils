@@ -183,7 +183,8 @@ def Parse(ga_file):
                                             strand = gff_info['strand'], 
                                             score = gff_info['score'], 
                                             ID = gff_info['id'],
-                                            gene_id = gff_info['info'].get('GParent', '') 
+                                            gene_id = gff_info['info'].get('GParent', ''), 
+                                            read_cov = gff_info['info'].get('cov', '') 
                                             ))
             elif rec_category == 'parent':
                 parent_map[(gff_info['chr'], gff_info['info']['source'], gff_info['id'])] = dict( 
@@ -191,6 +192,7 @@ def Parse(ga_file):
                                             location = gff_info['location'],
                                             strand = gff_info['strand'],
                                             score = gff_info['score'], 
+                                            read_cov = gff_info['info'].get('cov', ''), 
                                             name = tags.get('Name', [''])[0])
             elif rec_category == 'record':
                 #TODO how to handle plain records?
@@ -220,7 +222,7 @@ def format_gene_models(parent_nf_map, child_nf_map):
     gene = np.zeros((len(parent_nf_map),), dtype = utils.init_gene())
 
     for pkey, pdet in parent_nf_map.items():
-
+        
         # considering only gene features 
         #if not re.search(r'gene', pdet.get('type', '')):
         #    continue 
@@ -264,10 +266,11 @@ def format_gene_models(parent_nf_map, child_nf_map):
         CLV = np.zeros((dim,), dtype=np.object)
         CSTOP = np.zeros((dim,), dtype=np.object)
         TSTAT = np.zeros((dim,), dtype=np.object)
+        TRINFO = np.zeros((dim,), dtype=np.object)
 
         # fetching corresponding transcripts 
         for xq, Lv1 in enumerate(child_nf_map[pkey]):
-
+            
             TID = Lv1.get('ID', '')
             TRS[xq]= np.array([TID])
 
@@ -360,6 +363,7 @@ def format_gene_models(parent_nf_map, child_nf_map):
             CSTOP[xq] = np.array(cdsStop)
             TSSc[xq] = np.array(TSS)
             CLV[xq] = np.array(cleave)
+            TRINFO[xq] = np.array(Lv1.get('cov', '')) ## including the transcript read coverage 
             
         # add sub-features to the parent gene feature
         gene[g_cnt]['transcript_status'] = TSTAT
@@ -373,10 +377,11 @@ def format_gene_models(parent_nf_map, child_nf_map):
         gene[g_cnt]['cdsStop'] = CSTOP
         gene[g_cnt]['tss'] = TSSc
         gene[g_cnt]['cleave'] = CLV
-        
+        gene[g_cnt]['transcript_info'] = TRINFO
+
         gene[g_cnt]['gene_info'] = dict( ID = pkey[-1], 
                                 Name = pdet.get('name'), 
-                                Source = pkey[1]) 
+                                Source = pkey[1], ) 
         # few empty fields // TODO fill this:
         gene[g_cnt]['anno_id'] = []
         gene[g_cnt]['confgenes_id'] = []
@@ -384,7 +389,6 @@ def format_gene_models(parent_nf_map, child_nf_map):
         gene[g_cnt]['name2'] = []
         gene[g_cnt]['chr_num'] = []
         gene[g_cnt]['paralogs'] = []
-        gene[g_cnt]['transcript_info'] = []
         gene[g_cnt]['transcript_valid'] = []
         gene[g_cnt]['exons_confirmed'] = []
         gene[g_cnt]['tis_conf'] = []
@@ -456,6 +460,7 @@ def create_missing_feature_type(p_feat, c_feat):
             EPOS.append(gchild.get('location', [])[1]) 
             STRD = gchild.get('strand', '')
             SCR = gchild.get('score', '')
+            read_cov = gchild.get('read_cov', '')[0] ## read coverage to the transcript
             if gchild.get('type', '') == "gene": ## gencode GTF file has this problem 
                 continue 
             TYP[gchild.get('type', '')] = 1
@@ -483,6 +488,7 @@ def create_missing_feature_type(p_feat, c_feat):
                                             strand = STRD, 
                                             score = SCR, 
                                             ID = transcript_id,
+                                            cov = read_cov,
                                             gene_id = '' ))
         # reorganizing the grand child
         for gchild in det:
