@@ -13,7 +13,6 @@ import libpyjobrunner as pg
 
 from optparse import OptionParser
 
-from fetch_remote_data import prepare_data as ppd
 from fetch_remote_data import download_data as dld
 
 from signal_labels import experiment_details_db as expdb
@@ -50,7 +49,9 @@ def main():
     parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads." )
     parser.add_option( "-3", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer." )
     parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks." )
-    parser.add_option( "-f", "--filter_genes", action="store_true", dest="filter_genes", default=False, help="Filter out genes from annotation file based on the consensus signal sequence." )
+    parser.add_option( "-f", "--filter_trsk_out", action="store_true", dest="filter_trsk_out", default=False, help="Apply filter to the TRSK predicted gene models." )
+    parser.add_option( "--filter_cuff_out", action="store_true", dest="filter_cuff_out", default=False, help="Apply filter to the cufflinks predicted gene models." )
+    parser.add_option( "--filter_db_anno", action="store_true", dest="filter_db_anno", default=False, help="Apply filter to the online db gene models." )
     parser.add_option( "-4", "--extract_signal_labels", action="store_true", dest="extract_signal_labels", default=False, help="Extract training labels for different genomic signals." )
 
     ( options, args ) = parser.parse_args()
@@ -60,14 +61,15 @@ def main():
         print __doc__
         sys.exit(-1)
 
-    print 'Using config file %s for the experiment.' % config_file
-
     if not (options.download_public_data ^ options.genome_index ^ \
             options.read_mapping ^ options.multi_map_resolve ^ \
             options.trsk_prediction ^ options.cufflinks_prediction ^ \
-            options.filter_genes ^ options.extract_signal_labels):
+            options.filter_trsk_out ^ options.extract_signal_labels ^ \
+            options.filter_cuff_out ^ options.filter_db_anno):
         parser.print_help()
         sys.exit(-1)
+        
+    print 'Using config file %s for the experiment.' % config_file
 
     if options.download_public_data:
         print 'Operation selected: Download public genome dataset and Sequencing experiment files'
@@ -93,9 +95,17 @@ def main():
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data with Cufflinks'
         transcript_prediction_cuff(config_file)
 
-    if options.filter_genes:
+    if options.filter_trsk_out:
         print 'Operation selected: Filter out gene models from annotation file based on the splice-site consensus into account and length of the ORF'
-        filter_genes(config_file)
+        filter_genes(config_file, "trsk")
+
+    if options.filter_cuff_out:
+        print 'Operation selected: Filter out gene models from cufflinks predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
+        filter_genes(config_file, "cufflinks")
+
+    if options.filter_db_anno:
+        print 'Operation selected: Filter out gene models from cufflinks predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
+        filter_genes(config_file, "onlinedb")
 
     if options.extract_signal_labels:
         print 'Operation selected: Extract different genomic signal label sequences'
@@ -199,7 +209,7 @@ def call_filter_genes(args_list):
     return "done"
 
 
-def filter_genes(yaml_config):
+def filter_genes(yaml_config, data_method):
     """
     filter out invalid gene models from the provided genome annotation
     """
@@ -210,12 +220,18 @@ def filter_genes(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
 
-        ## creating a output file based on the filtering of annotated transcripts. 
-        ## example: A_thaliana_arabidopsis-tair10.gff  
-        outFile = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db'])
+        if data_method == "cufflinks":
+            gff_file = "%s/transcripts.gtf" % det['read_assembly_dir'] ## cufflinks run output file 
+            outFile = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name) ## example: A_thaliana_cufflinks_genes.gff 
+        elif data_method == "trsk":
+            gff_file = "%s/tmp_trsk_genes.gff" % det['read_assembly_dir'] ## trsk run output file 
+            outFile = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name) ## example: A_thaliana_trsk_genes.gff  
+        else:
+            gff_file = det['gtf'] ## public database genome annotation file 
+            outFile = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## example: A_thaliana_arabidopsis-tair10.gff  
 
         ## arguments to pygrid 
-        arg = [[det['gtf'], det['fasta'], outFile]]
+        arg = [[gff_file, det['fasta'], outFile]]
 
         job = pg.cBioJob(call_filter_genes, arg) 
 
@@ -258,7 +274,7 @@ def transcript_prediction_cuff(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det, 4]]
+        arg = [[det, 18]]
 
         job = pg.cBioJob(call_transcript_prediction_cuff, arg) 
 
@@ -340,7 +356,7 @@ def alignment_filter(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['short_name'], det['read_map_dir'], 3]]
+        arg = [[det['short_name'], det['read_map_dir'], 12]]
 
         job = pg.cBioJob(call_alignment_filter, arg) 
 
@@ -410,6 +426,7 @@ def call_genome_index(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
+    from fetch_remote_data import prepare_data as ppd
 
     fasta_file, out_dir, genome_anno, num_workers, onematelength = args_list
     ppd.create_star_genome_index(fasta_file, out_dir, genome_anno, num_workers, onematelength)
@@ -426,7 +443,7 @@ def create_genome_index(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 4, det['read_length']-1]]
+        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 12, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
     
@@ -443,7 +460,7 @@ def create_genome_index(yaml_config):
     print 
     print "sending jobs to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs, "True", 4)
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def download_public_data(yaml_config):
