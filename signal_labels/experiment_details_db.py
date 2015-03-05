@@ -163,7 +163,7 @@ def experiment_db(config_file, opt_action):
 
         ## calculate the sequence read length
         readlength = 0 
-        if opt_action in ["c", "a", "2", "3"]: ## perform this action only for selected options 
+        if opt_action in ["a", "2", "3"]: ## perform this action only for selected options 
             if sra_files:
                 fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
                 print 'using sequencing read file %s to determine readLength' % fqfile
