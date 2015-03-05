@@ -148,9 +148,18 @@ def experiment_db(config_file, opt_action):
         org_db[short_name]['fastq'] = sra_files
 
         ## read mapping, read assembly and label generation working folders 
-        org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
-        org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
-        org_db[short_name]['labels_dir'] = "%s/%s/signal_labels" % (exp_path, short_name)
+        read_map_path = "%s/%s/read_mapping" % (exp_path, short_name)
+        if not os.path.isdir(read_map_path):
+            os.makedirs(read_map_path)
+        org_db[short_name]['read_map_dir'] = read_map_path
+        trans_pred_path = "%s/%s/trans_pred" % (exp_path, short_name)
+        if not os.path.isdir(trans_pred_path):
+            os.makedirs(trans_pred_path)
+        org_db[short_name]['read_assembly_dir'] = trans_pred_path
+        labels_path = "%s/%s/signal_labels" % (exp_path, short_name) 
+        if not os.path.isdir(labels_path):
+            os.makedirs(labels_path)
+        org_db[short_name]['labels_dir'] = labels_path
 
         ## calculate the sequence read length
         readlength = 0 
