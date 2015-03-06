@@ -52,7 +52,9 @@ def main():
     parser.add_option( "-f", "--filter_trsk_out", action="store_true", dest="filter_trsk_out", default=False, help="Apply filter to the TRSK predicted gene models." )
     parser.add_option( "--filter_cuff_out", action="store_true", dest="filter_cuff_out", default=False, help="Apply filter to the cufflinks predicted gene models." )
     parser.add_option( "--filter_db_anno", action="store_true", dest="filter_db_anno", default=False, help="Apply filter to the online db gene models." )
-    parser.add_option( "-4", "--extract_signal_labels", action="store_true", dest="extract_signal_labels", default=False, help="Extract training labels for different genomic signals." )
+    parser.add_option( "-4", "--fetch_trsk_labels", action="store_true", dest="fetch_trsk_labels", default=False, help="Fetch labels from TranscriptSkimmer." )
+    parser.add_option( "--fetch_cuff_labels", action="store_true", dest="fetch_cuff_labels", default=False, help="Fetch labels from cufflinks." )
+    parser.add_option( "--fetch_db_labels", action="store_true", dest="fetch_db_labels", default=False, help="Fetch labels from public database annotation files." )
 
     ( options, args ) = parser.parse_args()
     try:
@@ -64,8 +66,9 @@ def main():
     if not (options.download_public_data ^ options.genome_index ^ \
             options.read_mapping ^ options.multi_map_resolve ^ \
             options.trsk_prediction ^ options.cufflinks_prediction ^ \
-            options.filter_trsk_out ^ options.extract_signal_labels ^ \
-            options.filter_cuff_out ^ options.filter_db_anno):
+            options.filter_trsk_out ^ options.fetch_trsk_labels ^ \
+            options.filter_cuff_out ^ options.filter_db_anno ^ \
+            options.fetch_cuff_labels ^ options.fetch_db_labels):
         parser.print_help()
         sys.exit(-1)
         
@@ -96,7 +99,7 @@ def main():
         transcript_prediction_cuff(config_file)
 
     if options.filter_trsk_out:
-        print 'Operation selected: Filter out gene models from annotation file based on the splice-site consensus into account and length of the ORF'
+        print 'Operation selected: Filter out gene models from TranscriptSkimmer predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
         filter_genes(config_file, "trsk")
 
     if options.filter_cuff_out:
@@ -104,12 +107,20 @@ def main():
         filter_genes(config_file, "cufflinks")
 
     if options.filter_db_anno:
-        print 'Operation selected: Filter out gene models from cufflinks predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
+        print 'Operation selected: Filter out gene models from public database - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
         filter_genes(config_file, "onlinedb")
 
-    if options.extract_signal_labels:
-        print 'Operation selected: Extract different genomic signal label sequences'
-        fetch_db_signals(config_file)
+    if options.fetch_trsk_labels:
+        print 'Operation selected: Extract different genomic signal label sequences from TranscriptSkimmer.'
+        fetch_db_signals(config_file, "trsk")
+
+    if options.fetch_cuff_labels:
+        print 'Operation selected: Extract different genomic signal label sequences from cufflinks.'
+        fetch_db_signals(config_file, "cufflinks")
+
+    if options.fetch_db_labels:
+        print 'Operation selected: Extract different genomic signal label sequences from online database files.'
+        fetch_db_signals(config_file, "onlinedb")
 
 
 def call_fetch_db_signals(args_list):
@@ -126,7 +137,7 @@ def call_fetch_db_signals(args_list):
     return "done" 
 
 
-def fetch_db_signals(yaml_config):
+def fetch_db_signals(yaml_config, data_method):
     """
     get the genomic signal labels bases on the annotation from external database
     """
@@ -136,27 +147,25 @@ def fetch_db_signals(yaml_config):
 
     Jobs = []
     for org_name, det in orgdb.items():
-        ## arguments to pygrid 
-        #gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-        #gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
-        gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
+
+        if data_method == "trsk":
+            gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
+            out_dir = "%s/trsk_labels" % det['labels_dir']## new label sequence dir 
+        elif data_method == "cufflinks":
+            gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
+            out_dir = "%s/cuff_labels" % det['labels_dir']
+        else:
+            gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
+            out_dir = "%s/db_labels" % det['labels_dir']
         
-        ## check the file present or not  
-        if not os.path.isfile(gff_file):
-            print "error"
-            sys.exit(-1)
+        if not os.path.isfile(gff_file):## check the file present or not  
+            print "error: genome annotation file missing %s" % gff_file
+            sys.exit(0)
        
-        ## new label sequence dir 
-        #out_dir = "%s/db_labels" % det['labels_dir']
-        #out_dir = "%s/cuff_labels" % det['labels_dir']
-        out_dir = "%s/trsk_labels" % det['labels_dir']
-        #out_dir = "%s/trsk_tot_labels" % det['labels_dir']
-        #out_dir = "%s/cuff_tot_labels" % det['labels_dir']
-        if not os.path.exists(out_dir):
+        if not os.path.exists(out_dir): ## create the new label sequence dir 
             os.makedirs(out_dir)
 
-        ## cleaning the existing one 
-        for the_file in os.listdir(out_dir):
+        for the_file in os.listdir(out_dir): ## cleaning the existing one 
             file_path = os.path.join(out_dir, the_file)
             try:
                 if os.path.isfile(file_path):
@@ -170,14 +179,15 @@ def fetch_db_signals(yaml_config):
         #count, err = proc.communicate() 
         #count = int(count.strip())
 
-        count = 5000
+        count = 4000
         signal_type = "tss"
         poslabels_cnt = 1000
         neglabels_cnt = 3000
         flank_nts = 1200 
 
+        ## arguments to pygrid 
         arg = [[det['fasta'], gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts, out_dir]]
-
+        
         job = pg.cBioJob(call_fetch_db_signals, arg) 
 
         ## native specifications 
