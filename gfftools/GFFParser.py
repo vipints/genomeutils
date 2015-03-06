@@ -363,7 +363,8 @@ def format_gene_models(parent_nf_map, child_nf_map):
             CSTOP[xq] = np.array(cdsStop)
             TSSc[xq] = np.array(TSS)
             CLV[xq] = np.array(cleave)
-            TRINFO[xq] = np.array(Lv1.get('cov', '')) ## including the transcript read coverage 
+            if Lv1.get('cov', ''):
+                TRINFO[xq] = np.array(Lv1.get('cov', '')) ## including the transcript read coverage 
             
         # add sub-features to the parent gene feature
         gene[g_cnt]['transcript_status'] = TSTAT
