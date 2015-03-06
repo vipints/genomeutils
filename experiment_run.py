@@ -78,47 +78,47 @@ def main():
         print 'Operation selected: Download public genome dataset and Sequencing experiment files'
         download_public_data(config_file)
 
-    if options.genome_index:
+    elif options.genome_index:
         print 'Operation selected: Create STAR genome index'
         create_genome_index(config_file)
 
-    if options.read_mapping: 
+    elif options.read_mapping: 
         print 'Operation selected: Read alignment with STAR'
         align_rnaseq_reads(config_file)
 
-    if options.multi_map_resolve:
+    elif options.multi_map_resolve:
         print 'Operation selected: Multiple read mapper resolution with MMR'
         alignment_filter(config_file) 
 
-    if options.trsk_prediction:
+    elif options.trsk_prediction:
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data with TranscriptSkimmer'
         transcript_prediction_trsk(config_file)
 
-    if options.cufflinks_prediction:
+    elif options.cufflinks_prediction:
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data with Cufflinks'
         transcript_prediction_cuff(config_file)
 
-    if options.filter_trsk_out:
+    elif options.filter_trsk_out:
         print 'Operation selected: Filter out gene models from TranscriptSkimmer predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
         filter_genes(config_file, "trsk")
 
-    if options.filter_cuff_out:
+    elif options.filter_cuff_out:
         print 'Operation selected: Filter out gene models from cufflinks predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
         filter_genes(config_file, "cufflinks")
 
-    if options.filter_db_anno:
+    elif options.filter_db_anno:
         print 'Operation selected: Filter out gene models from public database - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
         filter_genes(config_file, "onlinedb")
 
-    if options.fetch_trsk_labels:
+    elif options.fetch_trsk_labels:
         print 'Operation selected: Extract different genomic signal label sequences from TranscriptSkimmer.'
         fetch_db_signals(config_file, "trsk")
 
-    if options.fetch_cuff_labels:
+    elif options.fetch_cuff_labels:
         print 'Operation selected: Extract different genomic signal label sequences from cufflinks.'
         fetch_db_signals(config_file, "cufflinks")
 
-    if options.fetch_db_labels:
+    elif options.fetch_db_labels:
         print 'Operation selected: Extract different genomic signal label sequences from online database files.'
         fetch_db_signals(config_file, "onlinedb")
 
