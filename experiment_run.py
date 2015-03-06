@@ -204,8 +204,7 @@ def call_filter_genes(args_list):
 
     from rnaseq_align_assembly import refine_transcript_models as filter_tool 
     gtf_file, fasta_file, result_file = args_list
-    filter_gene_file = filter_tool.filter_gene_models(gtf_file, fasta_file, result_file)
-    print "filtered gene models stored at %s" % filter_gene_file
+    filter_tool.filter_gene_models(gtf_file, fasta_file, result_file)
     return "done"
 
 
