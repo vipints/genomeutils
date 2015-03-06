@@ -1,13 +1,19 @@
 #!/usr/bin/env python 
 """
-filter out gene models from annotation file based on the splice-site consensus into account and length of the ORF 
+filter out gene models from an genome annotation file based on 
+the splice-site sequence consensus, length of the ORF and 
+sequencing read coverage to the trancript. 
 
-Program requires genome annotation in gtf/gff and genome sequence file in fasta format. 
+program requires genome annotation in gtf/gff and genome sequence 
+file in fasta format. 
+
+usage:
+    python refine_transcript_models.py in.gff in.fasta  
 
 Requirement:
-    numpy
-    gfftools
-    biopython 
+    numpy       :- http://numpy.org 
+    gfftools    :- 
+    biopython   :- http://biopython.org
 """
 
 from __future__ import division
@@ -29,24 +35,22 @@ def filter_gene_models(gff_name, fas_file, outFile):
     @args outFile: filtered gene output file 
     @type outFile: str 
     """
-    
-    print 
     print 'using genome sequence file %s' % fas_file
     print 'using genome annotation file %s' % gff_name
     print 
-    sys.stdout.write("parsing ...")
-    ## getting the genome annotation from GFF file 
-    gff_content = GFFParser.Parse(gff_name)
-    sys.stdout.write(" ... done\n")
-    
-    spliced_cand = 0 
-    sing_exon_gen = 0
+
+    print "parsing genome annotation file..."
+    gff_content = GFFParser.Parse(gff_name) ## getting the genome annotation from GFF file 
+    print " ...done" 
 
     print "screening for spliced transcripts..."
-    print 
+    orf_short = 0 
+    spliced_cand = 0 
+    sing_exon_gen = 0
+    transcript_cov = 0 
     transcripts_region = defaultdict(list)
-    ## screening the spliced transcripts
-    for gene_recd in gff_content:
+
+    for gene_recd in gff_content: ## screening the spliced transcripts
         spliced_transcript = defaultdict(list)
 
         for idx, sub_rec in enumerate(gene_recd['transcripts']):
@@ -55,60 +59,83 @@ def filter_gene_models(gff_name, fas_file, outFile):
             except:
                 continue
 
-            ## skipping the single-exon transcripts 
-            if exon_cnt > 1: 
-                spliced_cand +=1
-                for idk, ex in enumerate(gene_recd['exons'][idx]):
-                    if idk == 0:
-                        ex[0] = None 
-                    if exon_cnt-1 == idk:
-                        ex[1] = None
+            if exon_cnt > 1: ## skipping the single-exon transcripts 
+                if gene_recd['transcript_info'][idx]: ## discarding the transcript based on the read coverage value
+                    if float(numpy.atleast_1d(gene_recd['transcript_info'][idx])[0]) < 10: ## read coverage value to consider  
+                        transcript_cov += 1 
+                        continue
 
-                    spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append(ex)
+                orf_length = 0 
+                for idk, ex in enumerate(gene_recd['exons'][idx]):
+                    orf_length += ex[1]-(ex[0]-1)
+
+                    if idk == 0:
+                        #ex[0] = None 
+                        spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append((None, ex[1]))
+                    elif exon_cnt-1 == idk:
+                        #ex[1] = None
+                        spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append((ex[0], None))
+                    else:
+                        spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append((ex[0], ex[1]))
+
+                if orf_length < 400: ## min orf length for the transcripts 
+                    del spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])] ## clearing that transcript details
+                    orf_short += 1 
+                    continue
+                    
+                spliced_cand +=1
             else:
                 sing_exon_gen +=1 
         
         if spliced_transcript: 
             transcripts_region[gene_recd['chr']].append(spliced_transcript)
     
-    print "considering %d spliced transcripts" % spliced_cand
-    print 
-    print "discarding %d single exon transcripts" % sing_exon_gen
-    print 
+    print "...considering %d spliced transcripts\n" % spliced_cand 
+    print "discarding transcripts...\n\t%d transcripts with single exon" % sing_exon_gen
+    print "\t%d transcripts with read coverage value less than 10" % transcript_cov 
+    print "\t%d transcripts with orf region less than 400 nucleotides" % orf_short
 
-    print "check for the splice site consensus for predicted transcripts"
-    ## check for splice site consensus sequence of predicted transcripts 
+    genemodels = check_splice_site_consensus(fas_file, transcripts_region)
+
+    write_filter_gene_models(gff_content, genemodels, outFile)
+
+
+def check_splice_site_consensus(fas_file, splice_region):
+    """
+    splice site consensus check
+    """
+    print 
+    print "splice site sequence consensus check started..."
     get_gene_models = defaultdict()
+    splice_site_con = 0 
     for fas_rec in SeqIO.parse(fas_file, "fasta"):
-        if fas_rec.id in transcripts_region:
-            for details in transcripts_region[fas_rec.id]:
+        if fas_rec.id in splice_region:
+            for details in splice_region[fas_rec.id]:
                 for genes, regions in details.items():
-
                     acc_cons_cnt = 0 
                     don_cons_cnt = 0 
 
                     for region in regions:
                         if genes[-1] == '+':
-                            ## acceptor splice site 
-                            if not numpy.isnan(region[0]):
+                            #if not numpy.isnan(region[0]):## acceptor splice site 
+                            if region[0]:## acceptor splice site 
                                 acc_seq = fas_rec.seq[int(region[0])-3:int(region[0])-1]
                                 if str(acc_seq).upper() == "AG":
                                     acc_cons_cnt += 1 
 
-                            if not numpy.isnan(region[1]):
+                            if region[1]:
                                 don_seq = fas_rec.seq[int(region[1]):int(region[1])+2]
                                 if str(don_seq).upper() == "GT":
                                     don_cons_cnt +=1 
 
                         elif genes[-1] == '-':
-                            ## donor splice site 
-                            if not numpy.isnan(region[0]):
+                            if region[0]: ## donor splice site 
                                 don_seq = fas_rec.seq[int(region[0])-3:int(region[0])-1]
                                 don_seq = don_seq.reverse_complement()
                                 if str(don_seq).upper() == "GT":
                                     don_cons_cnt +=1 
                             
-                            if not numpy.isnan(region[1]):
+                            if region[1]:
                                 acc_seq = fas_rec.seq[int(region[1]):int(region[1])+2]
                                 acc_seq = acc_seq.reverse_complement()
                                 if str(acc_seq).upper() == "AG":
@@ -116,20 +143,34 @@ def filter_gene_models(gff_name, fas_file, outFile):
                     ## check for half of the consensus sites 
                     if acc_cons_cnt > (len(regions)/2) and don_cons_cnt > (len(regions)/2):
                         get_gene_models[(fas_rec.id, genes[0], genes[1], genes[2])] = 1   
+                    else:
+                        splice_site_con +=1 
     
-    gff_cont = GFFParser.Parse(gff_name)
+    print "...considering %d best transcripts\n" % len(get_gene_models) 
+    print "discarding transcripts..."
+    print "\t%d splice-site consensus sequence missing" % splice_site_con
+    print 
 
-    ## filter out the best gene models based on the consensus 
-    print "writing the fine tuned transctipts to the the file"
+    return get_gene_models
+
+
+def write_filter_gene_models(gff_cont, gene_models, outFile):
+    """
+    writing the filtered gene models to the result file
+    """
+    print "writing filtered gene models to %s ..." % outFile
+    true_genes = 0 
+    true_transcripts = 0 
     out_fh = open(outFile, "w")
     for recd in gff_cont:
         trans_indices = [] 
 
         for idx, sub_rec in enumerate(recd['transcripts']):
-            if (recd['chr'], recd['name'], sub_rec[0], recd['strand']) in get_gene_models:
+            if (recd['chr'], recd['name'], sub_rec[0], recd['strand']) in gene_models:
                 trans_indices.append(idx)
 
         if trans_indices:
+            true_genes += 1 
             chr_name = recd['chr']
             strand = recd['strand']
             start = recd['start']
@@ -143,6 +184,7 @@ def filter_gene_models(gff_name, fas_file, outFile):
             for idz, tid in enumerate(recd['transcripts']):
                 if idz in trans_indices:
 
+                    true_transcripts += 1 
                     t_start = recd['exons'][idz][0][0]
                     t_stop = recd['exons'][idz][-1][-1]
                     t_type = recd['transcript_type'][idz] 
@@ -158,7 +200,10 @@ def filter_gene_models(gff_name, fas_file, outFile):
                     for ex_cod in recd['exons'][idz]:
                         out_fh.write('%s\t%s\texon\t%d\t%d\t.\t%s\t.\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
     out_fh.close()
-    return outFile
+    print "...done"
+    print "number of genes considered  %d" % true_genes 
+    print "number of transcripts considered  %d" % true_transcripts
+    print 
 
 
 if __name__ == "__main__":
