@@ -461,7 +461,11 @@ def create_missing_feature_type(p_feat, c_feat):
             EPOS.append(gchild.get('location', [])[1]) 
             STRD = gchild.get('strand', '')
             SCR = gchild.get('score', '')
-            read_cov = gchild.get('read_cov', '')[0] ## read coverage to the transcript
+            read_cov = None 
+            try:
+                read_cov = gchild.get('read_cov', '')[0] ## read coverage to the transcript
+            except:
+                pass 
             if gchild.get('type', '') == "gene": ## gencode GTF file has this problem 
                 continue 
             TYP[gchild.get('type', '')] = 1
