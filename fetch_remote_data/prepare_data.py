@@ -92,7 +92,7 @@ def read_genome_file(fas_file):
         chrom_names.append((rec.id, len(rec.seq)))
     
     fh.close()
-    # retunr the list with chromosome identifier and its sequence length 
+    # return the list with chromosome identifier and its sequence length 
     return chrom_names
 
     """
@@ -172,10 +172,8 @@ def make_anno_db(gff_file):
             try:
                 exon_cnt = len(rec['exons'][idx])
             except:
-                #TODO fix the issue
-                import pdb 
-                pdb.set_trace()
-
+                continue
+                
             if exon_cnt > 1:
                 intron_start = 0 
                 
@@ -292,12 +290,11 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
         except Exception, e:
             print e 
     
-    ## changing the working dir to run STAR 
-    os.chdir(out_dir)
-
     ## start the indexing job 
     sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
     try:
+        ## changing the working dir to run STAR 
+        os.chdir(out_dir)
         ## Run command.
         process = subprocess.Popen(cli_cmd, shell=True) 
         returncode = process.wait()
