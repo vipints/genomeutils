@@ -31,7 +31,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def main(faname=None, gfname=None, signal='tss', label_cnt=400, plus_cnt=100, minus_cnt=300, flanks=1200):
     """
     core unit
 
@@ -60,7 +60,6 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, 
     #base_path = ''
 
     print 'processing genome annotation %s...' % gfname
-    print 
     anno_file_content = GFFParser.Parse(gfname) # extract genome annotation from gtf/gff type file 
     print '...done.'
     print 
@@ -98,14 +97,16 @@ def main(faname=None, gfname=None, signal='tss', label_cnt=8000, plus_cnt=1000, 
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
         print 
 
+        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
+
         negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
         print 'selecting %d RANDOM %s signal regions...' % (nCOUNT, signal) 
         print 
 
-        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
         #TODO shutil copy bkp file to fas 
         diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
 
+        #label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal) 
         print 
@@ -227,7 +228,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
-
+        
         assert minus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
 
         try:
@@ -235,7 +236,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        print accept_prob
+        #print accept_prob
 
         ## default acceptance probability 
         accept_prob = 0.98
@@ -244,11 +245,13 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
             counter, label_seq_ids = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
             if minus_label_cnt <= counter:
                 break
+            #break
             print '    still trying ... %d' % counter
 
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
         os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
         print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (counter, signal, signal)
+        print 
 
         return label_seq_ids
 
@@ -299,19 +302,21 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        print accept_prob
+        #print accept_prob
         ## default acceptance probability 
-        accept_prob = 0.98
+        accept_prob = 1.00
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
             if plus_label_cnt <= counter:
                 break
+            #break
             print '    still trying ... %d' % counter
 
         #os.system('mv ' + out_path + '/' + signal +'_sig_plus_label.bkp '+ out_path + "/"+ signal + "_sig_plus_label.fa")
         os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal)
+        print 
 
         return label_seq_ids
 
@@ -999,7 +1004,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=2):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
     """
     fetch the minus TSS signal sequence label
 
