@@ -78,7 +78,7 @@ def filter_gene_models(gff_name, fas_file, outFile):
                     else:
                         spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append((ex[0], ex[1]))
 
-                if orf_length < 400: ## min orf length for the transcripts 
+                if orf_length <= 400: ## min orf length for the transcripts 
                     del spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])] ## clearing that transcript details
                     orf_short += 1 
                     continue
