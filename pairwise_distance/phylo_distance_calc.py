@@ -10,6 +10,7 @@ Requirement:
 """
 
 import os 
+import csv 
 import subprocess
 from Bio import AlignIO, SeqIO
 from skbio import RNA, Alignment 
