@@ -578,8 +578,6 @@ def download_sra_file(RUNID, download_path):
     tempfile.close()
     sra_file.close()
 
-    return out_file_name
-
 
 def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compress="bzip2"):
     """
