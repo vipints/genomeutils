@@ -13,7 +13,6 @@ import libpyjobrunner as pg
 
 from optparse import OptionParser
 
-from fetch_remote_data import download_data as dld
 
 from signal_labels import experiment_details_db as expdb
 
@@ -76,7 +75,7 @@ def main():
 
     if options.download_public_data:
         print 'Operation selected: Download public genome dataset and Sequencing experiment files'
-        download_public_data(config_file)
+        download_all_data(config_file)
 
     elif options.genome_index:
         print 'Operation selected: Create STAR genome index'
@@ -150,13 +149,13 @@ def fetch_db_signals(yaml_config, data_method):
 
         if data_method == "trsk":
             gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
-            out_dir = "%s/trsk_labels" % det['labels_dir']## new label sequence dir 
+            out_dir = "%s/trsk_3K_labels" % det['labels_dir']## new label sequence dir 
         elif data_method == "cufflinks":
             gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
-            out_dir = "%s/cuff_labels" % det['labels_dir']
+            out_dir = "%s/cuff_3K_labels" % det['labels_dir']
         else:
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/db_labels" % det['labels_dir']
+            out_dir = "%s/db_1K_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -179,10 +178,10 @@ def fetch_db_signals(yaml_config, data_method):
         #count, err = proc.communicate() 
         #count = int(count.strip())
 
-        count = 4000
+        count = 3150
         signal_type = "tss"
-        poslabels_cnt = 1000
-        neglabels_cnt = 3000
+        poslabels_cnt = 2000
+        neglabels_cnt = 9000
         flank_nts = 1200 
 
         ## arguments to pygrid 
@@ -191,13 +190,13 @@ def fetch_db_signals(yaml_config, data_method):
         job = pg.cBioJob(call_fetch_db_signals, arg) 
 
         ## native specifications 
-        job.mem="6gb"
-        job.vmem="6gb"
-        job.pmem="6gb"
-        job.pvmem="6gb"
+        job.mem="4gb"
+        job.vmem="4gb"
+        job.pmem="4gb"
+        job.pvmem="4gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "3:00:00"
+        job.walltime = "1:00:00"
 
         Jobs.append(job)
 
@@ -283,18 +282,18 @@ def transcript_prediction_cuff(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det, 18]]
+        arg = [[det, 4]]
 
         job = pg.cBioJob(call_transcript_prediction_cuff, arg) 
 
         ## native specifications 
-        job.mem="72gb"
-        job.vmem="72gb"
-        job.pmem="18gb"
-        job.pvmem="18gb"
+        job.mem="96gb"
+        job.vmem="96gb"
+        job.pmem="24gb"
+        job.pvmem="24gb"
         job.nodes = 1
         job.ppn = 4
-        job.walltime = "18:00:00"
+        job.walltime = "32:00:00"
 
         Jobs.append(job)
 
@@ -472,17 +471,49 @@ def create_genome_index(yaml_config):
     processedJobs = pg.process_jobs(Jobs)
 
 
-def download_public_data(yaml_config):
+def call_download_sra_file(args_list):
     """
+    wrapper for submitting jobs to pygrid
     """
+    from fetch_remote_data import download_data as dld
+    sra_run_id, out_dir = args_list
+    dld.download_sra_file(sra_run_id, out_dir)
+    return 'done'
+
+
+def download_all_data(yaml_config):
+    """
+    download complete set of dataset defined for each organisms 
+
+    fasta file 
+    gtf file 
+    SRA file 
+    """
+
     operation_seleted = "1"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
-    print orgdb
 
+    for org_name, det in orgdb.items():
+        
+        ## arguments to pygrid 
+        arg = [[det['sra_run_id'], det['fastq_path']]]
 
-    #import ipdb 
-    #ipdb.set_trace()
+        job = pg.cBioJob(call_download_sra_file, arg) 
+    
+        job.mem="3gb"
+        job.vmem="3gb"
+        job.pmem="3gb"
+        job.pvmem="3gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "4:00:00"
+        
+        Jobs.append(job)
 
+    print 
+    print "sending download SRA file jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 def download_fasta(org_details):
@@ -530,7 +561,6 @@ def download_uncompress_sra_file(org_details):
 
 
 if __name__=="__main__":
-    
     main() 
 
     """
