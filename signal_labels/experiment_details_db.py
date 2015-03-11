@@ -133,6 +133,9 @@ def experiment_db(config_file, opt_action):
         org_db[short_name] = dict(short_name = short_name)  
         org_db[short_name]['sra_run_id'] = sra_run_id
         org_db[short_name]['genome_release_db'] = genome_build_version
+        ## the broad path to the experiment 
+        org_db[short_name]['genome_dir'] = data_path
+        org_db[short_name]['experiment_dir'] = exp_path
 
         build_release = genome_build_version.split("_")
         org_db[short_name]['release_db'] = db_server ## ensembl_metazoa, phytozome
