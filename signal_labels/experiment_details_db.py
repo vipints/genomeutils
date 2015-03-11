@@ -128,13 +128,17 @@ def experiment_db(config_file, opt_action):
         short_name = ent['organism_name'] 
         sra_run_id = ent['sra_run_id']
         genome_build_version = ent['genome_build_version']
+        db_server = ent['release_db']
 
         org_db[short_name] = dict(short_name = short_name)  
         org_db[short_name]['sra_run_id'] = sra_run_id
         org_db[short_name]['genome_release_db'] = genome_build_version
 
-        ## sequencing reads files 
-        sra_files = [] 
+        build_release = genome_build_version.split("_")
+        org_db[short_name]['release_db'] = db_server ## ensembl_metazoa, phytozome
+        org_db[short_name]['release_nb'] = build_release[-1] ## build number 
+
+        sra_files = [] ## sequencing reads files 
         if os.path.isdir("%s/%s/source_data" % (exp_path, short_name)):
             for sra_file in os.listdir("%s/%s/source_data" % (exp_path, short_name)):
                 file_prefx, ext = os.path.splitext(sra_file)
@@ -143,24 +147,25 @@ def experiment_db(config_file, opt_action):
                 if re.search(sra_run_id, sra_file):
                     sra_files.append(sra_file) 
         else:
-            print "warning: didn't find sequencing read files %s/%s/source_data" % (exp_path, short_name) 
+            print "warning: missing sequencing read trace file %s/%s/source_data" % (exp_path, short_name) 
                 
         org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
         org_db[short_name]['fastq'] = sra_files
 
         ## read mapping, read assembly and label generation working folders 
-        read_map_path = "%s/%s/read_mapping" % (exp_path, short_name)
-        if not os.path.isdir(read_map_path):
-            os.makedirs(read_map_path)
-        org_db[short_name]['read_map_dir'] = read_map_path
-        trans_pred_path = "%s/%s/trans_pred" % (exp_path, short_name)
-        if not os.path.isdir(trans_pred_path):
-            os.makedirs(trans_pred_path)
-        org_db[short_name]['read_assembly_dir'] = trans_pred_path
-        labels_path = "%s/%s/signal_labels" % (exp_path, short_name) 
-        if not os.path.isdir(labels_path):
-            os.makedirs(labels_path)
-        org_db[short_name]['labels_dir'] = labels_path
+        for sub_dir in ['read_mapping', 'signal_labels', 'trans_pred']:
+            work_path = "%s/%s/%s" % (exp_path, short_name, sub_dir)
+
+            if not os.path.isdir(work_path):
+                try:
+                    os.makedirs(work_path)
+                except OSError:
+                    print "error: cannot create the directory %s." % work_path
+                    sys.exit(0)
+
+        org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
+        org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
+        org_db[short_name]['labels_dir'] = "%s/%s/signal_labels" % (exp_path, short_name)
 
         ## calculate the sequence read length
         readlength = 0 
