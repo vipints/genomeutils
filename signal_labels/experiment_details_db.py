@@ -183,24 +183,32 @@ def experiment_db(config_file, opt_action):
 
         ## check for the genome sequence file 
         if short_name in org_fasta_file:
-            org_db[short_name]['fasta'] = org_fasta_file[short_name]
+            if os.path.isfile(org_fasta_file[short_name]):
+                org_db[short_name]['fasta'] = org_fasta_file[short_name]
+            else:
+                org_db[short_name]['fasta'] = None
         else:
-            print "warning: didn't find genome sequence file fasta/fa for organism %s" % short_name
-            org_db[short_name]['fasta'] = "%s/%s/%s" % (data_path, short_name, genome_build_version) 
+            print "warning: missing genome sequence file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
+            org_db[short_name]['fasta'] = None
 
         if not os.path.isdir("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version)):
-            os.makedirs("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version))
+            try:
+                os.makedirs("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version))
+            except OSError:
+                print "error: cannot create the directory %s/%s/%s" % (data_path, short_name, genome_build_version) 
+                sys.exit(0)
 
         org_db[short_name]['genome_index_dir'] = "%s/%s/%s/STARgenome/" % (data_path, short_name, genome_build_version) 
 
         ## check the genome annotation 
         if short_name in org_gtf_file:
-            org_db[short_name]['gtf'] = org_gtf_file[short_name]
+            org_db[short_name]['gtf'] = None
 
             #if opt_action in ["c", "a", "2", "3"]: ## perform this action only for selected options 
             if opt_action in ["c", "2", "3"]: ## perform this action only for selected options 
                 ## get the gtf feature lengths 
                 if os.path.isfile(org_gtf_file[short_name]):
+                    org_db[short_name]['gtf'] = org_gtf_file[short_name]
                     from fetch_remote_data import prepare_data as pd
                     feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
                     org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
@@ -209,8 +217,8 @@ def experiment_db(config_file, opt_action):
                     print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
                     sys.exit(-1)
         else:
-                print "warning: didn't find an annotation file gtf/gff for organism %s" % short_name
-                org_db[short_name]['gtf'] = "%s/%s/%s" % (data_path, short_name, genome_build_version)
+                print "warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
+                org_db[short_name]['gtf'] = None
                 org_db[short_name]['max_intron_len'] = None
                 org_db[short_name]['max_exon_len'] = None
         
