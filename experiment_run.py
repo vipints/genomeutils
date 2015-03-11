@@ -23,6 +23,8 @@ def main():
 
     -1 download_sra file from NCBI SRA service
     -d decompose_sra decompress the SRA file  
+    -a annotation fetch genome annotation file from public database servers mainly ensembl, phytosome 
+    -g genome fetch genome sequence file from public database
     
     TODO    
     -1 from SRA ENSEMBL Phytozome
@@ -43,6 +45,8 @@ def main():
 
     parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories." )
     parser.add_option( "-d", "--decompose_sra", action="store_true", dest="decompose_sra", default=False, help="Decompress the sra file according to the library type.")
+    parser.add_option( "-a", "--annotation", action="store_true", dest="annotation", default=False, help="Download genome annotation from public database resources.")
+    parser.add_option( "-g", "--genome", action="store_true", dest="genome", default=False, help="Download genome sequence from public database resources.")
 
     parser.add_option( "-2", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads." )
     parser.add_option( "-3", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR." )
@@ -63,7 +67,8 @@ def main():
         print __doc__
         sys.exit(-1)
 
-    if not (options.download_sra ^ options.decompose_sra ^ options.genome_index ^ \
+    if not (options.download_sra ^ options.decompose_sra ^ options.annotation ^ \
+            options.genome ^ options.genome_index ^ \
             options.read_mapping ^ options.multi_map_resolve ^ \
             options.trsk_prediction ^ options.cufflinks_prediction ^ \
             options.filter_trsk_out ^ options.fetch_trsk_labels ^ \
@@ -80,6 +85,12 @@ def main():
     elif options.decompose_sra:
         print 'Operation selected: Decompress sra file'
         decompose_sra_file(config_file)
+    elif options.annotation:
+        print 'Operation selected: Downloading genome annotation file'
+        download_gtf(config_file)
+    elif options.genome:
+        print 'Operation selected: Downloading genome sequence file'
+        download_fasta(config_file)
 
     elif options.genome_index:
         print 'Operation selected: Create STAR genome index'
@@ -529,7 +540,7 @@ def decompose_sra_file(yaml_config):
     """
     decompress the .sra file from ncbi sra
     """
-    operation_seleted = "1"
+    operation_seleted = "d"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = [] 
@@ -563,60 +574,141 @@ def decompose_sra_file(yaml_config):
     print 
     processedJobs = pg.process_jobs(Jobs)
        
+def call_metazoa_fasta(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_metazoa_fasta(release_num, organism, genome_path)
+    return 'done'
 
-def download_fasta(org_details):
+def call_phytozome_fasta(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_phytozome_fasta(release_num, organism, genome_path)
+    return 'done'
+
+def call_ensembl_fasta(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_fasta(release_num, organism, genome_path)
+    return 'done'
+
+def download_fasta(yaml_config):
     """
     download fasta file from remote data publishing services
     """
+    operation_seleted = "g"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
-    for org_name, det in org_details.items():
-        if det['release_db'] == 'ensembl':
-            dld.fetch_ensembl_fasta(det['release_num'], det['name'], det['fasta'])
-        elif det['release_db'] == 'phytozome':
-            dld.fetch_phytozome_fasta(det['release_num'], det['name'], det['fasta']) 
-        elif det['release_db'] == 'ensembl_metazoa':
-            dld.fetch_ensembl_metazoa_fasta(det['release_num'], det['name'], det['fasta'])
+    Jobs = [] 
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        arg = [[det['release_nb'], det['long_name'], det['genome_dir']]]
+
+        if det['release_db'] == 'ensembl_metazoa_genome':
+            job = pg.cBioJob(call_metazoa_fasta, arg) 
+        elif det['release_db'] == 'phytozome_genome':
+            job = pg.cBioJob(call_phytozome_fasta, arg) 
+        elif det['release_db'] == 'ensembl_genome':
+            job = pg.cBioJob(call_ensembl_fasta, arg) 
         else:
-            print "download fasta plugin for %s not available, module works with ensembl, ensembl_metazoa and phytozome." % det['release_db']
+            print "error: download fasta plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db']
+            sys.exit(0)
 
+        job.mem="2gb"
+        job.vmem="2gb"
+        job.pmem="2gb"
+        job.pvmem="2gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "2:00:00"
+        
+        Jobs.append(job)
+    print 
+    print "sending fasta download job to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
-def download_gtf(org_details):
+def call_metazoa_gtf(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_metazoa_gtf(release_num, organism, genome_path)
+    return 'done'
+
+def call_phytozome_gtf(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_phytozome_gff(release_num, organism, genome_path)
+    return 'done'
+
+def call_ensembl_gtf(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_gtf(release_num, organism, genome_path)
+    return 'done'
+
+def download_gtf(yaml_config):
     """
     download gtf/gff file from remote data publishing services
     """
-    for org_name, det in org_details.items():
-        if det['release_db'] == 'ensembl':
-            dld.fetch_ensembl_gtf(det['release_num'], det['name'], det['gtf'])
-        elif det['release_db'] == 'phytozome':
-            dld.fetch_phytozome_gff(det['release_num'], det['name'], det['gtf']) 
-        elif det['release_db'] == 'ensembl_metazoa':
-            dld.fetch_ensembl_metazoa_gtf(det['release_num'], det['name'], det['gtf'])
-        else:
-            print "download gtf plugin for %s not available, module works with ensembl, ensembl_metazoa and phytozome." % det['release_db']
+    operation_seleted = "a"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
+    Jobs = [] 
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        arg = [[det['release_nb'], det['long_name'], det['genome_dir']]]
+
+        if det['release_db'] == 'ensembl_metazoa_genome':
+            job = pg.cBioJob(call_metazoa_gtf, arg) 
+        elif det['release_db'] == 'phytozome_genome':
+            job = pg.cBioJob(call_phytozome_gtf, arg) 
+        elif det['release_db'] == 'ensembl_genome':
+            job = pg.cBioJob(call_ensembl_gtf, arg) 
+        else:
+            print "error: download gtf plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db']
+            sys.exit(0)
+
+        job.mem="2gb"
+        job.vmem="2gb"
+        job.pmem="2gb"
+        job.pvmem="2gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "2:00:00"
+        
+        Jobs.append(job)
+    print 
+    print "sending gtf download job to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
 
 
 if __name__=="__main__":
     main() 
 
     """
-    from signal_labels import org_details_db as odb
-    org_details = odb.make_org_db(infile, data_path, exp_path) 
-
-    download_fasta(org_details) 
-
-    download_gtf(org_details)     
-
-    download_uncompress_sra_file(org_details)
-
-    #TODO
     save a pickle file with organisms details with updated genome annotation and sra file, path informations 
-
     the object will be passed to the next preprocessing manual tweeking
-
     
     #FIXME 
-    fas_file = ""
     chr_names = prd.read_genome_file(fas_file) 
 
     fas_out = "" 
