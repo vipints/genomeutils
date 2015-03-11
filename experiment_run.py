@@ -7,12 +7,9 @@ import os
 import sys 
 import yaml 
 
-import subprocess 
-
 import libpyjobrunner as pg
 
 from optparse import OptionParser
-
 
 from signal_labels import experiment_details_db as expdb
 
@@ -23,10 +20,12 @@ def main():
     Managing the experiment run in different levels 
 
     Options
+
+    -1 download_sra file from NCBI SRA service
+    -d decompose_sra decompress the SRA file  
     
     TODO    
-    -1 download_public_data from SRA ENSEMBL Phytozome
-        uncompressing the SRA file 
+    -1 from SRA ENSEMBL Phytozome
         manual cleaning of downloaded genome 
         create the genome genome indices
         calculate the insert size 
@@ -42,16 +41,18 @@ def main():
 
     parser = OptionParser() 
 
-    parser.add_option( "-1", "--download_public_data", action="store_true", dest="download_public_data", default=False, help="download public datasets" )
-    parser.add_option( "-a", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads." )
-    parser.add_option( "-2", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR." )
+    parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories." )
+    parser.add_option( "-d", "--decompose_sra", action="store_true", dest="decompose_sra", default=False, help="Decompress the sra file according to the library type.")
+
+    parser.add_option( "-2", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads." )
+    parser.add_option( "-3", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR." )
     parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads." )
-    parser.add_option( "-3", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer." )
+    parser.add_option( "-4", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer." )
     parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks." )
     parser.add_option( "-f", "--filter_trsk_out", action="store_true", dest="filter_trsk_out", default=False, help="Apply filter to the TRSK predicted gene models." )
     parser.add_option( "--filter_cuff_out", action="store_true", dest="filter_cuff_out", default=False, help="Apply filter to the cufflinks predicted gene models." )
     parser.add_option( "--filter_db_anno", action="store_true", dest="filter_db_anno", default=False, help="Apply filter to the online db gene models." )
-    parser.add_option( "-4", "--fetch_trsk_labels", action="store_true", dest="fetch_trsk_labels", default=False, help="Fetch labels from TranscriptSkimmer." )
+    parser.add_option( "-5", "--fetch_trsk_labels", action="store_true", dest="fetch_trsk_labels", default=False, help="Fetch labels from TranscriptSkimmer." )
     parser.add_option( "--fetch_cuff_labels", action="store_true", dest="fetch_cuff_labels", default=False, help="Fetch labels from cufflinks." )
     parser.add_option( "--fetch_db_labels", action="store_true", dest="fetch_db_labels", default=False, help="Fetch labels from public database annotation files." )
 
@@ -62,7 +63,7 @@ def main():
         print __doc__
         sys.exit(-1)
 
-    if not (options.download_public_data ^ options.genome_index ^ \
+    if not (options.download_sra ^ options.decompose_sra ^ options.genome_index ^ \
             options.read_mapping ^ options.multi_map_resolve ^ \
             options.trsk_prediction ^ options.cufflinks_prediction ^ \
             options.filter_trsk_out ^ options.fetch_trsk_labels ^ \
@@ -73,9 +74,12 @@ def main():
         
     print 'Using config file %s for the experiment.' % config_file
 
-    if options.download_public_data:
-        print 'Operation selected: Download public genome dataset and Sequencing experiment files'
-        download_all_data(config_file)
+    if options.download_sra:
+        print 'Operation selected: Download sequencing reads file from ncbi-sra'
+        download_sra_data(config_file)
+    elif options.decompose_sra:
+        print 'Operation selected: Decompress sra file'
+        decompose_sra_file(config_file)
 
     elif options.genome_index:
         print 'Operation selected: Create STAR genome index'
@@ -172,6 +176,7 @@ def fetch_db_signals(yaml_config, data_method):
             except Exception, e:
                 print e 
     
+        import subprocess 
         ## get the label count for each organisms, essentially the max number of genes available 
         #cmd = "grep -P \"\tgene\t\" %s | wc -l" % gff_file
         #proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -481,20 +486,15 @@ def call_download_sra_file(args_list):
     return 'done'
 
 
-def download_all_data(yaml_config):
+def download_sra_data(yaml_config):
     """
-    download complete set of dataset defined for each organisms 
-
-    fasta file 
-    gtf file 
-    SRA file 
+    download sra file for the working organism   
     """
-
     operation_seleted = "1"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
+    Jobs = [] 
     for org_name, det in orgdb.items():
-        
         ## arguments to pygrid 
         arg = [[det['sra_run_id'], det['fastq_path']]]
 
@@ -506,15 +506,63 @@ def download_all_data(yaml_config):
         job.pvmem="3gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "4:00:00"
+        job.walltime = "2:00:00"
         
         Jobs.append(job)
-
     print 
     print "sending download SRA file jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+
+def call_decompose_sra_file(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    sra_file, out_dir = args_list
+    dld.decompress_sra_file(sra_file, out_dir)
+    return 'done'
+
+
+def decompose_sra_file(yaml_config):
+    """
+    decompress the .sra file from ncbi sra
+    """
+    operation_seleted = "1"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+
+    Jobs = [] 
+    for org_name, det in orgdb.items():
+        sra_file = "%s/%s.sra"  % (det['fastq_path'], det['sra_run_id'])
+
+        if not os.path.isfile(sra_file):## check the file present or not  
+            print "error: missing sequencing read file %s" % sra_file
+            sys.exit(0)
+        
+        ## TODO can be consider to the yaml file options 
+        library_type = "pe"
+        compress_format = "gzip"
+
+        ## arguments to pygrid 
+        arg = [[sra_file, det['fastq_path']]]
+
+        job = pg.cBioJob(call_decompose_sra_file, arg) 
+    
+        job.mem="3gb"
+        job.vmem="3gb"
+        job.pmem="3gb"
+        job.pvmem="3gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "3:00:00"
+        
+        Jobs.append(job)
+    print 
+    print "sending decompress SRA file jobs to worker"
+    print 
+    processedJobs = pg.process_jobs(Jobs)
+       
 
 def download_fasta(org_details):
     """
@@ -546,18 +594,6 @@ def download_gtf(org_details):
         else:
             print "download gtf plugin for %s not available, module works with ensembl, ensembl_metazoa and phytozome." % det['release_db']
 
-
-def download_uncompress_sra_file(org_details):
-    """
-    download and uncompress the sra files 
-    """
-
-    for org_name, det in org_details.items():
-        sra_file = dld.download_sra_file(det['sra_run_id'], det['fastq_path'])
-        
-        library_type = "pe"
-        compress_format = "gzip"
-        dld.uncompress_sra_file(sra_file, det['fastq_path'], library_type, compress_format)
 
 
 if __name__=="__main__":
