@@ -69,7 +69,11 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
         ## setting up the download path 
         base_file_path = "%s/%s/phytozome_%s" % (download_path, org_short_name, release_version)
         if not os.path.exists(base_file_path):
-            os.makedirs(base_file_path)
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                print "error: cannot create the directory %s." % base_file_path
+                sys.exit(0)
 
         for gff_name in gff_files:
             gff_name =gff_name.strip('\n\r')
@@ -225,7 +229,11 @@ def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
 
         base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, release_version)
         if not os.path.exists(base_file_path):
-            os.makedirs(base_file_path)
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                print "error: cannot create the directory %s." % base_file_path
+                sys.exit(0)
             
         for gtf_name in gtf_files:
             gtf_name =gtf_name.strip('\n\r')
@@ -305,7 +313,11 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
         ## setting up the download path 
         base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, release_version)
         if not os.path.exists(base_file_path):
-            os.makedirs(base_file_path)
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                print "error: cannot create the directory %s." % base_file_path
+                sys.exit(0)
 
         for gtf_name in gtf_files:
             gtf_name =gtf_name.strip('\n\r')
@@ -326,7 +338,6 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
 
                 tempfile.close()
                 ftp_file.close()
-
         gtf_files.close()
     org_file.close()
 
@@ -553,7 +564,11 @@ def download_sra_file(RUNID, download_path):
 
     ## create downloadpath if doesnot exists 
     if not os.path.exists(download_path):
-        os.makedirs(download_path)
+        try:
+            os.makedirs(download_path)
+        except OSError:
+            print "error: cannot create the directory %s." % download_path
+            sys.exit(0)
 
     ## getting the absolute path 
     download_path = os.path.realpath(download_path)
