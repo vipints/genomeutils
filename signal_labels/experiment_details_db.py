@@ -125,12 +125,17 @@ def experiment_db(config_file, opt_action):
     org_db = defaultdict()
     
     for ent in config_map['experiment']:
-        short_name = ent['organism_name'] 
+        species_name = ent['organism_name'] 
         sra_run_id = ent['sra_run_id']
         genome_build_version = ent['genome_build_version']
         db_server = ent['release_db']
 
+        ## mapping to short names       arabidopsis_thaliana --> A_thaliana
+        genus, species = species_name.strip().split("_")
+        short_name = "%s_%s" % (genus[0].upper(), species)
+
         org_db[short_name] = dict(short_name = short_name)  
+        org_db[short_name]['long_name'] = species_name
         org_db[short_name]['sra_run_id'] = sra_run_id
         org_db[short_name]['genome_release_db'] = genome_build_version
         ## the broad path to the experiment 
