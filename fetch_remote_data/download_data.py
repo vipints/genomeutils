@@ -7,7 +7,7 @@ from ENEMBL and Phytozome server.
 Usage: 
 import download_data as dl 
 dl.download_sra_file.__doc__
-dl.uncompress_sra_file.__doc__
+dl.decompress_sra_file.__doc__
 
 Requirement:
     fastq-dump - sratoolkit: http://www.ncbi.nlm.nih.gov/Traces/sra/?view=software
@@ -579,9 +579,9 @@ def download_sra_file(RUNID, download_path):
     sra_file.close()
 
 
-def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compress="bzip2"):
+def decompress_sra_file(out_file_name, download_path, lib_type="pe", out_compress="bzip2"):
     """
-    Uncompress downloaded SRA file 
+    decompress downloaded SRA file 
 
     @args out_file_name: Downloaded SRA file name 
     @type out_file_name: str 
@@ -594,9 +594,7 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
 
     NOTE: This module expects sratoolkit is available under PATH variable or add the path below line.
     """
-    ## add the installation path of sratoolkit  
-    #os.environ['PATH'] += os.pathsep + '/home/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
-
+    #os.environ['PATH'] += os.pathsep + '/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
     ## depends on the compress type and library protocol type
     if lib_type in ['pe', 'PE', 'paired-end']:
         cli = 'fastq-dump \
@@ -616,8 +614,13 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
 
     ## split the .SRA format file based on the library layout
     sys.stdout.write('\trun %s \n' % cli)
-    process = subprocess.Popen(cli, shell=True) 
-    process.wait()
+    
+    try:
+        process = subprocess.Popen(cli, shell=True) 
+        process.wait()
+    except Exception, e:
+        print 'Error running fast-dump.\n%s' %  str( e )
+        sys.exit(0)
     
     prefix, ext = os.path.splitext(out_file_name) 
     extensions = dict(gzip = "gz", bzip2 = "bz2") 
@@ -634,22 +637,3 @@ def uncompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
 if __name__=="__main__":
     print __doc__
     
-"""
-    sra_run_id = ""
-    sra_data_path = ""
-    library_type = ""
-    compress_format = ""
-
-    sra_file = download_sra_file(sra_run_id, sra_data_path)
-    uncompress_sra_file(sra_file, data_path, library_type, compress_format)
-
-    release_num = ""
-    org_name = "" # homo_sapiens, Vcarteri
-    fasta_data_path = ""
-    
-    fetch_ensembl_fasta(release_num, org_name, fasta_data_path)
-    fetch_phytozome_fasta(release_num, org_name, fasta_data_path)
-
-    fetch_phytozome_gff(release_num, org_name, fasta_data_path)
-    fetch_ensembl_gtf(release_num, org_name, fasta_data_path)
-"""
