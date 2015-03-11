@@ -6,6 +6,7 @@ FIXME descriptions
 
 import os 
 import re 
+import sys 
 import yaml 
 from Bio import SeqIO
 from gfftools import helper 
@@ -163,7 +164,8 @@ def experiment_db(config_file, opt_action):
 
         ## calculate the sequence read length
         readlength = 0 
-        if opt_action in ["a", "2"]: ## perform this action only for selected options 
+        #if opt_action in ["a", "2"]: ## perform this action only for selected options 
+        if opt_action in ["2"]: ## perform this action only for selected options 
             if sra_files:
                 fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
                 print 'using sequencing read file %s to determine readLength' % fqfile
@@ -190,7 +192,8 @@ def experiment_db(config_file, opt_action):
         if short_name in org_gtf_file:
             org_db[short_name]['gtf'] = org_gtf_file[short_name]
 
-            if opt_action in ["c", "a", "2", "3"]: ## perform this action only for selected options 
+            #if opt_action in ["c", "a", "2", "3"]: ## perform this action only for selected options 
+            if opt_action in ["c", "2", "3"]: ## perform this action only for selected options 
                 ## get the gtf feature lengths 
                 if os.path.isfile(org_gtf_file[short_name]):
                     from fetch_remote_data import prepare_data as pd
