@@ -150,7 +150,11 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
         ## setting up the download path 
         base_file_path = "%s/%s/phytozome_%s" % (download_path, org_short_name, release_version)
         if not os.path.exists(base_file_path):
-            os.makedirs(base_file_path)
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                print "error: cannot create the directory %s." % base_file_path
+                sys.exit(0)
 
         for fa_name in fa_files:
             fa_name =fa_name.strip('\n\r')
@@ -167,7 +171,6 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
 
                 sys.stdout.write('\tdownloading %s ... \n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
-
                 tempfile.close()
                 ftp_file.close()
 
@@ -395,7 +398,11 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
 
         base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, release_version)
         if not os.path.exists(base_file_path):
-            os.makedirs(base_file_path)
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                print "error: cannot create the directory %s." % base_file_path
+                sys.exit(0)
 
         for fa_name in fa_files:
             fa_name =fa_name.strip('\n\r')
@@ -417,7 +424,6 @@ def fetch_ensembl_metazoa_fasta(release_version, species_name, download_path):
                 sys.stdout.write('\tdownloading %s ... \n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
                 sys.stdout.write('\t... saved at %s \n' % fasta_file)
-
                 tempfile.close()
                 ftp_file.close()
 
@@ -479,7 +485,11 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
         ## download the files in ex: /home/tmp/F_albicollis/ensembl_release-77/Ficedula_albicollis.FicAlb_1.4.dna_rm.toplevel.fa.gz
         base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, ensembl_release_version)
         if not os.path.exists(base_file_path):
-            os.makedirs(base_file_path)
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                print "error: cannot create the directory %s." % base_file_path
+                sys.exit(0)
 
         for fa_name in fa_files:
             fa_name =fa_name.strip('\n\r')
@@ -500,10 +510,8 @@ def fetch_ensembl_fasta(ensembl_release_version, species_name, download_path):
 
                 sys.stdout.write('\tdownloading %s ...\n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
-
                 tempfile.close()
                 ftp_file.close()
-
                 sys.stdout.write("\t... saved at %s\n" % fasta_file)
         fa_files.close()
     org_file.close()
@@ -651,4 +659,3 @@ def decompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
 
 if __name__=="__main__":
     print __doc__
-    
