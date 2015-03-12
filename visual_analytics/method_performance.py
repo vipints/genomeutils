@@ -1,12 +1,21 @@
 """
 detailed bar plot to measure the performance of different methods 
-"""
 
+Usage: 
+
+from visual_analytics import method_performance as mp 
+fname = '29_org_base_0.5_acc.pickle'
+organisms, diff_methods, perfomance = mp.data_process(fname) 
+mp.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor splice site') 
+
+Requirement:
+    pylab: 
+    numpy 
+"""
 
 from __future__ import division
 import numpy 
 from collections import defaultdict
-
 
 def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
     """
@@ -21,7 +30,6 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     @args res_file: result file name 
     @type res_file: str
     """
-    
     import pylab 
 
     #pylab.figure(figsize=(5, 10)) # custom form 
@@ -30,7 +38,6 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
 
     width = 0.20
     separator = 0.15
-
     offset = 0
     num_methods = len(methods)
     
@@ -41,17 +48,14 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     mean_perf = defaultdict(list) 
 
     for org_name, details in data.items():
-        
         offset += separator
         rects = [] 
-        #print 'organism', org_name
 
         #xlocations.append(offset + (width*(num_methods*7+2))/2)
         xlocations.append(offset + (width*(num_methods*1))/3)
 
         for idx, bundles in enumerate(details):
             method, perfs = bundles 
-
             ##print '\t', method
 
             best_c = [] 
@@ -86,7 +90,6 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     print 'mean', round(sum(mean_perf['union'])/len(labels), 2), round(sum(mean_perf['individual'])/len(labels), 2), round(sum(mean_perf['mtl'])/len(labels), 2) 
 
     offset += separator
-
     labels.append('Mean')
 
     # determine the extreams 
@@ -99,7 +102,6 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
 
     pylab.yticks(ticks)
-
     pylab.xticks(xlocations, labels, rotation="vertical") 
 
     fontsize=17
@@ -169,9 +171,7 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
     import re 
 
     file_mean = defaultdict(list) 
-
     for file in os.listdir(data_dir):
-
         #FIXME adjust the next line to get the name from the file name  
         #prefix = re.search('5.org_(\d+)_cleave.pickle', file).group(1) 
         prefix = re.search('5.org_(.+)_cleave.pickle', file).group(1) 
@@ -180,7 +180,6 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
         organisms, diff_methods, perfomance = data_process("%s/%s" % (data_dir, file)) 
 
         for org_name, details in perfomance.items():
-        
             for idx, bundles in enumerate(details):
                 method, perfs = bundles 
                 #print '\t', method
@@ -212,15 +211,12 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
     
     used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
     xlocations = []
-
     min_max = [] 
     for parameter, mean_meth_perf in sorted(file_mean.items()):
-
         offset += separator
         rects = [] 
 
         xlocations.append(offset + (width*(num_methods*1))/3)
-        
         for idx, nb in enumerate(mean_meth_perf):
             min_max.append(nb)
             rects.append(pylab.bar(offset, nb, width, color=used_colors[idx], edgecolor='white'))
@@ -253,17 +249,9 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
 
     pylab.gca().get_yaxis().grid(True)
     pylab.gca().get_xaxis().grid(False)
-
     pylab.legend(tuple(rects), tuple(diff_methods))
 
     ylabel = "auROC"
     pylab.ylabel(ylabel, fontsize = 15)
     pylab.savefig(res_file) 
 
-
-"""
-from signal_labels import method_performance
-fname = '29_org_base_0.5_acc.pickle'
-organisms, diff_methods, perfomance = method_performance.data_process(fname) 
-method_performance.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor splice site') 
-"""
