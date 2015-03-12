@@ -62,7 +62,6 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
     @args num_cpus: number of threads to use for the run (default: 1)
     @type num_cpus: int 
     """
-
     ## genome indices and annotation file
     genome_dir = org_db['genome_index_dir']
     gtf_db = org_db['gtf']
@@ -143,8 +142,12 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
             zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
 
     sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
-    process = subprocess.Popen(make_star_run, shell=True) 
-    process.wait()
+    try:
+        process = subprocess.Popen(make_star_run, shell=True) 
+        process.wait()
+    except Exception, e:
+        print 'Error running STAR.\n%s' %  str( e )
+        sys.exit(0)
 
 
 def uniq_mapped_reads(bam_file, multi_map=1):
@@ -242,7 +245,7 @@ def calculate_insert_size(org_db):
 
     #FIXME 
     """
-    vipin@gpu-3-9: /cbio/grlab/nobackup/SignalPrediction/SRA-rnaseq/S_enterica/source_data$ python ~/tmp/7281991/estimate-insert-sizes /cbio/grlab/share/databases/genomes/S_enterica/ensembl_release-21/Salmonella_enterica_subsp_enterica_serovar_typhimurium_str_lt2.GCA_000006945.1.21.dna.toplevel.fa SRR863221_1.fastq.bz2 SRR863221_2.fastq.bz2
+    $ python ~/tmp/7281991/estimate-insert-sizes Salmonella_enterica_subsp_enterica_serovar_typhimurium_str_lt2.GCA_000006945.1.21.dna.toplevel.fa SRR863221_1.fastq.bz2 SRR863221_2.fastq.bz2
     Processing:
      SRR863221_1.fastq.bz2
       SRR863221_2.fastq.bz2
@@ -252,7 +255,7 @@ def calculate_insert_size(org_db):
       [M::mem_pestat] skip orientation RF as there are not enough pairs
       [M::mem_pestat] skip orientation RR as there are not enough pairs
       Traceback (most recent call last):
-        File "/cbio/grlab/home/vipin/tmp/7281991/estimate-insert-sizes", line 100, in <module>
+        File "/home/vipin/tmp/7281991/estimate-insert-sizes", line 100, in <module>
             mean = most_likely[1]['mean']
             KeyError: 'mean'
 
