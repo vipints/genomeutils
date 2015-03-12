@@ -169,7 +169,6 @@ def make_gio(in_file_name, gio_path):
     make_gio builds a genome information object for an input fasta file. 
 
 	takes 2 arguments:
-
 	@args fasta_file: is the input file in fasta format
     @type fasta_file: str 
 	@args gio_path: is the directory to which the genome information object will be written to
