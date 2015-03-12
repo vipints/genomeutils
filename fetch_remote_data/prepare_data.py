@@ -277,18 +277,21 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 
     ## create downloadpath if doesnot exists 
     if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
-    ## if present any other old index files clean up the folder
-    for the_file in os.listdir(out_dir):
-        file_path = os.path.join(out_dir, the_file)
         try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception, e:
-            print e 
+            os.makedirs(out_dir)
+        except OSError:
+            print "error: cannot create the directory %s." % out_dir
+            sys.exit(0)
+    else:## if present any other old index files clean up the folder 
+        for the_file in os.listdir(out_dir):
+            file_path = os.path.join(out_dir, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception, e:
+                print e 
     
     ## start the indexing job 
     sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
@@ -309,7 +312,6 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
 
     except Exception, e:
         print 'Error running STAR.\n%s' %  str( e )
-
 
 
 if __name__=="__main__":
