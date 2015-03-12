@@ -29,18 +29,18 @@ def main():
     manual cleaning of genome sequence and annotation 
     
     -2 genome_index create genome indices for STAR alignment 
-    
-
-    TODO    
-        calculate the insert size 
-
-    -2 rnaseq read mapping process     
-        multiple mapper issue 
-        uniquely mapped reads 
-    -3 transcript assembly  
-        cufflinks prediction 
-        filter gene models 
-    -4 extract signal labels 
+    -i insert_size calculate the insert size based on the raw fastq files  
+    -3 read_mapping aligning reads to the genome using STAR aligner 
+    -m multi_map resolving the right place for read mapped in multiple location on the genome
+    -u uniq_read recover uniquely aligned reads from the star alignment 
+    -4 trsk_pred transcript prediction using TranscriptSkimmer
+    -c cuff_pred transcript assembly by Cufflinks 
+    -5 filter_trsk applying filter to the trsk predicted gene models 
+    -filter_cuff
+    -filter_db
+    -6 trsk_label 
+    -cuff_label
+    -db_label
     """
 
     parser = OptionParser() 
@@ -50,17 +50,18 @@ def main():
     parser.add_option( "-a", "--annotation", action="store_true", dest="annotation", default=False, help="Download genome annotation from public database resources.")
     parser.add_option( "-g", "--genome", action="store_true", dest="genome", default=False, help="Download genome sequence from public database resources.")
     parser.add_option( "-2", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index based on genome sequence and annotations." )
-
-    parser.add_option( "-3", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR." )
-    parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads." )
-    parser.add_option( "-4", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer." )
-    parser.add_option( "-c", "--cufflinks_prediction", action="store_true", dest="cufflinks_prediction", default=False, help="Transcript assembly using Cufflinks." )
-    parser.add_option( "-f", "--filter_trsk_out", action="store_true", dest="filter_trsk_out", default=False, help="Apply filter to the TRSK predicted gene models." )
-    parser.add_option( "--filter_cuff_out", action="store_true", dest="filter_cuff_out", default=False, help="Apply filter to the cufflinks predicted gene models." )
-    parser.add_option( "--filter_db_anno", action="store_true", dest="filter_db_anno", default=False, help="Apply filter to the online db gene models." )
-    parser.add_option( "-5", "--fetch_trsk_labels", action="store_true", dest="fetch_trsk_labels", default=False, help="Fetch labels from TranscriptSkimmer." )
-    parser.add_option( "--fetch_cuff_labels", action="store_true", dest="fetch_cuff_labels", default=False, help="Fetch labels from cufflinks." )
-    parser.add_option( "--fetch_db_labels", action="store_true", dest="fetch_db_labels", default=False, help="Fetch labels from public database annotation files." )
+    parser.add_option( "-i", "--insert_size", action="store_true", dest="insert_size", default=False, help="Calculate the library insert size from fastq files.")
+    parser.add_option( "-3", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to genome using STAR aligner." )
+    parser.add_option( "-m", "--multi_map", action="store_true", dest="multi_map", default=False, help="Multimapper resolution (mmr) on aligned reads to resolve multimapping of reads." )
+    parser.add_option( "-u", "--uniq_read", action="store_true", dest="uniq_read", default=False, help="Fetching uniquely mapped reads from bam file." )
+    parser.add_option( "-4", "--trsk_pred", action="store_true", dest="trsk_pred", default=False, help="Transcript prediction using TranscriptSkimmer." )
+    parser.add_option( "-c", "--cuff_pred", action="store_true", dest="cuff_pred", default=False, help="Transcript assembly using Cufflinks." )
+    parser.add_option( "-5", "--filter_trsk", action="store_true", dest="filter_trsk", default=False, help="Apply filters to trsk predicted gene models." )
+    parser.add_option( "--filter_cuff", action="store_true", dest="filter_cuff", default=False, help="Apply filter to the cufflinks predicted gene models." )
+    parser.add_option( "--filter_db", action="store_true", dest="filter_db_anno", default=False, help="Apply filter to the online db annotation gene models." )
+    parser.add_option( "-6", "--trsk_label", action="store_true", dest="trsk_label", default=False, help="Fetch label sequences from TranscriptSkimmer annotations." )
+    parser.add_option( "--cuff_label", action="store_true", dest="cuff_label", default=False, help="Fetch label sequences from cufflinks annotations." )
+    parser.add_option( "--db_label", action="store_true", dest="db_label", default=False, help="Fetch labels sequences from public online db annotation files." )
 
     ( options, args ) = parser.parse_args()
     try:
@@ -70,12 +71,11 @@ def main():
         sys.exit(-1)
 
     if not (options.download_sra ^ options.decompose_sra ^ options.annotation ^ \
-            options.genome ^ options.genome_index ^ \
-            options.read_mapping ^ options.multi_map_resolve ^ \
-            options.trsk_prediction ^ options.cufflinks_prediction ^ \
-            options.filter_trsk_out ^ options.fetch_trsk_labels ^ \
-            options.filter_cuff_out ^ options.filter_db_anno ^ \
-            options.fetch_cuff_labels ^ options.fetch_db_labels):
+            options.genome ^ options.genome_index ^ options.insert_size ^ \
+            options.read_mapping ^ options.multi_map ^ options.uniq_read ^ \
+            options.trsk_pred ^ options.cuff_pred ^ options.filter_trsk ^ \
+            options.trsk_label ^ options.filter_cuff ^ options.filter_db ^ \
+            options.cuff_label ^ options.db_label):
         parser.print_help()
         sys.exit(-1)
         
@@ -96,44 +96,40 @@ def main():
     elif options.genome_index:
         print 'Operation selected: Create STAR genome index'
         create_genome_index(config_file)
-
+    elif options.insert_size:
+        print 'Operation selected: Calculate the library insert size from sequencing read files'
+        calculate_insert_size(config_file)
     elif options.read_mapping: 
         print 'Operation selected: Read alignment with STAR'
         align_rnaseq_reads(config_file)
-
-    elif options.multi_map_resolve:
+    elif options.multi_map:
         print 'Operation selected: Multiple read mapper resolution with MMR'
         alignment_filter(config_file) 
-
-    elif options.trsk_prediction:
-        print 'Operation selected: Transcript assembly based on mapped RNASeq read data with TranscriptSkimmer'
+    elif options.uniq_read:
+        print 'Operation selected: Find uniquely mapped reads from star alignment'
+        find_uniq_reads(config_file) 
+    elif options.trsk_pred:
+        print 'Operation selected: Transcript prediction based on mapped RNASeq read data with TranscriptSkimmer'
         transcript_prediction_trsk(config_file)
-
-    elif options.cufflinks_prediction:
+    elif options.cuff_pred:
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data with Cufflinks'
         transcript_prediction_cuff(config_file)
-
-    elif options.filter_trsk_out:
-        print 'Operation selected: Filter out gene models from TranscriptSkimmer predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
+    elif options.filter_trsk:
+        print 'Operation selected: Filter out gene models from TranscriptSkimmer predictions - criteria: splice-site consensus and length of the ORF.'
         filter_genes(config_file, "trsk")
-
-    elif options.filter_cuff_out:
+    elif options.filter_cuff:
         print 'Operation selected: Filter out gene models from cufflinks predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
         filter_genes(config_file, "cufflinks")
-
-    elif options.filter_db_anno:
-        print 'Operation selected: Filter out gene models from public database - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
+    elif options.filter_db:
+        print 'Operation selected: Filter out gene models from public database - criteria: splice-site consensus and length of the ORF'
         filter_genes(config_file, "onlinedb")
-
-    elif options.fetch_trsk_labels:
+    elif options.trsk_label:
         print 'Operation selected: Extract different genomic signal label sequences from TranscriptSkimmer.'
         fetch_db_signals(config_file, "trsk")
-
-    elif options.fetch_cuff_labels:
+    elif options.cuff_label:
         print 'Operation selected: Extract different genomic signal label sequences from cufflinks.'
         fetch_db_signals(config_file, "cufflinks")
-
-    elif options.fetch_db_labels:
+    elif options.db_label:
         print 'Operation selected: Extract different genomic signal label sequences from online database files.'
         fetch_db_signals(config_file, "onlinedb")
 
@@ -142,12 +138,9 @@ def call_fetch_db_signals(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
-    
     from signal_labels import generate_genome_seq_labels as fetch_labels 
-
     fasta_file, gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts, out_dir = args_list
     os.chdir(out_dir)
-
     fetch_labels.main(fasta_file, gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts)
     return "done" 
 
@@ -156,8 +149,7 @@ def fetch_db_signals(yaml_config, data_method):
     """
     get the genomic signal labels bases on the annotation from external database
     """
-
-    operation_seleted = "4"
+    operation_seleted = "6"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
@@ -203,7 +195,6 @@ def fetch_db_signals(yaml_config, data_method):
 
         ## arguments to pygrid 
         arg = [[det['fasta'], gff_file, signal_type, count, poslabels_cnt, neglabels_cnt, flank_nts, out_dir]]
-        
         job = pg.cBioJob(call_fetch_db_signals, arg) 
 
         ## native specifications 
@@ -216,7 +207,6 @@ def fetch_db_signals(yaml_config, data_method):
         job.walltime = "1:00:00"
 
         Jobs.append(job)
-
     print 
     print "sending genomic signal fetch jobs to worker"
     print 
@@ -227,24 +217,20 @@ def call_filter_genes(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
-
     from rnaseq_align_assembly import refine_transcript_models as filter_tool 
     gtf_file, fasta_file, result_file = args_list
     filter_tool.filter_gene_models(gtf_file, fasta_file, result_file)
     return "done"
 
-
 def filter_genes(yaml_config, data_method):
     """
     filter out invalid gene models from the provided genome annotation
     """
-
     operation_seleted = "f"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
-
         if data_method == "cufflinks":
             gff_file = "%s/transcripts.gtf" % det['read_assembly_dir'] ## cufflinks run output file 
             outFile = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name) ## example: A_thaliana_cufflinks_genes.gff 
@@ -257,7 +243,6 @@ def filter_genes(yaml_config, data_method):
 
         ## arguments to pygrid 
         arg = [[gff_file, det['fasta'], outFile]]
-
         job = pg.cBioJob(call_filter_genes, arg) 
 
         ## native specifications 
@@ -270,18 +255,15 @@ def filter_genes(yaml_config, data_method):
         job.walltime = "2:00:00"
 
         Jobs.append(job)
-
     print 
     print "sending filter gene models jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
-
 def call_transcript_prediction_cuff(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
-    
     from rnaseq_align_assembly import transcript_assembly as trassembly
     org_db, num_threads = args_list
     trassembly.run_cufflinks(org_db, num_threads)
@@ -292,7 +274,6 @@ def transcript_prediction_cuff(yaml_config):
     """
     transcript prediction using cufflinks
     """
-
     operation_seleted = "c"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
@@ -313,9 +294,8 @@ def transcript_prediction_cuff(yaml_config):
         job.walltime = "32:00:00"
 
         Jobs.append(job)
-
     print 
-    print "sending transcript assembly jobs to worker"
+    print "sending transcript assembly cufflinks jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
@@ -324,19 +304,18 @@ def call_transcript_prediction_trsk(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
-
     from rnaseq_align_assembly import transcript_assembly as trassembly
     org_db = args_list
     trassembly.run_trsk(org_db)
     return "done"
     
-
 def transcript_prediction_trsk(yaml_config):
     """
     transcript prediction using TranscriptSkimmer
     """
-    operation_seleted = "3"
+    operation_seleted = "4"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
@@ -354,23 +333,29 @@ def transcript_prediction_trsk(yaml_config):
         job.walltime = "6:00:00"
 
         Jobs.append(job)
-
     print 
-    print "sending transcript assembly jobs to worker"
+    print "sending transcript assembly trsk jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+def find_uniq_reads(yaml_config):
+    """
+    find uniquely mapped reads from a bam file 
+    """
+    operation_seleted = "u"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+    print "NOT YET IMPLEMENTED."
+    sys.exit(0)
+    #TODO check the reconstruction of transcripts based on uniq reads and mmr reads on H_sapiens genome
 
 def call_alignment_filter(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
-
     from rnaseq_align_assembly import star_align_rna as filter
     org_name, out_dir, num_cpus = args_list
     filter.run_mmr(org_name, out_dir, num_cpus)
     return "done"
-    
 
 def alignment_filter(yaml_config):
     """
@@ -378,10 +363,11 @@ def alignment_filter(yaml_config):
     """
     operation_seleted = "m"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['short_name'], det['read_map_dir'], 12]]
+        arg = [[det['short_name'], det['read_map_dir'], 3]]
 
         job = pg.cBioJob(call_alignment_filter, arg) 
 
@@ -395,9 +381,8 @@ def alignment_filter(yaml_config):
         job.walltime = "24:00:00"
 
         Jobs.append(job)
-
     print 
-    print "sending jobs to worker"
+    print "sending multi map resolution jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
@@ -406,7 +391,6 @@ def call_align_reads(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
-
     from rnaseq_align_assembly import star_align_rna as rnastar 
     org_db, read_type, max_mates_gap_length, num_cpus = args_list
     rnastar.run_star_alignment(org_db, read_type, max_mates_gap_length, num_cpus) 
@@ -417,8 +401,7 @@ def align_rnaseq_reads(yaml_config):
     """
     wrapper for aligning rnaseq reads using 
     """
-
-    operation_seleted = "2"
+    operation_seleted = "3"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
@@ -427,7 +410,7 @@ def align_rnaseq_reads(yaml_config):
         lib_type = 'PE'
         lib_type = 'SE' if len(det['fastq'])==1 else lib_type
 
-        arg = [[det, lib_type, 100000, 16]]
+        arg = [[det, lib_type, 100000, 4]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
@@ -440,12 +423,19 @@ def align_rnaseq_reads(yaml_config):
         job.walltime = "24:00:00"
         
         Jobs.append(job)
-
     print 
-    print "sending jobs to worker"
+    print "sending read alignment with STAR jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+def calculate_insert_size(yaml_config):
+    """
+    wrapper for calling calculate insert size function
+    """
+    operation_seleted = "i"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+    print "NOT YET IMPLEMENTED."
+    sys.exit(0)
 
 def call_genome_index(args_list):
     """
@@ -704,6 +694,7 @@ if __name__=="__main__":
     main() 
 
     """
+    TODO 
     save a pickle file with organisms details with updated genome annotation and sra file, path informations 
     the object will be passed to the next preprocessing manual tweeking
     
