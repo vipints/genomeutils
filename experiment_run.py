@@ -23,13 +23,15 @@ def main():
 
     -1 download_sra file from NCBI SRA service
     -d decompose_sra decompress the SRA file  
-    -a annotation fetch genome annotation file from public database servers mainly ensembl, phytosome 
+    -a annotation fetch genome annotation file from public database servers mainly ensembl, phytozome 
     -g genome fetch genome sequence file from public database
+
+    manual cleaning of genome sequence and annotation 
     
+    -2 genome_index create genome indices for STAR alignment 
+    
+
     TODO    
-    -1 from SRA ENSEMBL Phytozome
-        manual cleaning of downloaded genome 
-        create the genome genome indices
         calculate the insert size 
 
     -2 rnaseq read mapping process     
@@ -43,12 +45,12 @@ def main():
 
     parser = OptionParser() 
 
-    parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories." )
+    parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories.")
     parser.add_option( "-d", "--decompose_sra", action="store_true", dest="decompose_sra", default=False, help="Decompress the sra file according to the library type.")
     parser.add_option( "-a", "--annotation", action="store_true", dest="annotation", default=False, help="Download genome annotation from public database resources.")
     parser.add_option( "-g", "--genome", action="store_true", dest="genome", default=False, help="Download genome sequence from public database resources.")
+    parser.add_option( "-2", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index based on genome sequence and annotations." )
 
-    parser.add_option( "-2", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index to align the reads." )
     parser.add_option( "-3", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to the genome using STAR." )
     parser.add_option( "-m", "--multi_map_resolve", action="store_true", dest="multi_map_resolve", default=False, help="Multimapper resolution (mmr) program on aligned reads." )
     parser.add_option( "-4", "--trsk_prediction", action="store_true", dest="trsk_prediction", default=False, help="Transcript assembly using TranscriptSkimmer." )
@@ -91,7 +93,6 @@ def main():
     elif options.genome:
         print 'Operation selected: Downloading genome sequence file'
         download_fasta(config_file)
-
     elif options.genome_index:
         print 'Operation selected: Create STAR genome index'
         create_genome_index(config_file)
@@ -451,7 +452,6 @@ def call_genome_index(args_list):
     wrapper for submitting jobs to pygrid
     """
     from fetch_remote_data import prepare_data as ppd
-
     fasta_file, out_dir, genome_anno, num_workers, onematelength = args_list
     ppd.create_star_genome_index(fasta_file, out_dir, genome_anno, num_workers, onematelength)
     return 'done'
@@ -461,28 +461,27 @@ def create_genome_index(yaml_config):
     """
     wrapper for calling genome index function 
     """
-    operation_seleted = "a"
+    operation_seleted = "2"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 12, det['read_length']-1]]
+        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 4, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
     
-        job.mem="32gb"
-        job.vmem="32gb"
-        job.pmem="32gb"
-        job.pvmem="32gb"
+        job.mem="48gb"
+        job.vmem="48gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
         job.nodes = 1
-        job.ppn = 1
-        job.walltime = "16:00:00"
+        job.ppn = 4
+        job.walltime = "24:00:00"
         
         Jobs.append(job)
-
     print 
-    print "sending jobs to worker"
+    print "sending star genome index jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
 
