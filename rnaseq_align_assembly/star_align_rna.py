@@ -13,7 +13,6 @@ import re
 import sys 
 import subprocess
 from collections import defaultdict
-from gfftools import helper, GFFParser
 
 
 def run_mmr(org_name, read_map_dir, threads=3):
@@ -26,27 +25,49 @@ def run_mmr(org_name, read_map_dir, threads=3):
     @type read_map_dir: str 
     @args threads: number of threads to use for the run (default: 3)
     @type threads: int  
+
+    expect mmr to be available under the PATH env variable 
     """
-    #TODO 
-    #
-    #check the file exists before runing mmr / if the unsorted file from star aligner then sort by read id and run mmr 
-    #
-    #bam_file = "%s/%s_Aligned.sortedByCoord.out.bam" % (read_map_dir, org_name) 
-    #bam_file = "%s/%s_Aligned.out.bam" % (read_map_dir, org_name) 
+    import pysam
+
+    ## mmr works well with bam file sorted by read id  
     bam_file = "%s/%s_Aligned.sortedByName.out.bam" % (read_map_dir, org_name) 
+    if not os.path.isfile(bam_file):
+        print "warning: failed to fetch read id sorted BAM file for organism: %s, trying to get the raw alignment file..." % org_name
+
+        bam_file = "%s/%s_Aligned.out.bam" % (read_map_dir, org_name) ## unsorted bam file from star output  
+        if not os.path.isfile(bam_file):
+            print "error: failed to fetch star alignment file for %s %s" % (org_name, bam_file) 
+            sys.exit(-1)
+
+        ## sorting bam file 
+        sorted_bam = "%s/%s_Aligned.sortedByName.out" % (read_map_dir, org_name)
+        print "trying to sort based by read id with output prefix as: %s" % sorted_bam
+        if not os.path.isfile("%s.bam" % sorted_bam):
+            print 'sorting...'
+            pysam.sort("-n", bam_file, sorted_bam)
+
+        bam_file = "%s.bam" % sorted_bam
+    
+    print 'using bam file from %s' % bam_file
     outFile = "%s/%s_Aligned_mmr.bam" % (read_map_dir, org_name) 
 
     iterations = 3 
-    ## this requires the BAM file in memory, otherwise provide a bam file sorted by read id
-    #cli_mmr = "module load gcc; mmr -v -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
+    ## provide a bam file sorted by read id
     cli_mmr = "module load gcc; mmr -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
 
-    ## changing the working dir to run mmr 
-    os.chdir(read_map_dir)
-
     sys.stdout.write('\trun MMR as: %s \n' % cli_mmr)
-    process = subprocess.Popen(cli_mmr, shell=True) 
-    process.wait()
+    try:
+        ## changing the working dir to run mmr 
+        os.chdir(read_map_dir)
+
+        process = subprocess.Popen(cli_mmr, shell=True) 
+        process.wait()
+
+        print 'mmr run completed. result file stored at %s' outFile
+    except Exception, e:
+        print 'Error running MMR.\n%s' %  str( e )
+        sys.exit(0)
 
 
 def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_cpus=1):
@@ -62,6 +83,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
     @args num_cpus: number of threads to use for the run (default: 1)
     @type num_cpus: int 
     """
+    from gfftools import helper, GFFParser
     ## genome indices and annotation file
     genome_dir = org_db['genome_index_dir']
     gtf_db = org_db['gtf']
@@ -145,6 +167,8 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
     try:
         process = subprocess.Popen(make_star_run, shell=True) 
         process.wait()
+
+        print "star run completed. result file stored at %sAligned.out.bam" % out_prefix
     except Exception, e:
         print 'Error running STAR.\n%s' %  str( e )
         sys.exit(0)
@@ -159,7 +183,6 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     @args multi_map: number of hits of a read (default 1) 
     @type multi_map: integer 
     """
-
     import pysam
 
     ## indexing the in bam file 
