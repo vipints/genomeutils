@@ -20,9 +20,10 @@ algorithms:
         tool: cufflinks
         version: 2.2.1
 experiment:
-  - organism_name: H_sapiens
+  - organism_name: homo_sapiens
     sra_run_id: SRR534327
     genome_build_version: ensembl_release-69
+    release_db: ensembl_genome
   - organism_name: P_troglodytes
     sra_run_id: SRR544874 
     genome_build_version: ensembl_release-69
@@ -80,6 +81,7 @@ experiment:
   - organism_name: N_vitripennis
     sra_run_id: SRR940321
     genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
   - organism_name: D_melanogaster 
     sra_run_id: SRR525180
     genome_build_version: ensembl_release-69 
