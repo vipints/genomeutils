@@ -1,13 +1,19 @@
-# Configuration file for running signal label generation pipeline for 30 organisms 
-# 
+#
+## Example configuration <yaml> file for running a signal label generation pipeline 30 organisms
+#
 genome_data_path:
     dir: /databases/genomes/
 experiment_data_path:
     dir: /SRA-rnaseq/
+label_type:
+    type: trsk
 algorithms:
     sra_unpack: 
         tool: fastq-dump
-        version: 2.3.1
+        version: 2.4.5
+    genome_index:
+        tool: STAR
+        version: 2.4.0f1
     read_aligner:
         tool: STAR
         version: 2.4.0f1
