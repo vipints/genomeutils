@@ -138,6 +138,7 @@ def clean_genome_file(chr_names, fas_file, fas_out):
     # writing stable contig genome sequence in FASTA format 
     for rec in SeqIO.parse(fh, "fasta"):
         if rec.id in chr_names:
+            print "writing the contig %s details" % rec.id  
             outfh.write(rec.format("fasta"))
 
     fh.close()
