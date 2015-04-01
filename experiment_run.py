@@ -43,7 +43,7 @@ def main():
     -db_label
     """
 
-    parser = OptionParser(usage='usage: %prog [options] arguments') 
+    parser = OptionParser(usage='usage: %prog <YAML config> [options]') 
 
     parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories.")
     parser.add_option( "-d", "--decompose_sra", action="store_true", dest="decompose_sra", default=False, help="Decompress the sra file according to the library type.")
@@ -58,7 +58,7 @@ def main():
     parser.add_option( "-c", "--cuff_pred", action="store_true", dest="cuff_pred", default=False, help="Transcript assembly using Cufflinks." )
     parser.add_option( "-5", "--filter_trsk", action="store_true", dest="filter_trsk", default=False, help="Apply filters to trsk predicted gene models." )
     parser.add_option( "--filter_cuff", action="store_true", dest="filter_cuff", default=False, help="Apply filter to the cufflinks predicted gene models." )
-    parser.add_option( "--filter_db", action="store_true", dest="filter_db_anno", default=False, help="Apply filter to the online db annotation gene models." )
+    parser.add_option( "--filter_db", action="store_true", dest="filter_db", default=False, help="Apply filter to the online db annotation gene models." )
     parser.add_option( "-6", "--trsk_label", action="store_true", dest="trsk_label", default=False, help="Fetch label sequences from TranscriptSkimmer annotations." )
     parser.add_option( "--cuff_label", action="store_true", dest="cuff_label", default=False, help="Fetch label sequences from cufflinks annotations." )
     parser.add_option( "--db_label", action="store_true", dest="db_label", default=False, help="Fetch labels sequences from public online db annotation files." )
