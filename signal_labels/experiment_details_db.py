@@ -209,7 +209,7 @@ def experiment_db(config_file, opt_action):
 
         ## check the genome annotation 
         if short_name in org_gtf_file:
-            org_db[short_name]['gtf'] = None
+            org_db[short_name]['gtf'] = org_gtf_file[short_name]
 
             if opt_action in ["2", "3", "4", "c"]: ## perform this action only for selected options 
                 ## get the gtf feature lengths 
