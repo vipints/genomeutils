@@ -43,7 +43,7 @@ def main():
     -db_label
     """
 
-    parser = OptionParser() 
+    parser = OptionParser(usage='usage: %prog [options] arguments') 
 
     parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories.")
     parser.add_option( "-d", "--decompose_sra", action="store_true", dest="decompose_sra", default=False, help="Decompress the sra file according to the library type.")
