@@ -89,6 +89,7 @@ def read_genome_file(fas_file):
 
     chrom_names = [] 
     for rec in SeqIO.parse(fh, "fasta"):
+        print "parsing contig %s details" % rec.id 
         chrom_names.append((rec.id, len(rec.seq)))
     
     fh.close()
