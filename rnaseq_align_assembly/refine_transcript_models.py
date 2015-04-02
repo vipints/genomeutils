@@ -108,7 +108,8 @@ def check_splice_site_consensus(fas_file, splice_region):
     print "splice site sequence consensus check started..."
     get_gene_models = defaultdict()
     splice_site_con = 0 
-    for fas_rec in SeqIO.parse(fas_file, "fasta"):
+    fas_fh = helper.open_file(fas_file)
+    for fas_rec in SeqIO.parse(fas_fh, "fasta"):
         if fas_rec.id in splice_region:
             for details in splice_region[fas_rec.id]:
                 for genes, regions in details.items():
@@ -145,7 +146,7 @@ def check_splice_site_consensus(fas_file, splice_region):
                         get_gene_models[(fas_rec.id, genes[0], genes[1], genes[2])] = 1   
                     else:
                         splice_site_con +=1 
-    
+    fas_fh.close()
     print "...considering %d best transcripts\n" % len(get_gene_models) 
     print "discarding transcripts..."
     print "\t%d splice-site consensus sequence missing" % splice_site_con
@@ -209,7 +210,7 @@ def write_filter_gene_models(gff_cont, gene_models, outFile):
 if __name__ == "__main__":
     try:
         gff_name = sys.argv[1]
-        fas_file = helper.open_file(sys.argv[2]) 
+        fas_file = sys.argv[2] 
     except:
         print __doc__
         sys.exit(-1) 
