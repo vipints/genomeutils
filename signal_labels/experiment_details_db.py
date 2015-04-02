@@ -209,19 +209,19 @@ def experiment_db(config_file, opt_action):
 
         ## check the genome annotation 
         if short_name in org_gtf_file:
-            org_db[short_name]['gtf'] = org_gtf_file[short_name]
 
-            if opt_action in ["2", "3", "4", "c"]: ## perform this action only for selected options 
-                ## get the gtf feature lengths 
-                if os.path.isfile(org_gtf_file[short_name]):
-                    org_db[short_name]['gtf'] = org_gtf_file[short_name]
+            if os.path.isfile(org_gtf_file[short_name]):
+                org_db[short_name]['gtf'] = org_gtf_file[short_name]
+
+                if opt_action in ["2", "3", "4", "c"]: ## perform this action only for selected options 
+                    ## get the gtf feature lengths 
                     from fetch_remote_data import prepare_data as pd
                     feat_len_db = pd.make_anno_db(org_gtf_file[short_name]) 
                     org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
                     org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
-                else:
-                    print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
-                    sys.exit(-1)
+            else:
+                print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
+                sys.exit(-1)
         else:
                 print "warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
                 org_db[short_name]['gtf'] = None
