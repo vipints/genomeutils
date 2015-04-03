@@ -1,8 +1,10 @@
 #!/usr/bin/env python 
 """
-modules for large scale experiment runs, example: generating standard genome indices. 
-
-Usage: 
+modules for large scale experiment runs includes:
+    - reading of genome sequence in fasta format 
+    - manual cleaning of genome and annotation files
+    - feature annotation db for querying details
+    - creating star genome indicies
 
 Requirement:
     STAR aligner: https://github.com/alexdobin/STAR 
@@ -138,8 +140,8 @@ def clean_genome_file(chr_names, fas_file, fas_out):
     # writing stable contig genome sequence in FASTA format 
     for rec in SeqIO.parse(fh, "fasta"):
         if rec.id in chr_names:
-            print "writing the contig %s details" % rec.id  
             outfh.write(rec.format("fasta"))
+            print "writing the contig %s details" % rec.id  
 
     fh.close()
     outfh.close()
