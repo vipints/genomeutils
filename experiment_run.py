@@ -3,7 +3,7 @@
 master script to control different operations in training label data generating pipeline.
 
 usage:
-    python experiment_run.py <YAML config> -h  
+    python experiment_run.py <YAML config> -h 
 
     sample yaml config file located at config/
 
@@ -45,14 +45,14 @@ def main():
     -4 trsk_pred transcript prediction using TranscriptSkimmer
     -c cuff_pred transcript assembly by Cufflinks 
     -5 filter_trsk applying filter to the trsk predicted gene models 
-    -filter_cuff applying filter to the cufflinks predicted gene models 
-    -filter_db applying filter to the online db genome annotations
+    -b filter_cuff applying filter to the cufflinks predicted gene models 
+    -f filter_db applying filter to the online db genome annotations
     -6 trsk_label generating labels for genomic signal based on the trsk feature annotation  
-    -cuff_label generating labels for genomic signal based on the cufflinks feature annotation 
-    -db_label generating labels for genomic signal based on online db annotations
+    -t cuff_label generating labels for genomic signal based on the cufflinks feature annotation 
+    -p db_label generating labels for genomic signal based on online db annotations
     """
 
-    parser = OptionParser(usage='usage: %prog <YAML config> [options]') 
+    parser = OptionParser(usage='usage: %prog <YAML config> [required option]') 
 
     parser.add_option( "-1", "--download_sra", action="store_true", dest="download_sra", default=False, help="Download sra file based on run id from NCBI SRA/ENA repositories.")
     parser.add_option( "-d", "--decompose_sra", action="store_true", dest="decompose_sra", default=False, help="Decompress the sra file according to the library type.")
@@ -61,7 +61,7 @@ def main():
     parser.add_option( "-2", "--genome_index", action="store_true", dest="genome_index", default=False, help="Create STAR genome index based on genome sequence and annotations." )
     parser.add_option( "-i", "--insert_size", action="store_true", dest="insert_size", default=False, help="Calculate the library insert size from fastq files.")
     parser.add_option( "-3", "--read_mapping", action="store_true", dest="read_mapping", default=False, help="RNASeq read mapping to genome using STAR aligner." )
-    parser.add_option( "-m", "--multi_map", action="store_true", dest="multi_map", default=False, help="Multimapper resolution (mmr) on aligned reads to resolve multimapping of reads." )
+    parser.add_option( "-m", "--multi_map", action="store_true", dest="multi_map", default=False, help="MMR on aligned reads to resolve multimapping of reads." )
     parser.add_option( "-u", "--uniq_read", action="store_true", dest="uniq_read", default=False, help="Fetching uniquely mapped reads from bam file." )
     parser.add_option( "-4", "--trsk_pred", action="store_true", dest="trsk_pred", default=False, help="Transcript prediction using TranscriptSkimmer." )
     parser.add_option( "-c", "--cuff_pred", action="store_true", dest="cuff_pred", default=False, help="Transcript assembly using Cufflinks." )
@@ -70,7 +70,7 @@ def main():
     parser.add_option( "-f", "--filter_db", action="store_true", dest="filter_db", default=False, help="Apply filter to the online db annotation gene models." )
     parser.add_option( "-6", "--trsk_label", action="store_true", dest="trsk_label", default=False, help="Fetch label sequences from TranscriptSkimmer annotations." )
     parser.add_option( "-t", "--cuff_label", action="store_true", dest="cuff_label", default=False, help="Fetch label sequences from cufflinks annotations." )
-    parser.add_option( "-p", "--db_label", action="store_true", dest="db_label", default=False, help="Fetch labels sequences from public online db annotation files." )
+    parser.add_option( "-p", "--db_label", action="store_true", dest="db_label", default=False, help="Fetch label sequences from public online db annotation files." )
 
     ( options, args ) = parser.parse_args()
     try:
