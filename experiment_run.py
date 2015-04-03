@@ -1,6 +1,15 @@
 #!/usr/bin/env python 
 """
-master script to execute the pipeline
+master script to control different operations in training label data generating pipeline.
+
+usage:
+    python experiment_run.py <YAML config> -h  
+
+    sample yaml config file located at config/
+
+requirement:
+    pygridtools for distributed computing 
+    packages/modules depends on the operation  
 """
 
 import os 
@@ -17,7 +26,7 @@ assert sys.version_info[:2] >= ( 2, 4 )
 
 def main():
     """
-    Managing the experiment run in different levels 
+    Managing the experiment run in different operation mode: 
 
     Options
 
@@ -36,11 +45,11 @@ def main():
     -4 trsk_pred transcript prediction using TranscriptSkimmer
     -c cuff_pred transcript assembly by Cufflinks 
     -5 filter_trsk applying filter to the trsk predicted gene models 
-    -filter_cuff
-    -filter_db
-    -6 trsk_label 
-    -cuff_label
-    -db_label
+    -filter_cuff applying filter to the cufflinks predicted gene models 
+    -filter_db applying filter to the online db genome annotations
+    -6 trsk_label generating labels for genomic signal based on the trsk feature annotation  
+    -cuff_label generating labels for genomic signal based on the cufflinks feature annotation 
+    -db_label generating labels for genomic signal based on online db annotations
     """
 
     parser = OptionParser(usage='usage: %prog <YAML config> [options]') 
@@ -154,7 +163,6 @@ def fetch_db_signals(yaml_config, data_method):
 
     Jobs = []
     for org_name, det in orgdb.items():
-
         if data_method == "trsk":
             gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
             out_dir = "%s/trsk_3K_labels" % det['labels_dir']## new label sequence dir 
@@ -163,7 +171,7 @@ def fetch_db_signals(yaml_config, data_method):
             out_dir = "%s/cuff_3K_labels" % det['labels_dir']
         else:
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/db_1K_labels" % det['labels_dir']
+            out_dir = "%s/jmlr_1K_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -180,17 +188,18 @@ def fetch_db_signals(yaml_config, data_method):
             except Exception, e:
                 print e 
     
-        import subprocess 
+        #import subprocess 
         ## get the label count for each organisms, essentially the max number of genes available 
         #cmd = "grep -P \"\tgene\t\" %s | wc -l" % gff_file
         #proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         #count, err = proc.communicate() 
         #count = int(count.strip())
-
-        count = 3150
+        
+        ## depends on the genomic signal type 
+        count = 12500
         signal_type = "tss"
-        poslabels_cnt = 2000
-        neglabels_cnt = 9000
+        poslabels_cnt = 1000
+        neglabels_cnt = 3000
         flank_nts = 1200 
 
         ## arguments to pygrid 
@@ -198,10 +207,10 @@ def fetch_db_signals(yaml_config, data_method):
         job = pg.cBioJob(call_fetch_db_signals, arg) 
 
         ## native specifications 
-        job.mem="4gb"
-        job.vmem="4gb"
-        job.pmem="4gb"
-        job.pvmem="4gb"
+        job.mem="6gb"
+        job.vmem="6gb"
+        job.pmem="6gb"
+        job.pvmem="6gb"
         job.nodes = 1
         job.ppn = 1
         job.walltime = "1:00:00"
