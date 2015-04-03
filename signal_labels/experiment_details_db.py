@@ -1,7 +1,11 @@
 #!/usr/bin/env python 
 """
-This program aims to locate the path for data storage and experiment runs for each organisms in a workflow.
-FIXME descriptions 
+This program contains some predefined variables which hold the relative path for data storage and experiment runs for each organisms in a workflow.
+The idea behind this is to have a speed query to the organisms detailed informations, specifically genome annotation file etc.
+The program includes 
+    - counting the sequencing read length for the provided experiment
+    - getting the details of annotated features 
+    - preparing for the experiment relative paths
 """
 
 import os 
@@ -28,36 +32,36 @@ def experiment_db(config_file, opt_action):
     exp_path = config_map['experiment_data_path']['dir']
 
     org_fasta_file = dict( A_carolinensis = '%s/A_carolinensis/ensembl_release-69/Anolis_carolinensis.AnoCar2.0.69.stable_genome.fa' % data_path,
-    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.fa.bz2" % data_path,
+    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.fa" % data_path,
     O_cuniculus = "%s/O_cuniculus/ensembl_release-69/ensembl_release-69.fa" % data_path,
-    M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.fa.bz2" % data_path, 
+    M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.fa" % data_path, 
     B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis_str_a0193.GCA_000181915.1.21.dna.toplevel.fa' % data_path,
-    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
+    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.fa' % data_path,
     D_melanogaster = '%s/D_melanogaster/ensembl_release-69/Drosophila_melanogaster.BDGP5.69.dna.toplevel.fa' % data_path,
-    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
+    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.fa' % data_path,
     M_domestica = '%s/M_domestica/ensembl_release-69/Monodelphis_domestica.BROADO5.69.dna.toplevel.fa' % data_path,
     O_sativa = '%s/O_sativa/phytozome_v9.0/Osativa_204.fa' % data_path,
     A_gambiae = '%s/A_gambiae/anoGam1_ucsc/anoGam1_rm.fasta' % data_path,
     B_rapa = '%s/B_rapa/phytozome_v9.0/Brapa_197_stable.fa' % data_path,
     C_japonica = '%s/C_japonica/STARgenome/Caenorhabditis_japonica.C_japonica-7.0.1.22.dna_sm.stable.fa' % data_path,
-    G_gallus = '%s/G_gallus/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
+    G_gallus = '%s/G_gallus/ensembl_release_79/ensembl_release_79.fa' % data_path,
     M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,  
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/Vvinifera_145.fa' % data_path,
     A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel3_sm.fasta' % data_path,
-    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
+    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.fa' % data_path,
     C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.fa.gz' % data_path,
     D_rerio = '%s/D_rerio/ensembl_release-69/ensembl_release-69.fa' % data_path,
     G_max = '%s/G_max/phytozome_v9.0/Gmax_189_filter.fa' % data_path,
     M_truncatula = '%s/M_truncatula/STARgenome/Mtruncatula_198.fa' % data_path,
     P_pacificus = '%s/P_pacificus/STARgenome/Pristionchus_pacificus.P_pacificus-5.0.22.dna_sm.stable.fa' % data_path,
-    S_scrofa = '%s/S_scrofa/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
+    S_scrofa = '%s/S_scrofa/ensembl_release_79/ensembl_release_79.fa' % data_path,
     X_tropicalis = '%s/X_tropicalis/JGIv4-1/JGIv4-1.fa' % data_path,
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_filtered.fa' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release-22/Drosophila_simulans.WUGSC1.22.dna_sm.dna.fa' % data_path,
     H_sapiens = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release-69/Ornithorhynchus_anatinus.OANA5.69-filtered_dna.fa' % data_path,
     N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis_dna_sm.fa' % data_path,
-    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fa.bz2' % data_path,
+    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fa' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206.fa' % data_path,
     Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181.fa' % data_path,
     A_thaliana = '%s/A_thaliana/arabidopsis_tair10/sequences/TAIR9_chr_all.fas' % data_path,
