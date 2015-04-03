@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 """
-Extract genomic signal labels like Transcription Start Site[tss], 
-Translational Initiation Site[tis], Splice Sites [don, acc], 
-Transcription Stop Site[cleave] and Translation Stop Site [cdsstop]
-from the genome sequence and annotation file. 
+Extract genomic signal label sequences from the genome sequence and annotation file. 
+    Transcription Start Site[tss], 
+    Translational Initiation Site[tis], 
+    Splice Sites [don, acc], 
+    Transcription Stop Site[cleave]
+    Translation Stop Site [cdsstop]
 
-The number of positive and negative labels for each signal sequence
-are generated randomly from each chromosome. 
+    the resulting label sequences are placed under the working dir in fasta format.
 
-The labels are flanked by 100 nucleotides upstream and downstream of
-the genome signal region. Labels are stored as: 
-ex: TSS [tss_sig_{minus|plus}_label.fa]
+The signal sequence are flanked by defined number of nucleotides upstream and downstream of genome signal region.
 
-Usage: python generate_genome_seq_labels.py in.fasta.(gz|bz2) in.gtf.(gz|bz2)
+Usage: 
+    python generate_genome_seq_labels.py in.fasta.(gz|bz2) in.gtf.(gz|bz2)
 
 Requirements:
     BioPython:- http://biopython.org 
@@ -23,6 +23,7 @@ import re
 import os 
 import sys
 import numpy 
+import shutil
 import random
 from Bio import SeqIO 
 from Bio.Seq import Seq
@@ -31,7 +32,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname=None, gfname=None, signal='tss', label_cnt=400, plus_cnt=100, minus_cnt=300, flanks=1200):
+def main(faname=None, gfname=None, signal='tss', label_cnt=6000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit
 
@@ -748,7 +749,7 @@ def get_label_regions(gtf_content, signal):
                                 feature['strand'], 
                                 (int(feature['start']), int(feature['stop']))
                                 )
-                    break  ## considering only one transcript from a region 
+                    #break  ## considering only one transcript from a region 
         elif signal == 'tis':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
