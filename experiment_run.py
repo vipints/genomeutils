@@ -171,7 +171,7 @@ def fetch_db_signals(yaml_config, data_method):
             out_dir = "%s/cuff_3K_labels" % det['labels_dir']
         else:
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/jmlr_1K_labels" % det['labels_dir']
+            out_dir = "%s/jmlr_2K_sm_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -199,7 +199,7 @@ def fetch_db_signals(yaml_config, data_method):
         count = 12500
         signal_type = "tss"
         poslabels_cnt = 1000
-        neglabels_cnt = 3000
+        neglabels_cnt = 1000
         flank_nts = 1200 
 
         ## arguments to pygrid 
@@ -213,7 +213,7 @@ def fetch_db_signals(yaml_config, data_method):
         job.pvmem="6gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "1:00:00"
+        job.walltime = "3:00:00"
 
         Jobs.append(job)
     print 
