@@ -10,11 +10,9 @@ mp.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor sp
 
 Requirement:
     pylab: 
-    numpy 
 """
 
 from __future__ import division
-import numpy 
 from collections import defaultdict
 
 def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
@@ -79,16 +77,20 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     #    print meth_color
     xlocations.append(offset + (width*(num_methods*1))/3)
 
-    rects_avg.append(pylab.bar(offset, round(sum(mean_perf['individual'])/len(labels), 2), width, color = used_colors[0], edgecolor='white'))
+    #rects_avg.append(pylab.bar(offset, round(sum(mean_perf['individual'])/len(labels), 2), width, color = used_colors[0], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['individual'])/len(labels), width, color = used_colors[0], edgecolor='white'))
     offset += width 
 
-    rects_avg.append(pylab.bar(offset, round(sum(mean_perf['union'])/len(labels), 2), width, color = used_colors[1], edgecolor='white'))
+    #rects_avg.append(pylab.bar(offset, round(sum(mean_perf['union'])/len(labels), 2), width, color = used_colors[1], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['union'])/len(labels), width, color = used_colors[1], edgecolor='white'))
     offset += width 
 
-    rects_avg.append(pylab.bar(offset, round(sum(mean_perf['mtl'])/len(labels), 2), width, color = used_colors[2], edgecolor='white'))
+    #rects_avg.append(pylab.bar(offset, round(sum(mean_perf['mtl'])/len(labels), 2), width, color = used_colors[2], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtl'])/len(labels), width, color = used_colors[2], edgecolor='white'))
     offset += width 
     
-    rects_avg.append(pylab.bar(offset, round(sum(mean_perf['mtmkl'])/len(labels), 2), width, color = used_colors[3], edgecolor='white'))
+    #rects_avg.append(pylab.bar(offset, round(sum(mean_perf['mtmkl'])/len(labels), 2), width, color = used_colors[3], edgecolor='white'))
+    rects_avg.append(pylab.bar(offset, sum(mean_perf['mtmkl'])/len(labels), width, color = used_colors[3], edgecolor='white'))
     offset += width 
 
     print 'individual - mean perf', round(sum(mean_perf['individual'])/len(labels), 2)
