@@ -15,11 +15,8 @@ requirement:
 import os 
 import sys 
 import yaml 
-
 import libpyjobrunner as pg
-
 from optparse import OptionParser
-
 from signal_labels import experiment_details_db as expdb
 
 assert sys.version_info[:2] >= ( 2, 4 )
@@ -171,7 +168,7 @@ def fetch_db_signals(yaml_config, data_method):
             out_dir = "%s/cuff_3K_labels" % det['labels_dir']
         else:
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/jmlr_2K_sm_labels" % det['labels_dir']
+            out_dir = "%s/jmlr_1K_sm_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -196,10 +193,10 @@ def fetch_db_signals(yaml_config, data_method):
         #count = int(count.strip())
         
         ## depends on the genomic signal type 
-        count = 12500
+        count = 7000
         signal_type = "tss"
         poslabels_cnt = 1000
-        neglabels_cnt = 1000
+        neglabels_cnt = 3000
         flank_nts = 1200 
 
         ## arguments to pygrid 
@@ -207,13 +204,13 @@ def fetch_db_signals(yaml_config, data_method):
         job = pg.cBioJob(call_fetch_db_signals, arg) 
 
         ## native specifications 
-        job.mem="6gb"
-        job.vmem="6gb"
-        job.pmem="6gb"
-        job.pvmem="6gb"
+        job.mem="5gb"
+        job.vmem="5gb"
+        job.pmem="5gb"
+        job.pvmem="5gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "3:00:00"
+        job.walltime = "1:00:00"
 
         Jobs.append(job)
     print 
@@ -355,7 +352,6 @@ def find_uniq_reads(yaml_config):
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
     print "NOT YET IMPLEMENTED."
     sys.exit(0)
-    #TODO check the reconstruction of transcripts based on uniq reads and mmr reads on H_sapiens genome
 
 def call_alignment_filter(args_list):
     """
@@ -701,18 +697,3 @@ def download_gtf(yaml_config):
 
 if __name__=="__main__":
     main() 
-
-    """
-    TODO 
-    save a pickle file with organisms details with updated genome annotation and sra file, path informations 
-    the object will be passed to the next preprocessing manual tweeking
-    
-    #FIXME current strategy is manual cleaning of the both genome and annotation file  
-    chr_names = prd.read_genome_file(fas_file) 
-
-    fas_out = "" 
-    prd.clean_genome_file(chr_names, fas_file, fas_out):
-
-    gtf_out = "" 
-    prd.clean_anno_file(chr_names, gtf_file, gtf_out)
-    """
