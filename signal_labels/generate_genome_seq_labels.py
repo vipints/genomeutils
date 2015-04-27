@@ -32,7 +32,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname=None, gfname=None, signal='tss', label_cnt=6000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def main(faname, gfname, signal='tss', label_cnt=9000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit
 
