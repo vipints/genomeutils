@@ -3,8 +3,7 @@
 select training dataset labels according to positive or negative class
 
 usage:
-    
-
+    rand_fas_rec_selection.py in_fasta.fa out_fasta.fa
 requirement:
     biopython : http://biopython.org 
 """
