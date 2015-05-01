@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """
-select training dataset labels according to positive or negative class
+select training dataset labels according to positive or negative class 
+from ARTS gold standard dataset for transcript start sites.
 
-usage:
+Usage:
     rand_fas_rec_selection.py in_fasta.fa out_fasta.fa
-requirement:
-    biopython : http://biopython.org 
+
+Requirement:
+    biopython: http://biopython.org 
 """
 
 import sys
@@ -22,10 +24,9 @@ def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=4
     @args fa_out: outfile handler 
     @type fa_out: file handler
     """
-
     label_type = ["-1", "+1"]
     if not category in label_type:
-        print "error: sequence record label type +1/-1 not supported to %s" % category
+        sys.stdout.write("error: sequence record label type +1/-1 not supported to %s\n" % category)
         sys.exit(0)
 
     try:
@@ -33,8 +34,6 @@ def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=4
     except:
         accept_prob = 1
     
-    print accept_prob
-
     cnt = 1
     fas_rec = 0 
 
@@ -56,10 +55,8 @@ def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=4
     fasta_in.close()
     fa_out.close()
 
-    print
-    print '%d number of records scanned' % fas_rec 
-    print '%d number of labels dumped' % cnt 
-    print 
+    sys.stdout.write('\n%d number of records scanned\n' % fas_rec)
+    sys.stdout.write('%d number of labels dumped\n\n' % cnt)
 
 
 if __name__=="__main__": 
