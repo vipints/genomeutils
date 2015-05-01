@@ -10,24 +10,6 @@ import gzip
 import bz2
 import numpy 
 
-def init_gene_DE():
-    """
-    Initializing the gene structure for DE
-    """
-    gene_det = [('id', 'f8'), 
-                    ('chr', 'S15'), 
-                    ('exons', numpy.dtype),
-                    ('gene_info', numpy.dtype),
-                    ('is_alt_spliced', 'f8'), 
-                    ('name', 'S25'),
-                    ('source', 'S25'),
-                    ('start', 'f8'),
-                    ('stop', 'f8'), 
-                    ('strand', 'S2'), 
-                    ('transcripts', numpy.dtype)]
-
-    return gene_det
-
 def init_gene():
     """
     Initializing the gene structure for GP 
@@ -372,6 +354,6 @@ def print_exon_line(tinfo, out_file):
                             '.',
                             'Parent=%s' % tid[0]]
 
-                print '\t'.join(out_print) # - exon line  
+                sys.stdout.write('\t'.join(out_print)+"\n") # - exon line  
 
 
