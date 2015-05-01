@@ -6,13 +6,14 @@ Common utility functions
 import os 
 import re
 import sys 
-import gzip 
 import bz2
+import gzip 
 import numpy 
+
 
 def init_gene():
     """
-    Initializing the gene structure for GP 
+    Initializing the gene structure 
     """
     gene_det = [('id', 'f8'), 
             ('anno_id', numpy.dtype), 
@@ -32,6 +33,7 @@ def init_gene():
             ('transcripts', numpy.dtype),
             ('transcript_type', numpy.dtype),
             ('transcript_info', numpy.dtype),
+            ('transcript_score', numpy.dtype),
             ('transcript_status', numpy.dtype),
             ('transcript_valid', numpy.dtype),
             ('exons', numpy.dtype),
