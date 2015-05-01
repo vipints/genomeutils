@@ -2,12 +2,12 @@
 """
 modules for downloading RNA-sequencing reads trace file from 
 NCBI Short Read Archive, genome sequence and genome annotations 
-from ENEMBL and Phytozome server. 
+from ENSEMBL and Phytozome server. 
 
 Usage: 
-import download_data as dl 
-dl.download_sra_file.__doc__
-dl.decompress_sra_file.__doc__
+    import download_data as dl 
+    dl.download_sra_file.__doc__
+    dl.decompress_sra_file.__doc__
 
 Requirement:
     fastq-dump - sratoolkit: http://www.ncbi.nlm.nih.gov/Traces/sra/?view=software
@@ -640,7 +640,12 @@ def decompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
     
     try:
         process = subprocess.Popen(cli, shell=True) 
-        process.wait()
+        returncode = process.wait()
+
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
+        sys.stdout.write("fast-dump run finished\n")
+
     except Exception, e:
         print 'Error running fast-dump.\n%s' %  str( e )
         sys.exit(0)
