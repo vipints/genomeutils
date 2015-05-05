@@ -12,8 +12,8 @@ usage:
 
 Requirement:
     numpy       :- http://numpy.org 
-    gfftools    :- 
     biopython   :- http://biopython.org
+    gfftools    :- http://github.com/vipints/gfftools 
 """
 
 from __future__ import division
@@ -35,15 +35,14 @@ def filter_gene_models(gff_name, fas_file, outFile):
     @args outFile: filtered gene output file 
     @type outFile: str 
     """
-    print 'using genome sequence file %s' % fas_file
-    print 'using genome annotation file %s' % gff_name
-    print 
+    sys.stdout.write( 'using genome sequence file %s\n' % fas_file)
+    sys.stdout.write( 'using genome annotation file %s\n' % gff_name)
 
-    print "parsing genome annotation file..."
+    sys.stdout.write( "parsing genome annotation file...\n")
     gff_content = GFFParser.Parse(gff_name) ## getting the genome annotation from GFF file 
-    print " ...done" 
+    sys.stdout.write( " ...done\n") 
 
-    print "screening for spliced transcripts..."
+    sys.stdout.write( "screening for spliced transcripts...\n")
     orf_short = 0 
     spliced_cand = 0 
     sing_exon_gen = 0
@@ -90,10 +89,10 @@ def filter_gene_models(gff_name, fas_file, outFile):
         if spliced_transcript: 
             transcripts_region[gene_recd['chr']].append(spliced_transcript)
     
-    print "...considering %d spliced transcripts\n" % spliced_cand 
-    print "discarding transcripts...\n\t%d transcripts with single exon" % sing_exon_gen
-    print "\t%d transcripts with read coverage value less than 10" % transcript_cov 
-    print "\t%d transcripts with orf region less than 400 nucleotides" % orf_short
+    sys.stdout.write( "...considering %d spliced transcripts\n" % spliced_cand) 
+    sys.stdout.write( "discarding transcripts...\n\t%d transcripts with single exon\n" % sing_exon_gen)
+    sys.stdout.write( "\t%d transcripts with read coverage value less than 10\n" % transcript_cov)
+    sys.stdout.write( "\t%d transcripts with orf region less than 400 nucleotides\n" % orf_short)
 
     genemodels = check_splice_site_consensus(fas_file, transcripts_region)
 
@@ -104,8 +103,7 @@ def check_splice_site_consensus(fas_file, splice_region):
     """
     splice site consensus check
     """
-    print 
-    print "splice site sequence consensus check started..."
+    sys.stdout.write( "splice site sequence consensus check started...\n")
     get_gene_models = defaultdict()
     splice_site_con = 0 
     fas_fh = helper.open_file(fas_file)
@@ -147,10 +145,9 @@ def check_splice_site_consensus(fas_file, splice_region):
                     else:
                         splice_site_con +=1 
     fas_fh.close()
-    print "...considering %d best transcripts\n" % len(get_gene_models) 
-    print "discarding transcripts..."
-    print "\t%d splice-site consensus sequence missing" % splice_site_con
-    print 
+    sys.stdout.write( "...considering %d best transcripts\n" % len(get_gene_models))
+    sys.stdout.write( "discarding transcripts...\n")
+    sys.stdout.write( "\t%d splice-site consensus sequence missing\n" % splice_site_con)
 
     return get_gene_models
 
@@ -159,7 +156,7 @@ def write_filter_gene_models(gff_cont, gene_models, outFile):
     """
     writing the filtered gene models to the result file
     """
-    print "writing filtered gene models to %s ..." % outFile
+    sys.stdout.write( "writing filtered gene models to %s ...\n" % outFile)
     true_genes = 0 
     true_transcripts = 0 
     out_fh = open(outFile, "w")
@@ -201,10 +198,9 @@ def write_filter_gene_models(gff_cont, gene_models, outFile):
                     for ex_cod in recd['exons'][idz]:
                         out_fh.write('%s\t%s\texon\t%d\t%d\t.\t%s\t.\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
     out_fh.close()
-    print "...done"
-    print "number of genes considered  %d" % true_genes 
-    print "number of transcripts considered  %d" % true_transcripts
-    print 
+    sys.stdout.write( "...donen\n")
+    sys.stdout.write( "number of genes considered  %d\n" % true_genes)
+    sys.stdout.write( "number of transcripts considered  %d\n" % true_transcripts)
 
 
 if __name__ == "__main__":
