@@ -16,7 +16,7 @@ Usage:
 
 Requirements:
     BioPython:- http://biopython.org 
-    gfftools:- https://github.com/vipints/genomeutils/tree/master/gfftools
+    gfftools:- https://github.com/vipints/gfftools
 """
 
 import re
