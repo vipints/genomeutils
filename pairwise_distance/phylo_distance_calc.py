@@ -16,7 +16,7 @@ from Bio import AlignIO, SeqIO
 from skbio import RNA, Alignment 
 
 
-def compute_distance_matrix(msa_file):
+def compute_distance_matrix(msa_file, csvfile="distance_mat.csv"):
     """
     load up some aligned sequences, and compute a distance matrix 
     compute distances between the sequences using the hamming function
@@ -26,7 +26,8 @@ def compute_distance_matrix(msa_file):
 
     @args msa_file: multiple sequence alignment in fasta format 
     @type msa_file: str 
-
+    @args csvfile: output distance matrix file in csv format 
+    @type csvfile: str 
     """
     
     records = [] 
@@ -37,8 +38,6 @@ def compute_distance_matrix(msa_file):
     master_dm = aln.distances() 
 
     ## writing the result to a csv file 
-    csvfile = "distance_mat.csv"
-
     csv_header_row = [header for header in master_dm.ids] 
 
     ## result as a list of list 
