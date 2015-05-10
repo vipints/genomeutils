@@ -32,7 +32,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname, gfname, signal='tss', label_cnt=9000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit
 
@@ -305,7 +305,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
 
         #print accept_prob
         ## default acceptance probability 
-        accept_prob = 1.00
+        accept_prob = 0.98
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
