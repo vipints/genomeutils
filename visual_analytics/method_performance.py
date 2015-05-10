@@ -38,7 +38,8 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     separator = 0.15
     offset = 0
     num_methods = len(methods)
-    
+   
+    ## FIXME catch colour according to the method 
     used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
     xlocations = []
     
@@ -59,7 +60,6 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
             best_c = [] 
             for method_perf in perfs: 
                 best_c.append(method_perf)
-
             best_c.sort() 
             min_max.append(best_c[-1])
             mean_perf[method].append(best_c[-1]) # best c over organisms on each method 
@@ -73,8 +73,6 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     # average of each methods  
     rects_avg = [] 
     offset += separator
-    #for meth_color, method_avg in mean_perf.items():
-    #    print meth_color
     xlocations.append(offset + (width*(num_methods*1))/3)
 
     #rects_avg.append(pylab.bar(offset, round(sum(mean_perf['individual'])/len(labels), 2), width, color = used_colors[0], edgecolor='white'))
@@ -158,12 +156,11 @@ def data_process(filename):
         
         #for name, perf_meas in org_perf.items():
         for name, perf_meas in org_perf[0].items():
-
             # organme - method - mean of perfomance measure from different cross validation
             data_mat[name].append((method, perf_meas.mean(axis=0)))
             
     fh.close()
-    return data_mat.keys(), methods, data_mat 
+    return data_mat.keys(), methods, data_mat
 
 
 def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
