@@ -166,10 +166,11 @@ def data_process(filename):
             
     fh.close()
 
-    # making an order for the experiments
     diff_methods = ['individual', 'union', 'mtl', 'mtmkl']
-    eval_perf = defaultdict(list)
+    assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (methods, diff_methods)
 
+    # making an order for the experiments
+    eval_perf = defaultdict(list)
     for order_meth in diff_methods:
         for org in data_mat.keys():
             for methods in data_mat[org]:
