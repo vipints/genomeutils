@@ -135,19 +135,36 @@ def parse_data(filename):
     myobj = cPickle.load(fh) 
 
     methods = [] 
-    eval_perf = defaultdict(list) 
-    test_perf = defaultdict(list) 
+    eval_perf_tmp = defaultdict(list) 
+    test_perf_tmp = defaultdict(list) 
 
     for method, org_perf in myobj.items():
         methods.append(method) 
-        ## eval performance  
-        for name, perf_meas in org_perf[0].items():
-            # organme - method - mean of perfomance measure from different cross validation
-            eval_perf[name].append((method, perf_meas.mean(axis=0)))
-        ## test performance 
-        for name, test_meas in org_perf[1].items():
-            test_perf[name].append((method, test_meas.mean(axis=0)))
+        
+        for name, perf_meas in org_perf[0].items():## eval performance  
+            eval_perf_tmp[name].append((method, perf_meas.mean(axis=0)))# organme - method - mean of perfomance measure from different cross validation
+        for name, test_meas in org_perf[1].items():## test performance 
+            test_perf_tmp[name].append((method, test_meas.mean(axis=0)))
             
     fh.close()
-    return eval_perf.keys(), methods, eval_perf, test_perf 
+
+    diff_methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
+    assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (methods, diff_methods)
+
+    # making an order for the experiments
+    eval_perf = defaultdict(list)
+    test_perf = defaultdict(list)
+    for order_meth in diff_methods:
+        for org in eval_perf_tmp.keys():
+            for methods in eval_perf_tmp[org]:
+                if methods[0] == order_meth:
+                    eval_perf[org].append(methods)
+
+    for order_meth in diff_methods:
+        for org in test_perf_tmp.keys():
+            for methods in test_perf_tmp[org]:
+                if methods[0] == order_meth:
+                    test_perf[org].append(methods)
+
+    return eval_perf.keys(), diff_methods, eval_perf, test_perf 
 
