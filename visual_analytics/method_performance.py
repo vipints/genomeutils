@@ -29,6 +29,7 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     @type res_file: str
     """
     import pylab 
+    import numpy 
 
     pylab.figure(figsize=(10, 10)) # custom form 
     #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
@@ -57,14 +58,20 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
             method, perfs = bundles 
             print '\t', method
 
-            best_c = [] 
-            for method_perf in perfs: 
-                best_c.append(method_perf)
-            best_c.sort() 
-            min_max.append(best_c[-1])
-            mean_perf[method].append(best_c[-1]) # best c over organisms on each method 
+            #best_c = [] 
+            #for method_perf in perfs: 
+            #    best_c.append(method_perf)
+            #best_c.sort() 
 
-            rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
+            #min_max.append(best_c[-1])
+            #mean_perf[method].append(best_c[-1]) # best c over organisms on each method 
+
+            best_c = numpy.mean(perfs) 
+            min_max.append(best_c)
+            mean_perf[method].append(best_c) # best c over organisms on each method 
+
+            #rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
+            rects.append(pylab.bar(offset, best_c, width, color=used_colors[idx], edgecolor='white'))
             offset += width 
 
         #offset += separator
@@ -148,19 +155,28 @@ def data_process(filename):
     myobj = cPickle.load(fh) 
 
     methods = [] 
-    # organme - method - perfomance measure 
+    # organme - method - perfomance measure from param C 
     data_mat = defaultdict(list) 
 
     for method, org_perf in myobj.items():
         methods.append(method) 
         
-        #for name, perf_meas in org_perf.items():
-        for name, perf_meas in org_perf[0].items():
-            # organme - method - mean of perfomance measure from different cross validation
-            data_mat[name].append((method, perf_meas.mean(axis=0)))
+        for name, perf_meas in org_perf[0].items(): ## considering the eval_perf
+            data_mat[name].append((method, perf_meas.mean(axis=0))) ## taking a mean from the xfold 
             
     fh.close()
-    return data_mat.keys(), methods, data_mat
+
+    # making an order for the experiments
+    diff_methods = ['individual', 'union', 'mtl', 'mtmkl']
+    eval_perf = defaultdict(list)
+
+    for order_meth in diff_methods:
+        for org in data_mat.keys():
+            for methods in data_mat[org]:
+                if methods[0] == order_meth:
+                    eval_perf[org].append(methods)
+
+    return eval_perf.keys(), diff_methods, eval_perf
 
 
 def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
