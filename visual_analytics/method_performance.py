@@ -58,20 +58,20 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
             method, perfs = bundles 
             print '\t', method
 
-            #best_c = [] 
-            #for method_perf in perfs: 
-            #    best_c.append(method_perf)
-            #best_c.sort() 
+            best_c = [] 
+            for method_perf in perfs: 
+                best_c.append(method_perf)
+            best_c.sort() 
 
-            #min_max.append(best_c[-1])
-            #mean_perf[method].append(best_c[-1]) # best c over organisms on each method 
+            min_max.append(best_c[-1])
+            mean_perf[method].append(best_c[-1]) # best/highest c score over organisms on each method 
 
-            best_c = numpy.mean(perfs) 
-            min_max.append(best_c)
-            mean_perf[method].append(best_c) # best c over organisms on each method 
+            #best_c = numpy.mean(perfs) 
+            #min_max.append(best_c)
+            #mean_perf[method].append(best_c) # best c over organisms on each method 
 
-            #rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
-            rects.append(pylab.bar(offset, best_c, width, color=used_colors[idx], edgecolor='white'))
+            rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
+            #rects.append(pylab.bar(offset, best_c, width, color=used_colors[idx], edgecolor='white'))
             offset += width 
 
         #offset += separator
@@ -166,7 +166,7 @@ def data_process(filename):
             
     fh.close()
 
-    diff_methods = ['individual', 'union', 'mtl', 'mtmkl']
+    diff_methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
     assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (methods, diff_methods)
 
     # making an order for the experiments
