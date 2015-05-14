@@ -15,7 +15,12 @@ requirement:
 import os 
 import sys 
 import yaml 
-import libpyjobrunner as pg
+try:
+    import libpyjobrunner as pg
+except:
+    sys.stdout.write('warning: pygridtools are not available, distributed computing task will be disrupted\n')
+    print __doc__
+    sys.exit(-1)
 from optparse import OptionParser
 from signal_labels import experiment_details_db as expdb
 
@@ -168,7 +173,7 @@ def fetch_db_signals(yaml_config, data_method):
             out_dir = "%s/cuff_3K_labels" % det['labels_dir']
         else:
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/jmlr_1K_sm_labels" % det['labels_dir']
+            out_dir = "%s/jmlr_2K_sm_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -193,10 +198,10 @@ def fetch_db_signals(yaml_config, data_method):
         #count = int(count.strip())
         
         ## depends on the genomic signal type 
-        count = 7000
+        count = 3000
         signal_type = "tss"
         poslabels_cnt = 1000
-        neglabels_cnt = 3000
+        neglabels_cnt = 1000
         flank_nts = 1200 
 
         ## arguments to pygrid 
