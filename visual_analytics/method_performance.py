@@ -10,10 +10,12 @@ mp.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor sp
 
 Requirement:
     pylab: 
+    pandas: 
 """
 
 from __future__ import division
 from collections import defaultdict
+
 
 def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
     """
@@ -140,12 +142,14 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     pylab.savefig(res_file) 
 
 
-def data_process(filename):
+def get_data(filename):
     """
     process the pickle file to get data frames
 
     @args filename: pickle file from experiment run 
     @type filename: bz2 pickle file 
+
+    retuns org_name, methods_name, evaluation performance and test performance
     """
     
     import bz2 
@@ -155,29 +159,37 @@ def data_process(filename):
     myobj = cPickle.load(fh) 
 
     methods = [] 
-    # organme - method - perfomance measure from param C 
-    data_mat = defaultdict(list) 
+    eval_perf_tmp = defaultdict(list) 
+    test_perf_tmp = defaultdict(list) 
 
     for method, org_perf in myobj.items():
         methods.append(method) 
-        
-        for name, perf_meas in org_perf[0].items(): ## considering the eval_perf
-            data_mat[name].append((method, perf_meas.mean(axis=0))) ## taking a mean from the xfold 
-            
+
+        for name, perf_meas in org_perf[0].items():## eval performance  
+            eval_perf_tmp[name].append((method, perf_meas.mean(axis=0)))# organme - method - mean of performance measure from different cross validation
+        for name, test_meas in org_perf[1].items():## test performance 
+            test_perf_tmp[name].append((method, test_meas.mean(axis=0)))
     fh.close()
 
     diff_methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
     assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (methods, diff_methods)
 
-    # making an order for the experiments
+    # making an order for the experiments -  orgname - method - performance measure 
     eval_perf = defaultdict(list)
+    test_perf = defaultdict(list)
+
     for order_meth in diff_methods:
-        for org in data_mat.keys():
-            for methods in data_mat[org]:
+        for org in eval_perf_tmp.keys():
+            for methods in eval_perf_tmp[org]:
                 if methods[0] == order_meth:
                     eval_perf[org].append(methods)
 
-    return eval_perf.keys(), diff_methods, eval_perf
+        for org in test_perf_tmp.keys():
+            for methods in test_perf_tmp[org]:
+                if methods[0] == order_meth:
+                    test_perf[org].append(methods)
+
+    return eval_perf.keys(), diff_methods, eval_perf, test_perf 
 
 
 def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
