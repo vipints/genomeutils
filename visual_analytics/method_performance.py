@@ -54,6 +54,39 @@ def best_global_param_idx(data, methods=None, org_names=None):
 
     return best_param_method, best_test_method
 
+def best_org_param_idx(data, methods=None, org_names=None):
+    """
+    for each method and org, report best param
+    """
+
+    if methods is None:
+        methods = data.keys()
+
+    if org_names is None:
+        org_names = data[methods[0]][0].keys()
+
+    best_param_method_org = defaultdict(dict)
+    all_num_eval = np.zeros((len(methods), len(org_names)))
+    all_num_test = np.zeros((len(methods), len(org_names)))
+    
+    for m_idx, m in enumerate(methods):
+        for n_idx, n in enumerate(org_names):
+            best_param_idx = np.argmax(data[m][0][n].mean(axis=0))
+            best_param_method_org[m][n] = best_param_idx
+            all_num_eval[m_idx, n_idx] = data[m][0][n].mean(axis=0)[best_param_idx]
+            all_num_test[m_idx, n_idx] = data[m][1][n].mean(axis=0)[best_param_idx]
+
+        print m, all_num_test[m_idx].mean()
+
+    # create pandas structures
+    df_eval = pd.DataFrame(all_num_eval, columns=org_names, index=methods)
+    df_test = pd.DataFrame(all_num_test, columns=org_names, index=methods)
+
+    # df_eval.plot(kind="bar")
+    # 
+
+    #TODO: return all_num_*
+    return best_param_method_org
 
 def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
     """
