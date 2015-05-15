@@ -5,7 +5,7 @@ Usage:
 
 from visual_analytics import method_performance as mp 
 fname = '29_org_base_0.5_acc.pickle'
-organisms, diff_methods, perfomance = mp.data_process(fname) 
+organisms, diff_methods, eval_perf, test_perf = mp.get_data(fname) 
 mp.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor splice site') 
 
 Requirement:
@@ -15,6 +15,44 @@ Requirement:
 
 from __future__ import division
 from collections import defaultdict
+
+
+def best_global_param_idx(data, methods=None, org_names=None):
+    """
+    for each method, report best param (averaged over orgs) based on eval data
+    """
+
+    if methods is None:
+        methods = data.keys()
+
+    if org_names is None:
+        org_names = data[methods[0]][0].keys()
+
+    best_param_method = {}
+    best_test_method = {}
+
+    inner_shape = data[methods[0]][0][org_names[0]].shape
+    assert inner_shape == data[methods[0]][1][org_names[0]].shape
+
+    for m in methods:
+        all_num = np.zeros((len(org_names), inner_shape[0], inner_shape[1]))
+        all_num_test = np.zeros((len(org_names), inner_shape[0], inner_shape[1]))
+
+        for i,n in enumerate(org_names):
+            assert data[m][0][n].shape == inner_shape
+            all_num[i] = data[m][0][n]
+            all_num_test[i] = data[m][1][n]
+ 
+        # average over orgs and splits   
+        mean_perf = all_num.mean(axis=1).mean(axis=0)
+        assert len(mean_perf) == inner_shape[1]
+        best_param_idx_eval = np.argmax(mean_perf)
+        best_param_method[m] = best_param_idx_eval
+        
+        best_test_method[m] = all_num_test.mean(axis=1).mean(axis=0)[best_param_idx_eval]
+
+
+    return best_param_method, best_test_method
 
 
 def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
