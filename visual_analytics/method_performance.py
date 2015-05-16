@@ -3,10 +3,12 @@ detailed bar plot to measure the performance of different methods
 
 Usage: 
 
-from visual_analytics import method_performance as mp 
-fname = '29_org_base_0.5_acc.pickle'
-organisms, diff_methods, eval_perf, test_perf = mp.get_data(fname) 
-mp.detailed_barplot(perfomance, diff_methods, organisms, 'acc.pdf', 'acceptor splice site') 
+    >>from visual_analytics import method_performance as mp 
+    >>fname = '29_org_base_0.5_acc.pickle'
+
+    >>diff_methods, eval_perf, test_perf = mp.get_data(fname) 
+    >>mp.single_perf_barplot(eval_perf, diff_methods, 'acc_ev.pdf', 'acceptor splice site') 
+    >>mp.single_perf_barplot(test_perf, diff_methods, 'acc_te.pdf', 'acceptor splice site') 
 
 Requirement:
     pylab: 
@@ -15,7 +17,8 @@ Requirement:
 
 from __future__ import division
 from collections import defaultdict
-
+import numpy as np 
+import pandas as pd 
 
 def best_global_param_idx(data, methods=None, org_names=None):
     """
@@ -88,7 +91,8 @@ def best_org_param_idx(data, methods=None, org_names=None):
     #TODO: return all_num_*
     return best_param_method_org
 
-def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auROC"):
+
+def single_perf_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
     """
     visualizing the experiment result of different methods 
     
@@ -96,14 +100,13 @@ def detailed_barplot(data, methods, labels, res_file, plot_title="", ylabel="auR
     @type data: <defaultdict<org_name:[(method, list)]>
     @args methods: different experiment methods 
     @type methods: list
-    @args labels: X axis labels, organism names 
-    @type labels: list 
     @args res_file: result file name 
     @type res_file: str
     """
     import pylab 
     import numpy 
 
+    labels = data.keys()
     pylab.figure(figsize=(10, 10)) # custom form 
     #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
@@ -220,7 +223,7 @@ def get_data(filename):
     @args filename: pickle file from experiment run 
     @type filename: bz2 pickle file 
 
-    retuns org_name, methods_name, evaluation performance and test performance
+    retuns methods_name, evaluation performance and test performance
     """
     
     import bz2 
@@ -260,7 +263,7 @@ def get_data(filename):
                 if methods[0] == order_meth:
                     test_perf[org].append(methods)
 
-    return eval_perf.keys(), diff_methods, eval_perf, test_perf 
+    return diff_methods, eval_perf, test_perf 
 
 
 def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
