@@ -58,17 +58,26 @@ def best_global_param_idx(data, methods=None, org_names=None):
     return best_param_method, best_test_method
 
 
-def best_org_param_idx(data, methods=None, org_names=None):
+def best_org_param_idx(filename, diff_methods=None, org_names=None):
     """
     for each method and org, report best param
     """
 
-    if methods is None:
-        methods = data.keys()
+    import bz2
+    import cPickle
+
+    fh = bz2.BZ2File(filename, 'rb')
+    data = cPickle.load(fh) 
+
+    if diff_methods is None:
+        diff_methods = data.keys()
+
+    methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
+    assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (diff_methods, methods)
 
     if org_names is None:
         org_names = data[methods[0]][0].keys()
-
+    
     best_param_method_org = defaultdict(dict)
     all_num_eval = np.zeros((len(methods), len(org_names)))
     all_num_test = np.zeros((len(methods), len(org_names)))
@@ -80,7 +89,7 @@ def best_org_param_idx(data, methods=None, org_names=None):
             all_num_eval[m_idx, n_idx] = data[m][0][n].mean(axis=0)[best_param_idx]
             all_num_test[m_idx, n_idx] = data[m][1][n].mean(axis=0)[best_param_idx]
 
-        print m, all_num_test[m_idx].mean()
+        print m, all_num_test[m_idx].mean(), all_num_eval[m_idx].mean()
 
     # create pandas structures
     df_eval = pd.DataFrame(all_num_eval, columns=org_names, index=methods)
@@ -90,7 +99,97 @@ def best_org_param_idx(data, methods=None, org_names=None):
     # 
 
     #TODO: return all_num_*
-    return best_param_method_org
+    return df_eval, df_test
+
+
+def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylabel="auROC"):
+    """
+    argmax of org specific cv
+    """
+    import pylab 
+
+
+def argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylabel="auROC"):
+    """
+    argmax of org specific cv
+    """
+    import pylab 
+    import numpy 
+
+    pylab.figure(figsize=(10, 10)) # custom form 
+    pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
+
+    width = 0.20
+    separator = 0.10
+    offset = 0
+    used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
+    xlocations = []
+    min_max = [] 
+    mean_perf = defaultdict(list) 
+    num_methods = 0 
+    labels = [] 
+    
+    methods = ['individual', 'union', 'mtl', 'mtmkl'] 
+    #import ipdb; ipdb.set_trace()
+
+    for org, perf in df_eval_perf.iteritems():
+        num_methods = len(perf)
+        offset += separator
+        xlocations.append(offset + (width*(num_methods*1))/3)
+        labels.append(org)
+        rects = [] 
+        
+        for idx, meth in enumerate(methods):
+            min_max.append(perf[meth])
+            mean_perf[meth].append(perf[meth]) 
+
+            rects.append(pylab.bar(offset, perf[meth], width, color=used_colors[idx], edgecolor='white'))
+
+            offset += width 
+    
+    ## the mean perf bar 
+    rects_avg = [] 
+    offset += separator
+    xlocations.append(offset + (width*(num_methods*1))/3)
+
+    for idx, meth in enumerate(methods):
+        rects_avg.append(pylab.bar(offset, sum(mean_perf[meth])/len(labels), width, color = used_colors[idx], edgecolor='white'))
+        offset += width 
+
+    offset += separator
+    labels.append('Mean')
+
+    ## modifying the image boarders 
+    min_max.sort() 
+    ymax = min_max[-1]*1.1
+    ymin = min_max[0]*0.9
+
+    # set ticks
+    tick_step = 0.05
+    ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
+
+    pylab.yticks(ticks)
+    pylab.xticks(xlocations, labels, rotation="vertical") 
+
+    fontsize=15
+    ax = pylab.gca()
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label1.set_fontsize(fontsize)
+
+    pylab.xlim(0, offset)
+    pylab.ylim(ymin, ymax)
+    
+    pylab.title(plot_title)
+    pylab.gca().get_xaxis().tick_bottom()
+    pylab.gca().get_yaxis().tick_left()
+
+    pylab.gca().get_yaxis().grid(True)
+    pylab.gca().get_xaxis().grid(False)
+
+    pylab.legend(tuple(rects), tuple(methods))
+    pylab.ylabel(ylabel, fontsize = 15)
+    pylab.savefig(res_file) 
+
 
 
 def single_perf_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
@@ -365,3 +464,8 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
     pylab.ylabel(ylabel, fontsize = 15)
     pylab.savefig(res_file) 
 
+
+if __name__=="__main__":
+    fname = "4K_db_labels/09_org_pn2_mtl_2-df/10org_mtmkl_pn_2_mtl_df-2_tss.pickle"
+    eval, test = best_org_param_idx(fname)
+    argmax_perf_barplot(eval, test, "test_4k_argmax.pdf")
