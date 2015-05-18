@@ -20,6 +20,7 @@ from collections import defaultdict
 import numpy as np 
 import pandas as pd 
 
+
 def best_global_param_idx(data, methods=None, org_names=None):
     """
     for each method, report best param (averaged over orgs) based on eval data
@@ -54,8 +55,8 @@ def best_global_param_idx(data, methods=None, org_names=None):
         
         best_test_method[m] = all_num_test.mean(axis=1).mean(axis=0)[best_param_idx_eval]
 
-
     return best_param_method, best_test_method
+
 
 def best_org_param_idx(data, methods=None, org_names=None):
     """
