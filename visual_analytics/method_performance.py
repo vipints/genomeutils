@@ -10,6 +10,14 @@ Usage:
     >>mp.single_perf_barplot(eval_perf, diff_methods, 'acc_ev.pdf', 'acceptor splice site') 
     >>mp.single_perf_barplot(test_perf, diff_methods, 'acc_te.pdf', 'acceptor splice site') 
 
+    plotting single perf event based on the value from org specific best c 
+    >>eval, test = best_org_param_idx(fname)
+    >>argmax_perf_barplot(test, "test_4k_argmax.pdf")
+
+    plotting multiple perf values based on the org specific best c 
+    >>eval, test = best_org_param_idx(fname)
+    >>multi_argmax_perf_barplot(eval, test, "test_4k_argmax.pdf")
+
 Requirement:
     pylab: 
     pandas: 
@@ -109,7 +117,7 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
     import pylab 
     import numpy 
 
-    pylab.figure(figsize=(10, 10)) # custom form 
+    pylab.figure(figsize=(10, 10)) #
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
     width = 0.20
@@ -119,6 +127,7 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
     xlocations = []
     min_max = [] 
     mean_perf = defaultdict(list) 
+    mean_perf_test = defaultdict(list) 
     num_methods = 0 
     labels = [] 
     
@@ -127,7 +136,7 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
     for org, perf in df_eval_perf.iteritems():
         num_methods = len(perf)
         offset += separator
-        xlocations.append(offset + (width*(num_methods*1))/3)
+        xlocations.append(offset + (width*num_methods))
         labels.append(org)
         rects = [] 
         
@@ -137,14 +146,28 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
 
             rects.append(pylab.bar(offset, perf[meth], width, color=used_colors[idx], edgecolor='white'))
             offset += width 
-    
+
+        ## test performce also plotting in single plot  
+        t_perf = df_test_perf[org]
+        for idx, meth in enumerate(methods):
+            #min_max.append(perf[meth])
+            mean_perf_test[meth].append(t_perf[meth]) 
+
+            rects.append(pylab.bar(offset, t_perf[meth], width, color=used_colors[idx], edgecolor='white', hatch="**"))
+            offset += width 
+
     ## the mean perf bar 
     rects_avg = [] 
     offset += separator
-    xlocations.append(offset + (width*(num_methods*1))/3)
+    xlocations.append(offset + (width*num_methods))
 
     for idx, meth in enumerate(methods):
         rects_avg.append(pylab.bar(offset, sum(mean_perf[meth])/len(labels), width, color = used_colors[idx], edgecolor='white'))
+        offset += width 
+
+    rects_avg_test = [] 
+    for idx, meth in enumerate(methods):
+        rects_avg_test.append(pylab.bar(offset, sum(mean_perf_test[meth])/len(labels), width, color = used_colors[idx], edgecolor='white', hatch="**"))
         offset += width 
 
     offset += separator
@@ -159,10 +182,10 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
     tick_step = 0.05
     ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
 
-    pylab.yticks(ticks)
+    pylab.yticks(ticks, fontsize=8)
     pylab.xticks(xlocations, labels, rotation="vertical") 
 
-    fontsize=15
+    fontsize=10
     ax = pylab.gca()
     for tick in ax.xaxis.get_major_ticks():
         tick.label1.set_fontsize(fontsize)
@@ -177,8 +200,9 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
     pylab.gca().get_yaxis().grid(True)
     pylab.gca().get_xaxis().grid(False)
 
-    pylab.legend(tuple(rects), tuple(methods))
-    pylab.ylabel(ylabel, fontsize = 15)
+    methods_cust = ['individual(eval perf)', 'union(eval perf)', 'mtl(eval perf)', 'mtmkl(eval perf)', 'individual(test perf)', 'union(test perf)', 'mtl(test perf)', 'mtmkl(test perf)'] 
+    pylab.legend(tuple(rects), tuple(methods_cust), loc="upper center", bbox_to_anchor=(0.5, 1.05), ncol=4, fancybox=True, shadow=False, fontsize = 9)
+    pylab.ylabel(ylabel, fontsize = 10)
     pylab.savefig(res_file) 
 
 
@@ -528,5 +552,6 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
 
 if __name__=="__main__":
     fname = "4K_db_labels/09_org_pn2_mtl_2-df/10org_mtmkl_pn_2_mtl_df-2_tss.pickle"
-    eval, test = best_org_param_idx(fname)
-    argmax_perf_barplot(test, "test_4k_argmax.pdf")
+    #eval, test = best_org_param_idx(fname)
+    #multi_argmax_perf_barplot(eval, test, "test_4k_argmax.pdf")
+    #argmax_perf_barplot(test, "test_4k_argmax.pdf")
