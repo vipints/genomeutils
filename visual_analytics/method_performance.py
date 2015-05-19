@@ -12,11 +12,11 @@ Usage:
 
     plotting single perf event based on the value from org specific best c 
     >>eval, test = best_org_param_idx(fname)
-    >>argmax_perf_barplot(test, "test_4k_argmax.pdf")
+    >>single_perf_barplot(test, "test_4k_argmax.pdf")
 
     plotting multiple perf values based on the org specific best c 
     >>eval, test = best_org_param_idx(fname)
-    >>multi_argmax_perf_barplot(eval, test, "test_4k_argmax.pdf")
+    >>multi_perf_barplot(eval, test, "test_4k_argmax.pdf")
 
 Requirement:
     pylab: 
@@ -66,6 +66,37 @@ def best_global_param_idx(data, methods=None, org_names=None):
     return best_param_method, best_test_method
 
 
+def highest_org_param_idx(filename, diff_methods=None, org_names=None):
+    """
+    highest c for an organism 
+    """
+    import bz2
+    import cPickle
+
+    fh = bz2.BZ2File(filename, 'rb')
+    data = cPickle.load(fh) 
+
+    if diff_methods is None:
+        diff_methods = data.keys()
+
+    methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
+    assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (diff_methods, methods)
+
+    if org_names is None:
+        org_names = data[methods[0]][0].keys()
+
+    best_param_method_org = defaultdict(dict)
+    all_num_eval = np.zeros((len(methods), len(org_names)))
+    all_num_test = np.zeros((len(methods), len(org_names)))
+
+    for m_idx, m in enumerate(methods):
+        for n_idx, n in enumerate(org_names):
+            best_param = np.amax(data[m][0][n].mean(axis=0))
+
+    import ipdb 
+    ipdb.set_trace()
+
+
 def best_org_param_idx(filename, diff_methods=None, org_names=None):
     """
     for each method and org, report best param
@@ -110,7 +141,7 @@ def best_org_param_idx(filename, diff_methods=None, org_names=None):
     return df_eval, df_test
 
 
-def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylabel="auROC"):
+def multi_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylabel="auROC"):
     """
     argmax of org specific cv
     """
@@ -206,7 +237,7 @@ def multi_argmax_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="
     pylab.savefig(res_file) 
 
 
-def argmax_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
+def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     """
     argmax of org specific cv
     """
@@ -287,8 +318,7 @@ def argmax_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     pylab.savefig(res_file) 
 
 
-
-def single_perf_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
+def detailed_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
     """
     visualizing the experiment result of different methods 
     
@@ -552,6 +582,7 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
 
 if __name__=="__main__":
     fname = "4K_db_labels/09_org_pn2_mtl_2-df/10org_mtmkl_pn_2_mtl_df-2_tss.pickle"
+    highest_org_param_idx(fname)
     #eval, test = best_org_param_idx(fname)
     #multi_argmax_perf_barplot(eval, test, "test_4k_argmax.pdf")
     #argmax_perf_barplot(test, "test_4k_argmax.pdf")
