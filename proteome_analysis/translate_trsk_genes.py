@@ -20,12 +20,13 @@ def get_trsk_genes(gtf_file):
     
     anno_db = GFFParser.Parse(gtf_file) 
 
-    #cnt = 0 
-    #for feat in anno_db:
-    #    if not feat['cds_exons'][0].any(): ## trsk produce single transcript 
-    #        cnt += 1 
-    #genes_w_cds = len(anno_db) - cnt 
+    cds_idx = [] # deleting the empty cds lines  
+    for idp, feat in enumerate(anno_db):
+        if not feat['cds_exons'][0].any():
+            cds_idx.append(idp) 
 
+    anno_db = np.delete(anno_db, cds_idx) 
+    
     trans_len = np.zeros(len(anno_db, 2))
     genes = [] 
 
