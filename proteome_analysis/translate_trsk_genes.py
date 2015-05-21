@@ -14,8 +14,9 @@ import matplotlib.pyplot as plt
 
 def trsk_gene_len_dist(gtf_file):
     """
-
+    plotting the histograms bases on the genes and CDS length
     """
+
     anno_db = GFFParser.Parse(gtf_file) 
 
     cds_idx = [] # deleting the empty cds lines  
@@ -46,11 +47,20 @@ def trsk_gene_len_dist(gtf_file):
     freq, bins = np.histogram(gene_length, bins=10, range=None, normed=False, weights=None)
     bins = np.delete(bins, 10) 
 
-    df_gene_len_bin = pd.DataFrame(freq, columns=['frequency'], index=bins) 
+    df_gene_len_bin = pd.DataFrame(freq, columns=['gene_frequency'], index=bins) 
     plt.figure() 
-
     df_gene_len_bin.plot(kind="bar")
     #plt.savefig()
+
+    ## plotting the cds length distribution
+    cds_length = trans_len[:,1] ## cds length distribution 
+    freq, bins = np.histogram(cds_length, bins=10, range=None, normed=False, weights=None)
+    bins = np.delete(bins, 10) 
+    df_cds_len_bin = pd.DataFrame(freq, columns=['cds_frequency'], index=bins) 
+    plt.figure() 
+    df_cds_len_bin.plot(kind="bar")
+    #plt.savefig("hist_cds_len.pdf") 
+
 
 
 if __name__=="__main__":
