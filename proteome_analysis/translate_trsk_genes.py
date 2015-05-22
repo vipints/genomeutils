@@ -12,6 +12,25 @@ from gfftools import GFFParser
 import matplotlib.pyplot as plt 
 
 
+def translate_trsk_genes(gtf_file):
+    """
+    translate the trsk genes to protein sequence 
+    """
+    from Bio.Seq import Seq
+    from Bio.Alphabet import generic_rna
+
+    anno_db = GFFParser.Parse(gtf_file) 
+
+    cds_idx = [] # deleting the empty cds lines  
+    for idp, feat in enumerate(anno_db):
+        if not feat['cds_exons'][0].any():
+            cds_idx.append(idp) 
+    anno_db = np.delete(anno_db, cds_idx) 
+
+    for idx, feat in enumerate(anno_db):
+        print idx 
+
+
 def trsk_gene_len_dist(gtf_file):
     """
     plotting the histograms bases on the genes and CDS length
