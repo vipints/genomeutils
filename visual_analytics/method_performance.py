@@ -28,6 +28,8 @@ from collections import defaultdict
 import numpy as np 
 import pandas as pd 
 
+from utils import compressed_pickle 
+
 
 def best_global_param_idx(data, methods=None, org_names=None):
     """
@@ -102,11 +104,7 @@ def best_org_param_idx(filename, diff_methods=None, org_names=None):
     for each method and org, report best param
     """
 
-    import bz2
-    import cPickle
-
-    fh = bz2.BZ2File(filename, 'rb')
-    data = cPickle.load(fh) 
+    data = compressed_pickle.load(filename) 
 
     if diff_methods is None:
         diff_methods = data.keys()
@@ -130,14 +128,14 @@ def best_org_param_idx(filename, diff_methods=None, org_names=None):
 
         print m, all_num_test[m_idx].mean(), all_num_eval[m_idx].mean()
 
-    # create pandas structures
+    # create pandas frames 
     df_eval = pd.DataFrame(all_num_eval, columns=org_names, index=methods)
     df_test = pd.DataFrame(all_num_test, columns=org_names, index=methods)
 
+    # TODO plotting with pandas add-on 
     # df_eval.plot(kind="bar")
-    # 
 
-    #TODO: return all_num_*
+    # TODO: unit test 
     return df_eval, df_test
 
 
@@ -582,7 +580,7 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
 
 if __name__=="__main__":
     fname = "4K_db_labels/09_org_pn2_mtl_2-df/10org_mtmkl_pn_2_mtl_df-2_tss.pickle"
-    highest_org_param_idx(fname)
-    #eval, test = best_org_param_idx(fname)
-    #multi_argmax_perf_barplot(eval, test, "test_4k_argmax.pdf")
+    #highest_org_param_idx(fname)
+    eval, test = best_org_param_idx(fname)
+    #multi_perf_barplot(eval, test, "test_4k_argmax.pdf")
     #argmax_perf_barplot(test, "test_4k_argmax.pdf")
