@@ -84,16 +84,25 @@ def highest_org_param_idx(filename, diff_methods=None, org_names=None):
     if org_names is None:
         org_names = data[methods[0]][0].keys()
 
-    best_param_method_org = defaultdict(dict)
+    #best_param_method_org = defaultdict(dict)
     all_num_eval = np.zeros((len(methods), len(org_names)))
     all_num_test = np.zeros((len(methods), len(org_names)))
 
     for m_idx, m in enumerate(methods):
         for n_idx, n in enumerate(org_names):
-            best_param = np.amax(data[m][0][n].mean(axis=0))
+            best_eval_param = np.amax(data[m][0][n].mean(axis=0))
+            all_num_eval[m_idx, n_idx] = best_eval_param
+            best_test_param = np.amax(data[m][1][n].mean(axis=0))
+            all_num_test[m_idx, n_idx] = best_test_param
 
-    import ipdb 
-    ipdb.set_trace()
+        print m, all_num_test[m_idx].mean(), all_num_eval[m_idx].mean()
+
+    # create pandas frames 
+    df_eval = pd.DataFrame(all_num_eval, columns=org_names, index=methods)
+    df_test = pd.DataFrame(all_num_test, columns=org_names, index=methods)
+
+    # TODO: unit test 
+    return df_eval, df_test
 
 
 def best_org_param_idx(filename, diff_methods=None, org_names=None):
