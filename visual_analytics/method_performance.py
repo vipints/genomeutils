@@ -72,11 +72,8 @@ def highest_org_param_idx(filename, diff_methods=None, org_names=None):
     """
     highest c for an organism 
     """
-    import bz2
-    import cPickle
 
-    fh = bz2.BZ2File(filename, 'rb')
-    data = cPickle.load(fh) 
+    data = compressed_pickle.load(filename) 
 
     if diff_methods is None:
         diff_methods = data.keys()
@@ -121,7 +118,7 @@ def best_org_param_idx(filename, diff_methods=None, org_names=None):
     
     for m_idx, m in enumerate(methods):
         for n_idx, n in enumerate(org_names):
-            best_param_idx = np.argmax(data[m][0][n].mean(axis=0))
+            best_param_idx = np.argmax(data[m][0][n].mean(axis=0)) # argmax based on eval data 
             best_param_method_org[m][n] = best_param_idx
             all_num_eval[m_idx, n_idx] = data[m][0][n].mean(axis=0)[best_param_idx]
             all_num_test[m_idx, n_idx] = data[m][1][n].mean(axis=0)[best_param_idx]
@@ -580,7 +577,7 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
 
 if __name__=="__main__":
     fname = "4K_db_labels/09_org_pn2_mtl_2-df/10org_mtmkl_pn_2_mtl_df-2_tss.pickle"
-    #highest_org_param_idx(fname)
-    eval, test = best_org_param_idx(fname)
+    highest_org_param_idx(fname)
+    #eval, test = best_org_param_idx(fname)
     #multi_perf_barplot(eval, test, "test_4k_argmax.pdf")
     #argmax_perf_barplot(test, "test_4k_argmax.pdf")
