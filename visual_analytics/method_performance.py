@@ -68,7 +68,7 @@ def best_global_param_idx(data, methods=None, org_names=None):
     return best_param_method, best_test_method
 
 
-def highest_org_param_idx(filename, diff_methods=None, org_names=None):
+def highest_org_param(filename, diff_methods=None, org_names=None):
     """
     highest c for an organism 
     """
@@ -185,7 +185,7 @@ def multi_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylab
         ## test performce also plotting in single plot  
         t_perf = df_test_perf[org]
         for idx, meth in enumerate(methods):
-            #min_max.append(perf[meth])
+            min_max.append(t_perf[meth])
             mean_perf_test[meth].append(t_perf[meth]) 
 
             rects.append(pylab.bar(offset, t_perf[meth], width, color=used_colors[idx], edgecolor='white', hatch="**"))
@@ -202,7 +202,7 @@ def multi_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylab
 
     rects_avg_test = [] 
     for idx, meth in enumerate(methods):
-        rects_avg_test.append(pylab.bar(offset, sum(mean_perf_test[meth])/len(labels), width, color = used_colors[idx], edgecolor='white', hatch="**"))
+        rects_avg_test.append(pylab.bar(offset, round(sum(mean_perf_test[meth])/len(labels),2), width, color = used_colors[idx], edgecolor='white', hatch="**"))
         offset += width 
 
     offset += separator
@@ -284,7 +284,7 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     xlocations.append(offset + (width*(num_methods*1))/3)
 
     for idx, meth in enumerate(methods):
-        rects_avg.append(pylab.bar(offset, sum(mean_perf[meth])/len(labels), width, color = used_colors[idx], edgecolor='white'))
+        rects_avg.append(pylab.bar(offset, round(sum(mean_perf[meth])/len(labels),2), width, color = used_colors[idx], edgecolor='white'))
         offset += width 
 
     offset += separator
@@ -362,7 +362,6 @@ def detailed_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
 
         for idx, bundles in enumerate(details):
             method, perfs = bundles 
-            print '\t', method
 
             best_c = [] 
             for method_perf in perfs: 
@@ -372,12 +371,7 @@ def detailed_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
             min_max.append(best_c[-1])
             mean_perf[method].append(best_c[-1]) # best/highest c score over organisms on each method 
 
-            #best_c = numpy.mean(perfs) 
-            #min_max.append(best_c)
-            #mean_perf[method].append(best_c) # best c over organisms on each method 
-
             rects.append(pylab.bar(offset, best_c[-1], width, color=used_colors[idx], edgecolor='white'))
-            #rects.append(pylab.bar(offset, best_c, width, color=used_colors[idx], edgecolor='white'))
             offset += width 
 
         #offset += separator
@@ -389,7 +383,6 @@ def detailed_barplot(data, methods, res_file, plot_title="", ylabel="auROC"):
     xlocations.append(offset + (width*(num_methods*1))/3)
     
     for idx, meth in enumerate(methods):
-        #rects_avg.append(pylab.bar(offset, round(sum(mean_perf['individual'])/len(labels), 2), width, color = used_colors[0], edgecolor='white'))
         rects_avg.append(pylab.bar(offset, sum(mean_perf[meth])/len(labels), width, color = used_colors[idx], edgecolor='white'))
         offset += width 
 
