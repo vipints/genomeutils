@@ -94,23 +94,20 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
         print 'selected %d negative %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
+        #TODO shutil copy bkp file to fas 
+
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
-        print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
-        print 
+        print 'selected %d positive %s signal lables\n' % (label_count_plus, signal) 
 
         label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
 
         negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        print 'selecting %d RANDOM %s signal regions...' % (nCOUNT, signal) 
-        print 
+        print 'selecting %d RANDOM %s signal regions...\n' % (nCOUNT, signal) 
 
-        #TODO shutil copy bkp file to fas 
         diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
 
-        #label_count = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
-        print 'selected %d negative %s signal lables' % (label_count, signal) 
-        print 
+        print 'selected %d negative %s signal lables\n' % (label_count, signal) 
 
     elif signal == "cleave":
         label_count_plus, label_ids_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
@@ -237,10 +234,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        #print accept_prob
-
-        ## default acceptance probability 
-        accept_prob = 0.98
+        print accept_prob
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
@@ -303,9 +297,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        #print accept_prob
+        print accept_prob
         ## default acceptance probability 
-        accept_prob = 0.98
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
@@ -1005,7 +998,7 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     return true_label_acc, true_label_don
 
 
-def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=3):
+def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample=2):
     """
     fetch the minus TSS signal sequence label
 
@@ -1314,6 +1307,8 @@ def select_labels(feat_db, feat_count, label_cnt):
         accept_prob = (1.0*label_cnt)/feat_count
     except:
         accept_prob = 1
+    
+    print 'acceptprob - ', accept_prob 
 
     while True: # ensure the label count 
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
