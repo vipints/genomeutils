@@ -31,10 +31,11 @@ import pandas as pd
 from utils import compressed_pickle 
 
 
-def best_global_param_idx(data, methods=None, org_names=None):
+def best_global_param_idx(filename, methods=None, org_names=None):
     """
     for each method, report best param (averaged over orgs) based on eval data
     """
+    data = compressed_pickle.load(filename) 
 
     if methods is None:
         methods = data.keys()
@@ -79,6 +80,7 @@ def highest_org_param(filename, diff_methods=None, org_names=None):
         diff_methods = data.keys()
 
     methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
+    #methods = ['individual'] ## pre-defined methods for learning techniques 
     assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (diff_methods, methods)
 
     if org_names is None:
@@ -116,6 +118,7 @@ def best_org_param_idx(filename, diff_methods=None, org_names=None):
         diff_methods = data.keys()
 
     methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
+    #methods = ['individual']
     assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (diff_methods, methods)
 
     if org_names is None:
@@ -167,6 +170,7 @@ def multi_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylab
     labels = [] 
     
     methods = ['individual', 'union', 'mtl', 'mtmkl'] 
+    #methods = ['individual']
 
     for org, perf in df_eval_perf.iteritems():
         num_methods = len(perf)
@@ -284,7 +288,7 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     xlocations.append(offset + (width*(num_methods*1))/3)
 
     for idx, meth in enumerate(methods):
-        rects_avg.append(pylab.bar(offset, round(sum(mean_perf[meth])/len(labels),2), width, color = used_colors[idx], edgecolor='white'))
+        rects_avg.append(pylab.bar(offset, sum(mean_perf[meth])/len(labels), width, color = used_colors[idx], edgecolor='white'))
         offset += width 
 
     offset += separator
