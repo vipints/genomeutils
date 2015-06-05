@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-select training dataset labels according to positive or negative class 
+select training/testing dataset labels according to positive or negative class 
 from ARTS gold standard dataset for transcript start sites.
 
 Usage:
@@ -22,8 +22,11 @@ def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=4
     @args fasta_in: fastafile with label records 
     @type fasta_in: str or a filehandler 
     @args fa_out: outfile handler 
-    @type fa_out: file handler
+    @type fa_out: str 
+    @args category: label class 
+    @type category: str 
     """
+
     label_type = ["-1", "+1"]
     if not category in label_type:
         sys.stdout.write("error: sequence record label type +1/-1 not supported to %s\n" % category)
