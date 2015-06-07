@@ -15,12 +15,13 @@ requirement:
 import os 
 import sys 
 import yaml 
+
 try:
     import libpyjobrunner as pg
 except:
     sys.stdout.write('warning: pygridtools are not available, distributed computing task will be disrupted\n')
     print __doc__
-    sys.exit(-1)
+
 from optparse import OptionParser
 from signal_labels import experiment_details_db as expdb
 
@@ -173,7 +174,7 @@ def fetch_db_signals(yaml_config, data_method):
             out_dir = "%s/cuff_3K_labels" % det['labels_dir']
         elif data_method == "onlinedb":
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/jmlr_100_labels" % det['labels_dir']
+            out_dir = "%s/jmlr_3K_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -198,10 +199,10 @@ def fetch_db_signals(yaml_config, data_method):
         #count = int(count.strip())
         
         ## depends on the genomic signal type 
-        count = 500
+        count = 4000
         signal_type = "tss"
-        poslabels_cnt = 100
-        neglabels_cnt = 300
+        poslabels_cnt = 1000
+        neglabels_cnt = 2000
         flank_nts = 1200 
 
         ## arguments to pygrid 
@@ -232,6 +233,7 @@ def call_filter_genes(args_list):
     gtf_file, fasta_file, result_file = args_list
     filter_tool.filter_gene_models(gtf_file, fasta_file, result_file)
     return "done"
+
 
 def filter_genes(yaml_config, data_method):
     """
@@ -270,6 +272,7 @@ def filter_genes(yaml_config, data_method):
     print "sending filter gene models jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
+
 
 def call_transcript_prediction_cuff(args_list):
     """
@@ -319,6 +322,7 @@ def call_transcript_prediction_trsk(args_list):
     org_db = args_list
     trassembly.run_trsk(org_db)
     return "done"
+
     
 def transcript_prediction_trsk(yaml_config):
     """
@@ -396,7 +400,6 @@ def alignment_filter(yaml_config):
     print 
     processedJobs = pg.process_jobs(Jobs)
 
-
 def call_align_reads(args_list):
     """
     wrapper for submitting jobs to pygrid
@@ -405,7 +408,6 @@ def call_align_reads(args_list):
     org_db, read_type, max_mates_gap_length, num_cpus = args_list
     rnastar.run_star_alignment(org_db, read_type, max_mates_gap_length, num_cpus) 
     return 'done'
-
 
 def align_rnaseq_reads(yaml_config):
     """
