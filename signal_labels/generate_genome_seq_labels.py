@@ -34,7 +34,7 @@ from gfftools import helper, GFFParser
 
 def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
-    core unit
+    core unit to fetch genomic signal label sequences 
 
     @args faname: genome sequence in fasta 
     @type faname: str
@@ -219,7 +219,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
                 SeqIO.write([fas_rec], fasta_out, "fasta")
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
-        os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
+        shutil.move('%s_sig_minus_label.bkp, %s_sig_minus_label.fa' %(signal, signal))
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta')) 
@@ -244,7 +244,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
             print '    still trying ... %d' % counter
 
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
-        os.system('mv %s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
+        shutil.move('%s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
         print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (counter, signal, signal)
         print 
 
@@ -281,7 +281,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
                 SeqIO.write([fas_rec], fasta_out, "fasta")
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
-        os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
+        #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
+        shutil.move('%s_sig_plus_label.bkp, %s_sig_plus_label.fa' % (signal, signal))
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
@@ -307,8 +308,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
             #break
             print '    still trying ... %d' % counter
 
-        #os.system('mv ' + out_path + '/' + signal +'_sig_plus_label.bkp '+ out_path + "/"+ signal + "_sig_plus_label.fa")
-        os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
+        #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
+        shutil.move('%s_sig_plus_label.bkp, %s_sig_plus_label.fa' % (signal, signal))
         print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal)
         print 
 
@@ -1253,12 +1254,10 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
 
     out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
     true_label = 0 
-    #truelabelseq = defaultdict(list)
 
     foh = helper.open_file(fnam)
     for rec in SeqIO.parse(foh, "fasta"):
         if rec.id in Label:
-            #truelabelids = dict() 
             for Lsub_feat in Label[rec.id]:
                 for fid, loc in Lsub_feat.items():
 
@@ -1280,13 +1279,10 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
                     fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
                     out_pos_fh.write(fseq.format("fasta"))
                     true_label += 1 
-                    #truelabelids[fid] = 0 
-            #truelabelseq[rec.id].append(truelabelids) ## true labels identity 
 
     out_pos_fh.close()
     foh.close()
     return true_label
-    #, truelabelseq
 
 
 def select_labels(feat_db, feat_count, label_cnt):
