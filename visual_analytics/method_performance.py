@@ -49,6 +49,8 @@ def best_global_param_idx(filename, methods=None, org_names=None):
     inner_shape = data[methods[0]][0][org_names[0]].shape
     assert inner_shape == data[methods[0]][1][org_names[0]].shape
 
+    import ipdb; ipdb.set_trace()
+
     for m in methods:
         all_num = np.zeros((len(org_names), inner_shape[0], inner_shape[1]))
         all_num_test = np.zeros((len(org_names), inner_shape[0], inner_shape[1]))
@@ -71,7 +73,7 @@ def best_global_param_idx(filename, methods=None, org_names=None):
 
 def highest_org_param(filename, diff_methods=None, org_names=None):
     """
-    highest c for an organism 
+    highest C for an organism 
     """
 
     data = compressed_pickle.load(filename) 
@@ -80,13 +82,12 @@ def highest_org_param(filename, diff_methods=None, org_names=None):
         diff_methods = data.keys()
 
     methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
-    #methods = ['individual'] ## pre-defined methods for learning techniques 
+    
     assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (diff_methods, methods)
 
     if org_names is None:
         org_names = data[methods[0]][0].keys()
 
-    #best_param_method_org = defaultdict(dict)
     all_num_eval = np.zeros((len(methods), len(org_names)))
     all_num_test = np.zeros((len(methods), len(org_names)))
 
@@ -170,7 +171,6 @@ def multi_perf_barplot(df_eval_perf, df_test_perf, res_file, plot_title="", ylab
     labels = [] 
     
     methods = ['individual', 'union', 'mtl', 'mtmkl'] 
-    #methods = ['individual']
 
     for org, perf in df_eval_perf.iteritems():
         num_methods = len(perf)
@@ -582,8 +582,10 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
 
 
 if __name__=="__main__":
-    fname = "4K_db_labels/09_org_pn2_mtl_2-df/10org_mtmkl_pn_2_mtl_df-2_tss.pickle"
-    highest_org_param_idx(fname)
+    import sys 
+    fname = sys.argv[1]
+    best_param, best_test = best_global_param_idx(fname) 
+
     #eval, test = best_org_param_idx(fname)
     #multi_perf_barplot(eval, test, "test_4k_argmax.pdf")
     #argmax_perf_barplot(test, "test_4k_argmax.pdf")
