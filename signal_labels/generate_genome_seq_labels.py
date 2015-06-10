@@ -25,6 +25,7 @@ import sys
 import numpy 
 import shutil
 import random
+import filecmp
 from Bio import SeqIO 
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -51,11 +52,10 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
     @args flanks: flanking sequence length 
     @type flanks: integer
     """
-    
-    # check for inputs
-    if faname == gfname:
-        print __doc__
-        sys.exit(-1)
+
+    ## compare the files  
+    if filecmp.cmp(faname, gfname):
+        exit("Do the two files are exactly same? Please check that!")
 
     # FIXME required input variables including the result path   
     #base_path = ''
