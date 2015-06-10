@@ -614,10 +614,12 @@ def decompress_sra_file(out_file_name, download_path, lib_type="pe", out_compres
     @type lib_type: str 
     @args out_compress: compress format for result file (default bzip2)
     @type out_compress: str 
-
-    NOTE: This module expects sratoolkit is available under PATH variable or add the path below line.
     """
-    #os.environ['PATH'] += os.pathsep + '/share/software/sratoolkit/sratoolkit.2.3.1-centos_linux64/bin/'
+    try:
+        subprocess.call(["fastq-dump"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `fastq-dump` binary is in your $PATH")
+
     ## depends on the compress type and library protocol type
     if lib_type in ['pe', 'PE', 'paired-end']:
         cli = 'fastq-dump \
