@@ -58,11 +58,11 @@ def run_ninja(msa_file, distance_mat="distance_matrix.csv"):
     @type msa_file: str 
     @args distance_mat: output distance matrix file in csv format 
     @type distance_mat: str 
-
-    NOTE: This module expects ninja is available under PATH variable or add the path below line.
     """
-
-    #os.environ['PATH'] += os.pathsep + '/home/share/software/ninja/'
+    try:
+        subprocess.call(["ninja"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `ninja` binary is in your $PATH")
 
     cli = 'ninja --alph_type d --out_type d --corr_type n %s > %s' % (msa_file, distance_mat) 
     process = subprocess.Popen(cli, shell=True) 
