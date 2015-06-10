@@ -230,6 +230,11 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     @args onematelength: One Mate Length (default value=100) 
     @type num_workers: int 
     """
+
+    try:
+        subprocess.call(["STAR"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `STAR` binary is in your $PATH")
     
     if not genome_anno:
         cli_cmd = 'STAR \
