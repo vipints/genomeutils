@@ -14,10 +14,11 @@ from gfftools import GFFParser, helper
 def translate_trsk_genes(gtf_file, fas_file):
     """
     translate the trsk genes to protein sequence 
+    gtf_file
+    fas_file
     """
-    #from Bio.Seq import Seq
-    #from Bio.Alphabet import generic_rna, generic_dna
-
+    ## reading the TSkim file to get the features 
+    sys.stdout.write('reading genome features from %s\n' % gtf_file)
     anno_db = GFFParser.Parse(gtf_file) 
     total_genes = len(anno_db) 
 
@@ -29,9 +30,11 @@ def translate_trsk_genes(gtf_file, fas_file):
     genes_with_cds = len(anno_db) 
 
     ## genome sequence file reading 
+    sys.stdout.write('reading genome sequence from %s\n' % fas_file)
     fasFH = helper.open_file(fas_file) 
     
     # FIXME out file name 
+    out_seq_fname = "H_sapiens_pred_protein_seq.fa"
     out_seq_fh = open("H_sapiens_pred_protein_seq.fa", "w")
 
     for rec in SeqIO.parse(fasFH, "fasta"):
@@ -56,6 +59,10 @@ def translate_trsk_genes(gtf_file, fas_file):
 
     fasFH.close()
     out_seq_fh.close()
+
+    sys.stdout.write('total genes fetched: %d\n' % total_genes)
+    sys.stdout.write('total genes translated: %d\n' % genes_with_cds)
+    sys.stdout.write('protein sequence stored at %s\n' % out_seq_fname)
 
 
 def trsk_gene_len_dist(gtf_file):
