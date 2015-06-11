@@ -5,6 +5,7 @@ translate the CDS region predicted by trsk program
 
 import os 
 import sys 
+import filecmp
 import numpy as np 
 import pandas as pd 
 from Bio import SeqIO 
@@ -17,6 +18,10 @@ def translate_trsk_genes(gtf_file, fas_file):
     gtf_file
     fas_file
     """
+    
+    if filecmp.cmp(gtf_file, fas_file):
+        exit("Do the two files are exactly same? Please check that!")
+
     ## reading the TSkim file to get the features 
     sys.stdout.write('reading genome features from %s\n' % gtf_file)
     anno_db = GFFParser.Parse(gtf_file) 
