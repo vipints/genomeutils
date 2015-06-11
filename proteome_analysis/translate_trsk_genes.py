@@ -8,6 +8,7 @@ import sys
 import numpy as np 
 import pandas as pd 
 from Bio import SeqIO 
+from Bio.SeqRecord import SeqRecord
 from gfftools import GFFParser, helper
 
 def translate_trsk_genes(gtf_file, fas_file):
@@ -29,6 +30,9 @@ def translate_trsk_genes(gtf_file, fas_file):
 
     ## genome sequence file reading 
     fasFH = helper.open_file(fas_file) 
+    
+    # FIXME out file name 
+    out_seq_fh = open("H_sapiens_pred_protein_seq.fa", "w")
 
     for rec in SeqIO.parse(fasFH, "fasta"):
         for idx, feature in enumerate(anno_db):
@@ -40,12 +44,18 @@ def translate_trsk_genes(gtf_file, fas_file):
                 
                 if feature['strand'] == '-':
                     cds_seq = cds_seq.reverse_complement()
+                ## 
+                #sys.stdout.write(str(cds_seq.translate()) + "\n")
 
-                sys.stdout.write(str(cds_seq.translate()) + "\n")
+                ## fasta output 
+                prt_seq = SeqRecord(cds_seq.translate(), id=feature['name'], description='protein sequence') 
+                out_seq_fh.write(prt_seq.format("fasta"))
 
         # FIXME need an efficient way to translate multiple gene 
         # iterate over chromosome
+
     fasFH.close()
+    out_seq_fh.close()
 
 
 def trsk_gene_len_dist(gtf_file):
