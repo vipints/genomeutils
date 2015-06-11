@@ -8,33 +8,51 @@ import sys
 import numpy as np 
 import pandas as pd 
 from Bio import SeqIO 
-from gfftools import GFFParser
-import matplotlib.pyplot as plt 
+from gfftools import GFFParser, helper
 
-
-def translate_trsk_genes(gtf_file):
+def translate_trsk_genes(gtf_file, fas_file):
     """
     translate the trsk genes to protein sequence 
     """
-    from Bio.Seq import Seq
-    from Bio.Alphabet import generic_rna
+    #from Bio.Seq import Seq
+    #from Bio.Alphabet import generic_rna, generic_dna
 
     anno_db = GFFParser.Parse(gtf_file) 
+    total_genes = len(anno_db) 
 
     cds_idx = [] # deleting the empty cds lines  
     for idp, feat in enumerate(anno_db):
         if not feat['cds_exons'][0].any():
             cds_idx.append(idp) 
     anno_db = np.delete(anno_db, cds_idx) 
+    genes_with_cds = len(anno_db) 
 
-    for idx, feat in enumerate(anno_db):
-        print idx 
+    ## genome sequence file reading 
+    fasFH = helper.open_file(fas_file) 
+
+    for rec in SeqIO.parse(fasFH, "fasta"):
+        for idx, feature in enumerate(anno_db):
+            if rec.id == feat['chr']:
+                ## iterate over cds_exons
+                cds_seq = ''
+                for ex in feature['cds_exons'][0]:## single transcript by TSkim 
+                    cds_seq += rec.seq[ex[0]-1:ex[1]]
+                
+                if feature['strand'] == '-':
+                    cds_seq = cds_seq.reverse_complement()
+
+                sys.stdout.write(str(cds_seq.translate()) + "\n")
+
+        # FIXME need an efficient way to translate multiple gene 
+        # iterate over chromosome
+    fasFH.close()
 
 
 def trsk_gene_len_dist(gtf_file):
     """
     plotting the histograms bases on the genes and CDS length
     """
+    import matplotlib.pyplot as plt 
 
     anno_db = GFFParser.Parse(gtf_file) 
 
@@ -81,7 +99,7 @@ def trsk_gene_len_dist(gtf_file):
     #plt.savefig("hist_cds_len.pdf") 
 
 
-
 if __name__=="__main__":
-    fname = "../../SRA-rnaseq/H_sapiens/trans_pred/H_sapiens_trsk_genes.gff"
-    trsk_gene_len_dist(fname)
+    gname = "hs_chr22.gff"
+    fas = "hg19.fa"
+    translate_trsk_genes(gname, fas) 
