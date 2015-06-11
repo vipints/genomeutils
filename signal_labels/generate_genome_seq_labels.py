@@ -53,28 +53,24 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
     @type flanks: integer
     """
 
-    ## compare the files  
-    if filecmp.cmp(faname, gfname):
+    if filecmp.cmp(faname, gfname):## compare the files  
         exit("Do the two files are exactly same? Please check that!")
 
     # FIXME required input variables including the result path   
     #base_path = ''
 
-    print 'processing genome annotation %s...' % gfname
+    sys.stdout.write('reading genome annotation from %s... ' % gfname)
     anno_file_content = GFFParser.Parse(gfname) # extract genome annotation from gtf/gff type file 
-    print '...done.'
-    print 
-    
+    sys.stdout.write('...done.\n')
+
     # check the consistency of chr names in fasta and gff file 
     chrom_name_consistency(faname, anno_file_content) 
     
     gtf_db, feature_cnt, signal_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
-    print 'extracted %d %s signal regions' % (feature_cnt, signal)
-    print 
+    sys.stdout.write('extracted %d %s signal regions\n' % (feature_cnt, signal))
 
     posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-    print 'selecting %d RANDOM %s signal regions...' % (COUNT, signal) 
-    print 
+    sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (COUNT, signal))
 
     if signal == 'splice':
         acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
@@ -97,17 +93,17 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
         #TODO shutil copy bkp file to fas 
 
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
-        print 'selected %d positive %s signal lables\n' % (label_count_plus, signal) 
+        sys.stdout.write('selected %d positive %s signal lables\n' % (label_count_plus, signal)) 
 
         label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
 
         negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        print 'selecting %d RANDOM %s signal regions...\n' % (nCOUNT, signal) 
+        sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (nCOUNT, signal))
 
         diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
 
         label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
-        print 'selected %d negative %s signal lables\n' % (label_count, signal) 
+        sys.stdout.write('selected %d negative %s signal lables\n' % (label_count, signal)) 
 
     elif signal == "cleave":
         label_count_plus, label_ids_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
@@ -291,27 +287,23 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         dup_ent.clear()
 
         assert plus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
-        #print len(non_dup_ent)
 
         try:
             accept_prob = (1.0*plus_label_cnt)/feat_count
         except:
             accept_prob = 1
 
-        print accept_prob
+        #print accept_prob
         ## default acceptance probability 
-
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
             if plus_label_cnt <= counter:
                 break
-            #break
-            print '    still trying ... %d' % counter
+            sys.stdout.write('    still trying ... %d' % counter)
 
         #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         shutil.move('%s_sig_plus_label.bkp, %s_sig_plus_label.fa' % (signal, signal))
-        print 'cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal)
-        print 
+        sys.stdout.write('cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal))
 
         return label_seq_ids
 
@@ -1304,13 +1296,12 @@ def select_labels(feat_db, feat_count, label_cnt):
     except:
         accept_prob = 1
     
-    print 'acceptprob - ', accept_prob 
-
+    #print 'acceptprob - ', accept_prob 
     while True: # ensure the label count 
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
             break
-        print '    still trying ... %d' % counter
+        sys.stdout.write('    still trying ... %d' % counter) 
 
     return LSet, counter
 
