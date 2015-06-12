@@ -1299,7 +1299,7 @@ def select_labels(feat_db, feat_count, label_cnt):
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
             break
-        sys.stdout.write('    still trying ... %d' % counter) 
+        sys.stdout.write('    still trying ... %d\n' % counter) 
 
     return LSet, counter
 
