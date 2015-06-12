@@ -230,14 +230,13 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        print accept_prob
+        #print accept_prob
 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
             if minus_label_cnt <= counter:
                 break
-            #break
-            print '    still trying ... %d' % counter
+            sys.stdout.write('    still trying ... %d\n' % counter)
 
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
         shutil.move('%s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
@@ -299,7 +298,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
             if plus_label_cnt <= counter:
                 break
-            sys.stdout.write('    still trying ... %d' % counter)
+            sys.stdout.write('    still trying ... %d\n' % counter)
 
         #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         shutil.move('%s_sig_plus_label.bkp, %s_sig_plus_label.fa' % (signal, signal))
