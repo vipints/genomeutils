@@ -215,7 +215,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
                 SeqIO.write([fas_rec], fasta_out, "fasta")
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
-        shutil.move('%s_sig_minus_label.bkp, %s_sig_minus_label.fa' %(signal, signal))
+        shutil.move('%s_sig_minus_label.bkp' % signal, '%s_sig_minus_label.fa' % signal)
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta')) 
@@ -239,9 +239,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
             sys.stdout.write('    still trying ... %d\n' % counter)
 
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
-        shutil.move('%s_sig_minus_label.bkp %s_sig_minus_label.fa' % (signal, signal) )
-        print 'cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa' % (counter, signal, signal)
-        print 
+        shutil.move('%s_sig_minus_label.bkp' % signal, '%s_sig_minus_label.fa' % signal )
+        sys.stdout.write('cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa\n' % (counter, signal, signal))
 
         return label_seq_ids
 
@@ -277,7 +276,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
         #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
-        shutil.move('%s_sig_plus_label.bkp, %s_sig_plus_label.fa' % (signal, signal))
+        shutil.move('%s_sig_plus_label.bkp' % signal, '%s_sig_plus_label.fa' % signal)
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
@@ -301,8 +300,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
             sys.stdout.write('    still trying ... %d\n' % counter)
 
         #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
-        shutil.move('%s_sig_plus_label.bkp, %s_sig_plus_label.fa' % (signal, signal))
-        sys.stdout.write('cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa' % (counter, signal, signal))
+        shutil.move('%s_sig_plus_label.bkp' % signal, '%s_sig_plus_label.fa' % signal)
+        sys.stdout.write('cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa\n' % (counter, signal, signal))
 
         return label_seq_ids
 
