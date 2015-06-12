@@ -69,7 +69,7 @@ def experiment_db(config_file, opt_action):
     C_jacchus = '%s/C_jacchus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     C_elegans = '%s/C_elegans/ensembl_release_79/ensembl_release_79.fas' % data_path,
     O_latipes = '%s/O_latipes/ensembl_release_79/ensembl_release_79.fas' % data_path,
-    R_norvegicus = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.fa' % data_path,
+    R_norvegicus = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     C_briggsae = '%s/C_briggsae/ensembl_release_22/ensembl_release_22.fas.bz2' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
