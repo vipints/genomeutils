@@ -90,7 +90,6 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
         print 'selected %d negative %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
-        #TODO shutil copy bkp file to fas 
 
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         sys.stdout.write('selected %d positive %s signal lables\n' % (label_count_plus, signal)) 
@@ -136,12 +135,10 @@ def fetch_unique_labels(firstLabel, secondLabel):
     @args secondLabel: random labels selected for the second time. example chr2:[{ATG001:(10, 20, +), ATG002:(20, 40, -)}]
     @type secondLabel: defaultdict(list) 
     """
-
     unique_label_loc = defaultdict(list) 
 
     for chrom, feat_loc_2 in secondLabel.items():
-        #TODO better way 
-        ## getting the uniq ids from second round of labels 
+        #TODO better way, getting the uniq ids from second round of labels 
         diff_keys = set(feat_loc_2[0].keys()) - set(firstLabel.keys()) 
         ## fetch those keys details
         ftdet = dict() 
@@ -254,12 +251,9 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
     @args feat_count: total number of random valid features extracted
     @type feat_count: int 
     """
-
     assert plus_label_cnt <= feat_count, 'PLEASE INCREASE THE NUMBER OF RANDOM FEATURES TO BE SELECTED FROM %d' % feat_count
 
-    #out_path = os.path.dirname(base_path) 
     sig_type = ['acc', 'don'] if sig_type[0] == "splice" else sig_type
-
     for signal in sig_type:
         # 1 remove the same rec.id presents in the file 
         fas_rec_ids = dict() 
@@ -273,7 +267,6 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
                 SeqIO.write([fas_rec], fasta_out, "fasta")
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
-        #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         shutil.move('%s_sig_plus_label.bkp' % signal, '%s_sig_plus_label.fa' % signal)
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
@@ -289,7 +282,6 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        #print accept_prob
         ## default acceptance probability 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
@@ -297,7 +289,6 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
                 break
             sys.stdout.write('    still trying ... %d\n' % counter)
 
-        #os.system('mv %s_sig_plus_label.bkp %s_sig_plus_label.fa' % (signal, signal) )
         shutil.move('%s_sig_plus_label.bkp' % signal, '%s_sig_plus_label.fa' % signal)
         sys.stdout.write('cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa\n' % (counter, signal, signal))
 
@@ -1035,7 +1026,6 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
                         motif_seq = rec.seq[rloc-boundary:rloc+boundary]
 
                         # sanity check for featched sequence 
-                        #if len(motif_seq) != 2*boundary+1:
                         if len(motif_seq) != 2*boundary:
                             continue
                         if not motif_seq:
