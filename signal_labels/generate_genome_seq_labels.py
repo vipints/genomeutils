@@ -175,13 +175,11 @@ def chrom_name_consistency(fasta_fname, gff_content):
     cnt = 0 
     for chrom in chrom_fasta:
         if not chrom in chrom_gff:
-            print chrom, 'NOT found in GFF/GTF file'
+            sys.stdout.write('%s NOT found in GFF/GTF file\n' % chrom)
             cnt += 1  
     
     if cnt == len(chrom_fasta):
-        print 
-        print 'error: chromosome/contig names are different in provided fasta and gff file.'
-        print 
+        sys.stdout.write('error: chromosome/contig names are different in provided fasta, gff/gtf file.\n')
         sys.exit(-1)
 
 
