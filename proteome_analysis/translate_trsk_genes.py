@@ -11,6 +11,7 @@ import pandas as pd
 from Bio import SeqIO 
 from Bio.SeqRecord import SeqRecord
 from gfftools import GFFParser, helper
+from signal_labels import generate_genome_seq_labels as seqlab
 
 
 def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
@@ -32,6 +33,8 @@ def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
     sys.stdout.write('reading genome features from %s\n' % gtf_file)
     anno_db = GFFParser.Parse(gtf_file) 
     total_genes = len(anno_db) 
+
+    seqlab.chrom_name_consistency(fas_file, anno_db) 
 
     cds_idx = [] # deleting the empty cds lines  
     for idp, feat in enumerate(anno_db):
