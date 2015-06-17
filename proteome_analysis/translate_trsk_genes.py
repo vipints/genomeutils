@@ -12,11 +12,17 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from gfftools import GFFParser, helper
 
-def translate_trsk_genes(gtf_file, fas_file):
+
+def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
     """
     translate the trsk genes to protein sequence 
-    gtf_file
-    fas_file
+
+    @args gtf_file: genome annotation file 
+    @type gtf_file: str 
+    @args fas_file: genome sequence file
+    @type fas_file: str
+    @args out_seq_fname: output file in fasta format 
+    @type out_seq_fname: str
     """
     
     if filecmp.cmp(gtf_file, fas_file):
@@ -29,7 +35,7 @@ def translate_trsk_genes(gtf_file, fas_file):
 
     cds_idx = [] # deleting the empty cds lines  
     for idp, feat in enumerate(anno_db):
-        if not feat['cds_exons'][0].any():
+        if not feat['cds_exons'][0].any(): # TSkim annotation expects only single transcript from a region
             cds_idx.append(idp) 
     anno_db = np.delete(anno_db, cds_idx) 
     genes_with_cds = len(anno_db) 
@@ -38,10 +44,7 @@ def translate_trsk_genes(gtf_file, fas_file):
     sys.stdout.write('reading genome sequence from %s\n' % fas_file)
     fasFH = helper.open_file(fas_file) 
     
-    # FIXME out file name 
-    out_seq_fname = "H_sapiens_pred_protein_seq.fa"
-    out_seq_fh = open("H_sapiens_pred_protein_seq.fa", "w")
-
+    out_seq_fh = open(out_seq_fname, "w")
     for rec in SeqIO.parse(fasFH, "fasta"):
         for idx, feature in enumerate(anno_db):
             if rec.id == feat['chr']:
@@ -124,4 +127,5 @@ def trsk_gene_len_dist(gtf_file):
 if __name__=="__main__":
     gname = "hs_chr22.gff"
     fas = "hg19.fa"
-    translate_trsk_genes(gname, fas) 
+    out = "out_protein_seq.fa"
+    translate_trsk_genes(gname, fas, out) 
