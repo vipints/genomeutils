@@ -49,7 +49,7 @@ def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
     out_seq_fh = open(out_seq_fname, "w")
     for rec in SeqIO.parse(fasFH, "fasta"):
         for idx, feature in enumerate(anno_db):
-            if rec.id == feat['chr']:
+            if rec.id == feature['chr']:
                 ## iterate over cds_exons
                 cds_seq = ''
                 for ex in feature['cds_exons'][0]:## single transcript by TSkim 
