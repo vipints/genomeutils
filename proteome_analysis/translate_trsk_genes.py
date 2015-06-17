@@ -61,8 +61,9 @@ def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
                 #sys.stdout.write(str(cds_seq.translate()) + "\n")
 
                 ## fasta output 
-                prt_seq = SeqRecord(cds_seq.translate(), id=feature['name'], description='protein sequence') 
-                out_seq_fh.write(prt_seq.format("fasta"))
+                if cds_seq:
+                    prt_seq = SeqRecord(cds_seq.translate(), id=feature['name'], description='protein sequence') 
+                    out_seq_fh.write(prt_seq.format("fasta"))
 
         # FIXME need an efficient way to translate multiple gene 
         # iterate over chromosome
