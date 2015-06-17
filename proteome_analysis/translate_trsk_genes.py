@@ -34,6 +34,8 @@ def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
     anno_db = GFFParser.Parse(gtf_file) 
     total_genes = len(anno_db) 
 
+    ## genome sequence file reading 
+    sys.stdout.write('reading genome sequence from %s\n' % fas_file)
     seqlab.chrom_name_consistency(fas_file, anno_db) 
 
     cds_idx = [] # deleting the empty cds lines  
@@ -43,10 +45,7 @@ def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
     anno_db = np.delete(anno_db, cds_idx) 
     genes_with_cds = len(anno_db) 
 
-    ## genome sequence file reading 
-    sys.stdout.write('reading genome sequence from %s\n' % fas_file)
     fasFH = helper.open_file(fas_file) 
-    
     out_seq_fh = open(out_seq_fname, "w")
     for rec in SeqIO.parse(fasFH, "fasta"):
         for idx, feature in enumerate(anno_db):
