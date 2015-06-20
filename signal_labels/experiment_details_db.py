@@ -1,11 +1,18 @@
 #!/usr/bin/env python 
 """
-This program contains some predefined variables which hold the relative path for data storage and experiment runs for each organisms in a workflow.
-The idea behind this is to have a speed query to the organisms detailed informations, specifically genome annotation file etc.
+This program contains some predefined variables which hold the relative path for 
+data storage and experiment runs for each organisms in a workflow. The idea behind 
+this is to have a speed query to the organisms detailed informations, specifically 
+genome annotation file etc.
+
 The program includes 
     - counting the sequencing read length for the provided experiment
     - getting the details of annotated features 
     - preparing for the experiment relative paths
+
+Requires:
+    biopython 
+    gfftools 
 """
 
 import os 
@@ -58,7 +65,7 @@ def experiment_db(config_file, opt_action):
     X_tropicalis = '%s/X_tropicalis/JGIv4-1/JGIv4-1.fa' % data_path,
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_filtered.fa' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release_22/ensembl_release_22.fas.bz2' % data_path,
-    H_sapiens = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
+    H_sapiens = '%s/H_sapiens/hg19_bowtie2/hg19.fa' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release-69/Ornithorhynchus_anatinus.OANA5.69-filtered_dna.fa' % data_path,
     N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis_dna_sm.fa' % data_path,
     P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
