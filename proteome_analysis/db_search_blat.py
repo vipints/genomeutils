@@ -14,17 +14,17 @@ import tempfile
 import subprocess
 
 
-def BLATrun(infile, outfile, data_type, outform):
+def BLATrun(database, query_seq, data_type, outform):
     """
     BLAT run
 
-    @args infile: fasta file with different genome sequence
-    @type infile: str 
-    @args outfile: multiple sequence alignments are reported 
-    @type outfile: str 
-    @args data_type: DNA, PROTEIN 
+    @args database: fasta file with different sequence 
+    @type database: str 
+    @args query_seq: fasta file with query sequence to search 
+    @type query_seq: str 
+    @args data_type: DNA, PROTEIN, RNA 
     @type data_type: str 
-    @args outform: CLUSTAL, PHYLIP, FASTA 
+    @args outform: PSL format filename 
     @type outform: str 
     """
 
@@ -33,8 +33,7 @@ def BLATrun(infile, outfile, data_type, outform):
     except:
         exit("Please make sure that the `blat` binary is in your $PATH")
 
-
-    cli = 'blat -INFILE=%s -OUTFILE=%s -OUTORDER=%s -TYPE=%s -OUTPUT=%s' % (infile, outfile, out_order, data_type, outform)
+    cli = 'blat %s %s -t=%s -q=%s %s' % (database, query_seq, data_type, data_type, outform)
 
     try:
         outlog = "blat_run-%s.log" % time.strftime("%Y_%m_%d_%H-%M-%S")
@@ -46,7 +45,7 @@ def BLATrun(infile, outfile, data_type, outform):
         if returncode !=0:
             raise Exception, "Exit status return code = %i" % returncode
 
-        sys.stdout.write("blat run finished.\n")
+        sys.stdout.write("blat run finished. result saved at %s\n" % outform)
         tlf.close() 
 
     except Exception, e:
