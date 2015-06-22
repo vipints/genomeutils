@@ -76,7 +76,7 @@ def translate_trsk_genes(gtf_file, fas_file, out_seq_fname):
     sys.stdout.write('protein sequence stored at %s\n' % out_seq_fname)
 
 
-def trsk_gene_len_dist(gtf_file):
+def trsk_gene_len_dist(gtf_file, out_file="hist_cds_len.pdf"):
     """
     plotting the histograms bases on the genes and CDS length
     """
@@ -124,7 +124,7 @@ def trsk_gene_len_dist(gtf_file):
     df_cds_len_bin = pd.DataFrame(freq, columns=['cds_frequency'], index=bins) 
     plt.figure() 
     df_cds_len_bin.plot(kind="bar")
-    #plt.savefig("hist_cds_len.pdf") 
+    plt.savefig(out_file) 
 
 
 if __name__=="__main__":
