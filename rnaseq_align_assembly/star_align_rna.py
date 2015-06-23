@@ -192,17 +192,20 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     if not os.path.exists(bam_file + ".bai"):
         pysam.index(bam_file) 
 
-    #import time 
-    #t_start = time.time() 
+    import time 
+    t_start = time.time() 
 
     sam_file = pysam.Samfile(bam_file, "rb") 
 
     ## getting the abs path of in bam file  
-    bam_file_path = os.path.abspath(bam_file)
-    bam_file_dir = os.path.dirname(bam_file_path)
-    
+    #bam_file_path = os.path.abspath(bam_file)
+    #bam_file_dir = os.path.dirname(bam_file_path)
+
     ## defining the out bam file 
-    uniq_map_bam_file = '%s/unique_map_reads.bam' % bam_file_dir 
+    file_pref, ext = os.path.splitext(bam_file)
+    uniq_map_bam_file = '%s_uniq_map_reads.bam' % file_pref
+    
+    #uniq_map_bam_file = '%s/unique_map_reads.bam' % bam_file_dir 
     out_bam_fh = pysam.Samfile(uniq_map_bam_file, "wb", template=sam_file)
 
     ## filtering the alignment based on the read hits
@@ -218,8 +221,8 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     ## indexing the out bam file 
     pysam.index(uniq_map_bam_file)
 
-    #time_taken = time.time() - t_start
-    #print time_taken
+    time_taken = time.time() - t_start
+    print "time taken in seconds ", time_taken
 
 
 def read_directions_count(bam_file):
