@@ -25,49 +25,52 @@ def run_mmr(org_name, read_map_dir, threads=3):
     @type read_map_dir: str 
     @args threads: number of threads to use for the run (default: 3)
     @type threads: int  
-
-    expect mmr to be available under the PATH env variable 
     """
     import pysam
+
+    try:
+        subprocess.call(["mmr"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `mmr` binary is in your $PATH")
 
     ## mmr works well with bam file sorted by read id  
     bam_file = "%s/%s_Aligned.sortedByName.out.bam" % (read_map_dir, org_name) 
     if not os.path.isfile(bam_file):
-        print "warning: failed to fetch read id sorted BAM file for organism: %s, trying to get the raw alignment file..." % org_name
+        sys.stdout.write("warning: failed to fetch read id sorted BAM file for organism: %s, trying to get the raw alignment file\n" % org_name)
 
-        bam_file = "%s/%s_Aligned.out.bam" % (read_map_dir, org_name) ## unsorted bam file from star output  
+        bam_file = "%s/%s_Aligned.out.bam" % (read_map_dir, org_name) ## unsorted bam file from STAR output  
         if not os.path.isfile(bam_file):
-            print "error: failed to fetch star alignment file for %s %s" % (org_name, bam_file) 
-            sys.exit(-1)
+            exit("error: failed to fetch STAR read alignment file for %s %s\n" % (org_name, bam_file))
 
         ## sorting bam file 
         sorted_bam = "%s/%s_Aligned.sortedByName.out" % (read_map_dir, org_name)
-        print "trying to sort based by read id with output prefix as: %s" % sorted_bam
         if not os.path.isfile("%s.bam" % sorted_bam):
-            print 'sorting...'
+            sys.stdout.write("trying to sort based by read id with output prefix as: %s\n" % sorted_bam)
             pysam.sort("-n", bam_file, sorted_bam)
 
         bam_file = "%s.bam" % sorted_bam
     
-    print 'using bam file from %s' % bam_file
+    sys.stdout.write("using bam file from %s\n" % bam_file)
     outFile = "%s/%s_Aligned_mmr.bam" % (read_map_dir, org_name) 
 
     iterations = 3 
     ## provide a bam file sorted by read id
     cli_mmr = "module load gcc; mmr -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, bam_file)  
 
-    sys.stdout.write('\trun MMR as: %s \n' % cli_mmr)
     try:
+        sys.stdout.write('\trun MMR as: %s \n' % cli_mmr)
         ## changing the working dir to run mmr 
         os.chdir(read_map_dir)
 
         process = subprocess.Popen(cli_mmr, shell=True) 
-        process.wait()
+        returncode = process.wait()
 
-        print 'mmr run completed. result file stored at %s' outFile
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
+
+        sys.stdout.write('MMR run finished. result file stored at %s\n' outFile)
     except Exception, e:
-        print 'Error running MMR.\n%s' %  str( e )
-        sys.exit(0)
+        exit('Error running MMR.\n%s' %  str( e ))
 
 
 def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_cpus=1):
