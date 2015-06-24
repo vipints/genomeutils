@@ -197,16 +197,14 @@ def uniq_mapped_reads(bam_file, multi_map=1):
 
     sam_file = pysam.Samfile(bam_file, "rb") 
 
-    ## getting the abs path of in bam file  
-    #bam_file_path = os.path.abspath(bam_file)
-    #bam_file_dir = os.path.dirname(bam_file_path)
-
     ## defining the out bam file 
     file_pref, ext = os.path.splitext(bam_file)
     uniq_map_bam_file = '%s_uniq_map_reads.bam' % file_pref
     
-    #uniq_map_bam_file = '%s/unique_map_reads.bam' % bam_file_dir 
-    out_bam_fh = pysam.Samfile(uniq_map_bam_file, "wb", template=sam_file)
+    try: 
+        out_bam_fh = pysam.Samfile(uniq_map_bam_file, "wb", template=sam_file)
+    except:
+        exit("error: cannot create the file %s." % uniq_map_bam_file) 
 
     ## filtering the alignment based on the read hits
     for read in sam_file.fetch():
