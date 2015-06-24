@@ -31,6 +31,38 @@ import pandas as pd
 from utils import compressed_pickle 
 
 
+def best_test_perf_with_eval(filename, methods=None, org_names=None):
+    """
+    for each method report the best param based on the validation performance
+    """
+
+    data = compressed_pickle.load(filename) 
+    
+    if methods is None:
+        methods = data.keys()
+
+    if org_names is None:
+        org_names = data[methods[0]][0].keys()
+
+    best_eval_perf = np.zeros((len(methods), len(org_names)))
+    best_test_perf = np.zeros((len(methods), len(org_names)))
+
+    for m_idx, m in enumerate(methods):
+        for n_idx, n in enumerate(org_names):
+
+            best_eval_param = np.amax(data[m][0][n], axis=0).mean(axis=0)
+            best_eval_perf[m_idx, n_idx] = best_eval_param
+            best_test_param = np.amax(data[m][1][n], axis=0).mean(axis=0)
+            best_test_perf[m_idx, n_idx] = best_test_param
+    
+        print m, best_test_perf[m_idx].mean(), best_eval_perf[m_idx].mean()
+
+    df_eval = pd.DataFrame(best_eval_perf, columns=org_names, index=methods)
+    df_test = pd.DataFrame(best_test_perf, columns=org_names, index=methods)
+
+    return df_eval, df_test
+
+
 def best_global_param_idx(filename, methods=None, org_names=None):
     """
     for each method, report best param (averaged over orgs) based on eval data
@@ -82,6 +114,7 @@ def highest_org_param(filename, diff_methods=None, org_names=None):
         diff_methods = data.keys()
 
     methods = ['individual', 'union', 'mtl', 'mtmkl'] ## pre-defined methods for learning techniques 
+    methods = ['individual', 'union', 'mtl'] 
     
     assert (set(methods)==set(diff_methods)), "methods from pickle file %s != %s" % (diff_methods, methods)
 
@@ -252,7 +285,8 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     import pylab 
     import numpy 
 
-    pylab.figure(figsize=(10, 10)) # custom form 
+    pylab.figure(figsize=(30, 17.5)) # custom form 
+    #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
     width = 0.20
@@ -266,6 +300,7 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     labels = [] 
     
     methods = ['individual', 'union', 'mtl', 'mtmkl'] 
+    #methods = ['individual', 'union', 'mtl'] 
     #import ipdb; ipdb.set_trace()
 
     for org, perf in df_perf.iteritems():
