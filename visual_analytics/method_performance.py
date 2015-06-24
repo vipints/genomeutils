@@ -30,7 +30,6 @@ import pandas as pd
 
 from utils import compressed_pickle 
 
-
 def best_test_perf_with_eval(filename, methods=None, org_names=None):
     """
     for each method report the best param based on the validation performance
@@ -50,17 +49,30 @@ def best_test_perf_with_eval(filename, methods=None, org_names=None):
     for m_idx, m in enumerate(methods):
         for n_idx, n in enumerate(org_names):
 
-            best_eval_param = np.amax(data[m][0][n], axis=0).mean(axis=0)
-            best_eval_perf[m_idx, n_idx] = best_eval_param
-            best_test_param = np.amax(data[m][1][n], axis=0).mean(axis=0)
-            best_test_perf[m_idx, n_idx] = best_test_param
-    
+            assert data[m][0][n].shape == data[m][1][n].shape
+            num_splits, num_params = data[m][0][n].shape
+            best_eval_param_idx_for_each_split = np.argmax(data[m][0][n], axis=1)
+            assert len(best_eval_param_idx_for_each_split) == num_splits
+
+            tmp_eval = []
+            tmp_test = []
+            for s_idx, p_idx in enumerate(best_eval_param_idx_for_each_split):
+                tmp_eval.append(data[m][0][n][s_idx][p_idx])
+                tmp_test.append(data[m][1][n][s_idx][p_idx])
+
+            assert len(tmp_eval) == len(tmp_test) == num_splits
+
+            best_eval_perf[m_idx, n_idx] = np.mean(tmp_eval)
+            best_test_perf[m_idx, n_idx] = np.mean(tmp_test)
+ 
+
         print m, best_test_perf[m_idx].mean(), best_eval_perf[m_idx].mean()
 
     df_eval = pd.DataFrame(best_eval_perf, columns=org_names, index=methods)
     df_test = pd.DataFrame(best_test_perf, columns=org_names, index=methods)
 
     return df_eval, df_test
+
 
 
 def best_global_param_idx(filename, methods=None, org_names=None):
