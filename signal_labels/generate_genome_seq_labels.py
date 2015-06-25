@@ -282,6 +282,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
+        accept_prob = 0.98
         ## default acceptance probability 
         while True: # to ensure that we are considering every element 
             counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
