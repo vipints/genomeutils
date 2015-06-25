@@ -297,7 +297,7 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     import pylab 
     import numpy 
 
-    pylab.figure(figsize=(30, 17.5)) # custom form 
+    pylab.figure(figsize=(15, 12.5)) # custom form 
     #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
     pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
 
@@ -312,8 +312,6 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     labels = [] 
     
     methods = ['individual', 'union', 'mtl', 'mtmkl'] 
-    #methods = ['individual', 'union', 'mtl'] 
-    #import ipdb; ipdb.set_trace()
 
     for org, perf in df_perf.iteritems():
         num_methods = len(perf)
@@ -351,9 +349,9 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
 
     pylab.yticks(ticks)
-    pylab.xticks(xlocations, labels, rotation="vertical") 
+    pylab.xticks(xlocations, labels, rotation="45") 
 
-    fontsize=15
+    fontsize=20
     ax = pylab.gca()
     for tick in ax.xaxis.get_major_ticks():
         tick.label1.set_fontsize(fontsize)
@@ -368,6 +366,7 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     pylab.gca().get_yaxis().grid(True)
     pylab.gca().get_xaxis().grid(False)
 
+    methods = ['Individual', 'Union', 'MTL', 'MTMKL'] 
     pylab.legend(tuple(rects), tuple(methods))
     pylab.ylabel(ylabel, fontsize = 15)
     pylab.savefig(res_file) 
