@@ -86,12 +86,17 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
     @args num_cpus: number of threads to use for the run (default: 1)
     @type num_cpus: int 
     """
+    try:
+        subprocess.call(["STAR"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `STAR` binary is in your $PATH")
+
     from gfftools import helper, GFFParser
-    ## genome indices and annotation file
-    genome_dir = org_db['genome_index_dir']
+
+    genome_dir = org_db['genome_index_dir']## genome indices and annotation file
     gtf_db = org_db['gtf']
 
-    ## check for the file type  
+    ## check for the annotation file type gff or gtf 
     gff_hand = helper.open_file(gtf_db)
     for rec in gff_hand:
         rec = rec.strip('\n\r')
