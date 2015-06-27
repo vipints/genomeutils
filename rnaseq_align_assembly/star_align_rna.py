@@ -68,7 +68,7 @@ def run_mmr(org_name, read_map_dir, threads=3):
         if returncode !=0:
             raise Exception, "Exit status return code = %i" % returncode
 
-        sys.stdout.write('MMR run finished. result file stored at %s\n' outFile)
+        sys.stdout.write('MMR run finished. result file stored at %s\n' % outFile)
     except Exception, e:
         exit('Error running MMR.\n%s' %  str( e ))
 
