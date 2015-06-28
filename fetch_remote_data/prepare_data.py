@@ -219,6 +219,8 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     """
     Creating STAR genome index with or without using genome annotation
 
+    TODO check whether the fasta and gtf files are uncompressed star works with uncompressed files in this step. 
+
     @args fasta_file: reference genome sequence file .fasta format 
     @type fasta_file: str 
     @args out_dir: genome index binary file storage place  
