@@ -72,9 +72,11 @@ def run_cufflinks(org_db, num_cpus=4):
     
     try:
         os.chdir(result_dir)
-        ## run the command
         process = subprocess.Popen(cli_cuff, shell=True) 
-        process.wait()
+        returncode = process.wait()
+
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
 
     except Exception, e:
         print 'Error running cufflinks.\n%s' %  str( e )
@@ -155,7 +157,10 @@ def run_trsk(org_db, out_gff_file="tmp_trsk_genes.gff"):
     try:
         os.chdir(result_dir)
         process = subprocess.Popen(cli_trsk, shell=True) 
-        process.wait()
+        returncode = process.wait()
+
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
 
     except Exception, e:
         print 'Error running TranscriptSkimmer.\n%s' %  str( e )
