@@ -174,11 +174,14 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
     sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
     try:
         process = subprocess.Popen(make_star_run, shell=True) 
-        process.wait()
+        returncode = process.wait()
 
-        print "star run completed. result file stored at %sAligned.out.bam" % out_prefix
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
+
+        sys.stdout.write("STAR run completed. result file stored at %sAligned.out.bam\n" % out_prefix)
     except Exception, e:
-        print 'Error running STAR.\n%s' %  str( e )
+        sys.stdout.write("Error running STAR.\n%s" %  str( e ))
         sys.exit(0)
 
 
