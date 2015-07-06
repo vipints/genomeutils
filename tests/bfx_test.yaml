@@ -1,0 +1,25 @@
+# Configuration file for running signal label generation pipeline (unit test)
+genome_data_path:
+    dir: /databases/genomes/
+experiment_data_path:
+    dir: /SRA-rnaseq/
+algorithms:
+    sra_unpack: 
+        tool: fastq-dump
+        version: 2.3.1
+    read_aligner:
+        tool: STAR
+        version: 2.4.0f1
+    multimapper_resolution:
+        tool: mmr 
+        version: 688921a
+    transcript_reconstruction: 
+        tool: TranscriptSkimmer
+        version: 4237130 
+        tool: cufflinks
+        version: 2.2.1
+experiment:
+  - organism_name: drosophila_melanogaster
+    sra_run_id: SRR1197286
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
