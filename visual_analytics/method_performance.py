@@ -24,11 +24,11 @@ Requirement:
 """
 
 from __future__ import division
-from collections import defaultdict
 import numpy as np 
 import pandas as pd 
-
+from collections import defaultdict
 from utils import compressed_pickle 
+
 
 def best_test_perf_with_eval(filename, methods=None, org_names=None):
     """
