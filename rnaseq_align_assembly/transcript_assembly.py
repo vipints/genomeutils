@@ -88,48 +88,37 @@ def run_trsk(org_db, out_gff_file="tmp_trsk_genes.gff"):
     """
 
     org_name = org_db['short_name'] 
-    print "preparing for TransriptSkimmer run for organism %s" % org_name
+    sys.stdout.write("preparing for TransriptSkimmer run for organism %s\n" % org_name)
 
     genome_seq_file = org_db['fasta']
-
     if not os.path.isfile(genome_seq_file):
-        print 'error: failed to fetch genome sequence file %s for organism %s' % (genome_seq_file, org_name) 
-        sys.exit(-1)
-
-    print "using genome sequence file from %s" % genome_seq_file
+        exit('error: failed to fetch genome sequence file %s for organism %s' % (genome_seq_file, org_name))
+    sys.stdout.write("using genome sequence file %s\n" % genome_seq_file)
 
     ## expect the mmr result file in below format ex: A_thaliana/read_mapping/A_thaliana_Aligned_mmr_sortbyCoord.bam 
     bam_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (org_db['read_map_dir'], org_name)
     if not os.path.isfile(bam_file):
-        print "failed to fetch sorted mmr BAM file for organism: %s, trying to get the mmr file..." % org_name
-        
+        sys.stdout.write("warning: failed to fetch sorted mmr BAM file for organism: %s, trying to get the unsorted mmr file\n" % org_name)
         bam_file = "%s/%s_Aligned_mmr.bam" % (org_db['read_map_dir'], org_name)
         if not os.path.isfile(bam_file):
-            print "error: failed to fetch mmr BAM file for organism %s" % org_name
-            sys.exit(-1)
+            exit("error: failed to fetch mmr BAM file for organism %s" % org_name)
         
         ## sorting, indexing the bam file 
         file_prefix, ext = os.path.splitext(bam_file)
         sorted_bam = "%s_sortbyCoord" % file_prefix
-
-        print "trying to sort based by the coordinates with output prefix as: %s" % sorted_bam
+        sys.stdout.write("trying to sort based on the coordinates with output prefix as: %s\n" % sorted_bam)
         if not os.path.isfile("%s.bam" % sorted_bam):
-            print 'sorting...'
             pysam.sort(bam_file, sorted_bam)
-            
         bam_file = "%s.bam" % sorted_bam
         
-    print 'using bam file from %s' % bam_file
+    sys.stdout.write("using bam file from %s\n" % bam_file)
     if not os.path.exists(bam_file + ".bai"):
-        sys.stdout.write('indexing... ')
         pysam.index(bam_file) 
-        sys.stdout.write(' ...done\n')
 
     max_intron_length = org_db['max_intron_len']
     max_exon_length = org_db['max_exon_len'] 
     ##FIXME to be included in the genome database  
     max_intergenic_region = 10000 
-
     result_dir = org_db['read_assembly_dir']
     gio_path_temp = os.path.join(result_dir, "temp_gio")
     make_gio(genome_seq_file, gio_path_temp)
