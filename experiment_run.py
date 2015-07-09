@@ -168,13 +168,13 @@ def fetch_db_signals(yaml_config, data_method):
     for org_name, det in orgdb.items():
         if data_method == "trsk":
             gff_file = "%s/%s_trsk_genes.gff" % (det['read_assembly_dir'], org_name)
-            out_dir = "%s/trsk_3K_labels" % det['labels_dir']## new label sequence dir 
+            out_dir = "%s/trsk_4K_labels" % det['labels_dir']## new label sequence dir 
         elif data_method == "cufflinks":
             gff_file = "%s/%s_cufflinks_genes.gff" % (det['read_assembly_dir'], org_name)
-            out_dir = "%s/cuff_3K_labels" % det['labels_dir']
+            out_dir = "%s/cuff_4K_labels" % det['labels_dir']
         elif data_method == "onlinedb":
             gff_file = "%s/%s_%s.gff" % (det['read_assembly_dir'], org_name, det['genome_release_db']) ## db_anno 
-            out_dir = "%s/jmlr_3K_labels" % det['labels_dir']
+            out_dir = "%s/jmlr_1K_sm_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
             print "error: genome annotation file missing %s" % gff_file
@@ -199,10 +199,10 @@ def fetch_db_signals(yaml_config, data_method):
         #count = int(count.strip())
         
         ## depends on the genomic signal type 
-        count = 4000
+        count = 5000
         signal_type = "tss"
         poslabels_cnt = 1000
-        neglabels_cnt = 2000
+        neglabels_cnt = 3000
         flank_nts = 1200 
 
         ## arguments to pygrid 
@@ -386,13 +386,13 @@ def alignment_filter(yaml_config):
         job = pg.cBioJob(call_alignment_filter, arg) 
 
         ## native specifications 
-        job.mem="36gb"
-        job.vmem="36gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.mem="72gb"
+        job.vmem="72gb"
+        job.pmem="24gb"
+        job.pvmem="24gb"
         job.nodes = 1
         job.ppn = 3
-        job.walltime = "24:00:00"
+        job.walltime = "48:00:00"
 
         Jobs.append(job)
     print 
@@ -422,16 +422,16 @@ def align_rnaseq_reads(yaml_config):
         lib_type = 'PE'
         lib_type = 'SE' if len(det['fastq'])==1 else lib_type
 
-        arg = [[det, lib_type, 100000, 4]]
+        arg = [[det, lib_type, 100000, 2]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
         job.mem="48gb"
         job.vmem="48gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.pmem="24gb"
+        job.pvmem="24gb"
         job.nodes = 1
-        job.ppn = 4
+        job.ppn = 2
         job.walltime = "24:00:00"
         
         Jobs.append(job)
@@ -469,16 +469,16 @@ def create_genome_index(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 4, det['read_length']-1]]
+        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 2, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
     
         job.mem="48gb"
         job.vmem="48gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.pmem="24gb"
+        job.pvmem="24gb"
         job.nodes = 1
-        job.ppn = 4
+        job.ppn = 2
         job.walltime = "24:00:00"
         
         Jobs.append(job)
