@@ -29,8 +29,7 @@ def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=4
 
     label_type = ["-1", "+1"]
     if not category in label_type:
-        sys.stdout.write("error: sequence record label type +1/-1 not supported to %s\n" % category)
-        sys.exit(0)
+        sys.exit("error: sequence record label type +1/-1 not supported to %s\n" % category)
 
     try:
         accept_prob = (1.0*sub_sample_records)/total_record_count
