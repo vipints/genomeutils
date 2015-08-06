@@ -4,7 +4,7 @@
 ## cat ${DIR}/compute_brlength.R | $R_PATH --slave --args $infile.tre $outfile.tre 
 
 ## install package 
-#install.packages(ape)
+install.packages(ape)
 
 ### get arguments 1: INFILE, 2: OUTFILE 
 args <- commandArgs()
