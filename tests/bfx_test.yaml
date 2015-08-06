@@ -6,7 +6,7 @@ experiment_data_path:
 algorithms:
     sra_unpack: 
         tool: fastq-dump
-        version: 2.3.1
+        version: 2.4.5
     read_aligner:
         tool: STAR
         version: 2.4.0f1
