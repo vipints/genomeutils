@@ -43,6 +43,7 @@ if len(reads) == 1:
     print("Assuming that %s is interleaved" % reads[0])
     reads += [""]
 
+#TODO check for file creating permissions
 if not os.path.isfile(reference+".sa"):
     print("Creating index file..")
     subprocess.call(["bwa", "index", reference], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -86,7 +87,7 @@ for read1, read2 in zip(reads[::2],reads[1::2]):
             stats[orientation]['mean'] = mean
             stats[orientation]['stdev'] = stdev
             if orientation == 'RR':
-                # stats are complete
+                # stats are done 
                 break
         sys.stdout.write(line)
         sys.stdout.flush()
