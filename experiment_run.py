@@ -353,6 +353,7 @@ def transcript_prediction_trsk(yaml_config):
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+
 def find_uniq_reads(yaml_config):
     """
     find uniquely mapped reads from a bam file 
@@ -362,6 +363,7 @@ def find_uniq_reads(yaml_config):
     print "NOT YET IMPLEMENTED."
     sys.exit(0)
 
+
 def call_alignment_filter(args_list):
     """
     wrapper for submitting jobs to pygrid
@@ -370,6 +372,7 @@ def call_alignment_filter(args_list):
     org_name, out_dir, num_cpus = args_list
     filter.run_mmr(org_name, out_dir, num_cpus)
     return "done"
+
 
 def alignment_filter(yaml_config):
     """
@@ -400,6 +403,7 @@ def alignment_filter(yaml_config):
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+
 def call_align_reads(args_list):
     """
     wrapper for submitting jobs to pygrid
@@ -408,6 +412,7 @@ def call_align_reads(args_list):
     org_db, read_type, max_mates_gap_length, num_cpus = args_list
     rnastar.run_star_alignment(org_db, read_type, max_mates_gap_length, num_cpus) 
     return 'done'
+
 
 def align_rnaseq_reads(yaml_config):
     """
@@ -422,16 +427,20 @@ def align_rnaseq_reads(yaml_config):
         lib_type = 'PE'
         lib_type = 'SE' if len(det['fastq'])==1 else lib_type
 
-        arg = [[det, lib_type, 100000, 2]]
+        ## TODO library insert size calculation implemented but not incorporated to the pipeline
+        lib_insert_size = 1000
+        num_cpu = 3 
+
+        arg = [[det, lib_type, lib_insert_size, num_cpu]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
-        job.mem="48gb"
-        job.vmem="48gb"
-        job.pmem="24gb"
-        job.pvmem="24gb"
+        job.mem="60gb"
+        job.vmem="60gb"
+        job.pmem="20gb"
+        job.pvmem="20gb"
         job.nodes = 1
-        job.ppn = 2
+        job.ppn = num_cpu
         job.walltime = "24:00:00"
         
         Jobs.append(job)
@@ -439,6 +448,7 @@ def align_rnaseq_reads(yaml_config):
     print "sending read alignment with STAR jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
+
 
 def calculate_insert_size(yaml_config):
     """
@@ -448,6 +458,7 @@ def calculate_insert_size(yaml_config):
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
     print "NOT YET IMPLEMENTED."
     sys.exit(0)
+
 
 def call_genome_index(args_list):
     """
