@@ -6,6 +6,9 @@ usage: estimate_insert_size.py <reference> <*.fastq>
 
 example: 
     estimate_insert_size.py contigs.fa readsA_1.fq readsA_2.fq readsB_1.fq readsB_2.fq
+
+Copyright (c) https://gist.github.com/rchikhi/7281991
+This is slightly modified to take the input fastq in different form and will be integrated to the pipeline. 
 """
 
 import os
