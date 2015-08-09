@@ -112,7 +112,7 @@ def experiment_db(config_file, opt_action):
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release_22/ensembl_release_22.gff.bz2' % data_path,
     H_sapiens = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
-    O_anatinus = '%s/O_anatinus/ensembl_release-69/' % data_path,
+    O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
     P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
     Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181_gene.gff3' % data_path,
@@ -172,7 +172,7 @@ def experiment_db(config_file, opt_action):
         org_db[short_name]['fastq'] = sra_files
 
         ## read mapping, read assembly and label generation working folders 
-        for sub_dir in ['read_mapping', 'signal_labels', 'trans_pred']:
+        for sub_dir in ['read_mapping', 'signal_labels', 'trans_pred', 'source_data']:
             work_path = "%s/%s/%s" % (exp_path, short_name, sub_dir)
 
             if not os.path.isdir(work_path):
@@ -232,7 +232,6 @@ def experiment_db(config_file, opt_action):
                     org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
             else:
                 print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
-                sys.exit(-1)
         else:
                 print "warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
                 org_db[short_name]['gtf'] = None
