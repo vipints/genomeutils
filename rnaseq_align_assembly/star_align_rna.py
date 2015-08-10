@@ -119,7 +119,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         read_file = "%s/%s" % (org_db['fastq_path'], org_db['fastq'][0])
     
     ## getting the command to uncompress the read file
-    zip_type = {".gz" : "zcat", ".bz2" : "bzcat"} 
+    zip_type = {".gz" : "gzip -c", ".bz2" : "bzip2 -c"} 
     file_prefx, ext = os.path.splitext(org_db['fastq'][0])
 
     ## genomic feature information 
@@ -181,8 +181,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
 
         sys.stdout.write("STAR run completed. result file stored at %sAligned.out.bam\n" % out_prefix)
     except Exception, e:
-        sys.stdout.write("Error running STAR.\n%s" %  str( e ))
-        sys.exit(0)
+        sys.exit("Error running STAR.\n%s" %  str( e ))
 
 
 def uniq_mapped_reads(bam_file, multi_map=1):
