@@ -38,13 +38,11 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
     """
     ## check the url for getting the recent version of the repository 
     base_url_gff = 'ftp://ftp.jgi-psf.org/pub/compgen/phytozome/%s/' % release_version
-    
     try:
         org_names = urllib2.urlopen(base_url_gff)
     except urllib2.URLError, err_release:
-        print "phytozome_release_version %s is NOT found" % release_version
-        print err_release
-        sys.exit(-1)
+        sys.stdout.write("phytozome_release_version %s is NOT found\n" % release_version)
+        exit(err_release)
 
     org_name_valid = False 
     for ORG in org_names:
@@ -59,9 +57,8 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
         try:
             gff_files = urllib2.urlopen(base_url_gff)
         except urllib2.URLError, err_faseq:
-            print "phytozome_release genome annotation missing" % base_url_gff
-            print err_faseq
-            sys.exit(-1)
+            sys.stdout.write("phytozome_release genome annotation missing\n" % base_url_gff)
+            exit(err_faseq)
 
         ## mapping to short names  Athaliana --> A_thaliana
         org_short_name = "%s_%s" % (species_name[0], species_name[1:])
@@ -72,8 +69,7 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
             try:
                 os.makedirs(base_file_path)
             except OSError:
-                print "error: cannot create the directory %s." % base_file_path
-                sys.exit(0)
+                exit("error: cannot create the directory %s." % base_file_path)
 
         for gff_name in gff_files:
             gff_name =gff_name.strip('\n\r')
@@ -85,8 +81,7 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
                 try:
                     ftp_file=urllib2.urlopen(base_url_gff+gff_name.split()[-1])
                 except urllib2.URLError, err_file:
-                    print err_file
-                    sys.exit(-1)
+                    exit(err_file)
 
                 sys.stdout.write('\tdownloading %s ...\n' % gff_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
@@ -99,9 +94,8 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
     org_names.close()
 
     if not org_name_valid:
-        print 
-        print "error: gff file for %s is not present in phytozome release version %s" % (species_name, release_version)   
-        print "URL checked %s/%s" % (base_url_gff, species_name) 
+        sys.stdout.write("error: gff file for %s is not present in phytozome release version %s\n" % (species_name, release_version))   
+        sys.stdout.write("URL checked %s/%s\n" % (base_url_gff, species_name))
 
 
 def fetch_phytozome_fasta(release_version, species_name, download_path):
