@@ -119,7 +119,7 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         read_file = "%s/%s" % (org_db['fastq_path'], org_db['fastq'][0])
     
     ## getting the command to uncompress the read file
-    zip_type = {".gz" : "gzip -c", ".bz2" : "bzip2 -c"} 
+    zip_type = {".gz" : "gzip -c", ".bz2" : "bzip2 -d -c"} 
     file_prefx, ext = os.path.splitext(org_db['fastq'][0])
 
     ## genomic feature information 
