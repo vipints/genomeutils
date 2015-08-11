@@ -1,0 +1,263 @@
+# 
+# conf file for running experiments to generate signal labels from rnaseq/public-db data source 
+#
+genome_data_path:
+    dir: /databases/genomes/
+experiment_data_path:
+    dir: /sra_rnaseq_data/
+algorithms:
+    sra_unpack: 
+        tool: fastq-dump
+        version: 2.4.5
+    read_aligner:
+        tool: STAR
+        version: 2.4.0f1
+    multimapper_resolution:
+        tool: mmr 
+        version: 688921a
+    transcript_reconstruction: 
+        tool: TranscriptSkimmer
+        version: 4237130 
+        tool: cufflinks
+        version: 2.2.1
+experiment:
+  - organism_name: homo_sapiens
+    sra_run_id: SRR534327
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: pan_troglodytes
+    sra_run_id: SRR544868 
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: gorilla_gorilla
+    sra_run_id: SRR649365
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: macaca_mulatta
+    sra_run_id: SRR389101
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: pan_paniscus
+    sra_run_id: SRR873628
+    genome_build_version: ensembl_release_XX
+    release_db: ensembl_genome
+  - organism_name: rattus_norvegicus
+    sra_run_id: SRR594424
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: mus_musculus
+    sra_run_id: SRR549333
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: heterocephalus_glaber
+    sra_run_id: SRR306403
+    genome_build_version: ensembl_release_xx
+    release_db: ensembl_genome
+  - organism_name: oryctolagus_cuniculus
+    sra_run_id: SRR401040
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: cavia_porcellus
+    sra_run_id: SRR901721
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: gallus_gallus
+    sra_run_id: SRR594504
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: meleagris_gallopavo
+    sra_run_id: SRR478416
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: anolis_carolinensis
+    sra_run_id: SRR389085 
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: ornithorhynchus_anatinus
+    sra_run_id: SRR414996
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: anas_platyrhynchos
+    sra_run_id: SRR064720
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: tetraodon_nigroviridis
+    sra_run_id: SRR579565
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: oryzias_latipes
+    sra_run_id: SRR1029906
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: oreochromis_niloticus
+    sra_run_id: SRR341464
+    genome_build_version: ensembl_release_xx
+    release_db: ensembl_genome
+  - organism_name: latimeria_chalumnae
+    sra_run_id: DRR002308
+    genome_build_version: ensembl_release_xx
+    release_db: ensembl_genome
+  - organism_name: danio_rerio
+    sra_run_id: SRR519725 
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: sus_scrofa
+    sra_run_id: SRR653843
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: ovis_aries
+    sra_run_id: ERR257744
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: callithrix_jacchus 
+    sra_run_id: SRR534327
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: monodelphis_domestica
+    sra_run_id: SRR868956
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: macropus_eugenii
+    sra_run_id: SRR1041779
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: caenorhabditis_elegans 
+    sra_run_id: SRR534327
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: caenorhabditis_briggsae
+    sra_run_id: SRR1050793
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: caenorhabditis_japonica
+    sra_run_id: SRR580396
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: caenorhabditis_brenneri
+    sra_run_id: SRR580401
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: caenorhabditis_remanei
+    sra_run_id: SRR580408
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: anopheles_gambiae
+    sra_run_id: SRR520427
+    genome_build_version: ucsc
+    release_db: ensembl_metazoa_genome
+  - organism_name: drosophila_melanogaster
+    sra_run_id: SRR1197286
+    genome_build_version: ensembl_release_79
+    release_db: ensembl_genome
+  - organism_name: drosophila_simulans
+    sra_run_id: SRR166813
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: nasonia_vitripennis
+    sra_run_id: SRR940321
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: aedes_aegypti
+    sra_run_id: ERR266255
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: apis_mellifera
+    sra_run_id: SRR849283
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: saccharomyces_cerevisiae
+    sra_run_id: SRR453567
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: schizosaccharomyces_pombe
+    sra_run_id: ERR327973
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: ciona_intestinalis
+    sra_run_id: DRR000344
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: petromyzon_marinus
+    sra_run_id: SRR369904
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: equus_caballus
+    sra_run_id: SRR495389
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: bos_taurus
+    sra_run_id: SRR594477
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: felis_catus
+    sra_run_id: SRR835495
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: canis_familiaris
+    sra_run_id: SRR606329
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: capra_hircus
+    sra_run_id: SRR520148
+    genome_build_version: ensembl_release_79 
+    release_db: ensembl_genome
+  - organism_name: plasmodium_falciparum 
+    sra_run_id: ERR333793
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: leishmania_major
+    sra_run_id: SRR1016919
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: thalassiosira_pseudonana
+    sra_run_id: SRR401384
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: dictyostelium_discoideum
+    sra_run_id: SRR503434
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: plasmodium_falciparum3D7
+    sra_run_id: SRR065645
+    genome_build_version: ensembl_release_22
+    release_db: ensembl_metazoa_genome
+  - organism_name: oryza_sativa
+    sra_run_id: SRR946865
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: zea_mays
+    sra_run_id: SRR1016225
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: glycine_max
+    sra_run_id: SRR1168173
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: brassica_rapa
+    sra_run_id: ERR117406
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: arabidopsis_thaliana
+    sra_run_id: SRR391051
+    genome_build_version: arabidopsis_tair10
+    release_db: phytozome_genome
+  - organism_name: vitis_vinifera
+    sra_run_id: SRR522298
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: manihot_esculenta
+    sra_run_id: SRR1213745
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: phaseolus_vulgaris
+    sra_run_id: SRR958472 
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: physcomitrella_patens
+    sra_run_id: SRR435298
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
+  - organism_name: sorghum_bicolor
+    sra_run_id: DRR006369
+    genome_build_version: phytozome_v9.0
+    release_db: phytozome_genome
