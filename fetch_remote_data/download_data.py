@@ -23,6 +23,23 @@ import subprocess
 class MyException( Exception ): 
     pass
 
+def fetch_silva_rRNA_fasta(release_version):
+    """
+
+    """
+    ## FASTA format 
+    ## LSU release version
+    ## This file contains all the LSU ribosomal fragments from organims. 
+    silva_archive_link = 'http://www.arb-silva.de/fileadmin/silva_databases/release_%d/Exports/SILVA_%d_LSURef_tax_silva.fasta.gz' % release_version
+
+    try:
+        archive_from_silva = urllib2.urlopen(silva_archive_link) 
+    except urllib2.URLError, err_release:
+        sys.stdout.write("release number %s is NOT found\n" % release_version)
+        exit(err_release)
+
+
+
 def fetch_phytozome_gff(release_version, species_name, download_path):
     """
     Download genome sequence from Phytozome ftp page.
