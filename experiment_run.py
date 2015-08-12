@@ -394,8 +394,8 @@ def alignment_filter(yaml_config):
         job.pmem="24gb"
         job.pvmem="24gb"
         job.nodes = 1
-        job.ppn = 3
-        job.walltime = "48:00:00"
+        job.ppn = 2
+        job.walltime = "68:00:00"
 
         Jobs.append(job)
     print 
@@ -427,21 +427,21 @@ def align_rnaseq_reads(yaml_config):
         lib_type = 'PE'
         lib_type = 'SE' if len(det['fastq'])==1 else lib_type
 
-        ## TODO library insert size calculation implemented but not incorporated to the pipeline
+        ## library insert size 
         lib_insert_size = 1000
-        num_cpu = 3 
+        num_cpu = 4 
 
         arg = [[det, lib_type, lib_insert_size, num_cpu]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
-        job.mem="60gb"
-        job.vmem="60gb"
-        job.pmem="20gb"
-        job.pvmem="20gb"
+        job.mem="88gb"
+        job.vmem="88gb"
+        job.pmem="22gb"
+        job.pvmem="22gb"
         job.nodes = 1
         job.ppn = num_cpu
-        job.walltime = "24:00:00"
+        job.walltime = "64:00:00"
         
         Jobs.append(job)
     print 
@@ -523,13 +523,13 @@ def download_sra_data(yaml_config):
 
         job = pg.cBioJob(call_download_sra_file, arg) 
     
-        job.mem="3gb"
-        job.vmem="3gb"
-        job.pmem="3gb"
-        job.pvmem="3gb"
+        job.mem="2gb"
+        job.vmem="2gb"
+        job.pmem="2gb"
+        job.pvmem="2gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "2:00:00"
+        job.walltime = "1:00:00"
         
         Jobs.append(job)
     print 
@@ -564,6 +564,7 @@ def decompose_sra_file(yaml_config):
             sys.exit(0)
         
         ## TODO can be consider to the yaml file options 
+        #library_type = "pe"
         library_type = "pe"
         compress_format = "gzip"
 
@@ -572,13 +573,13 @@ def decompose_sra_file(yaml_config):
 
         job = pg.cBioJob(call_decompose_sra_file, arg) 
     
-        job.mem="3gb"
-        job.vmem="3gb"
-        job.pmem="3gb"
-        job.pvmem="3gb"
+        job.mem="6gb"
+        job.vmem="6gb"
+        job.pmem="6gb"
+        job.pvmem="6gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "3:00:00"
+        job.walltime = "24:00:00"
         
         Jobs.append(job)
     print 
