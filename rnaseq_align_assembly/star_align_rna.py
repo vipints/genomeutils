@@ -143,12 +143,11 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --sjdbGTFtagExonParentTranscript Parent \
         --sjdbScore 1 \
         --sjdbOverhang 5 \
-        --alignMatesGapMax %d\
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
-            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
+            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db)
     else:
         make_star_run = "STAR \
         --genomeDir %s \
@@ -164,12 +163,11 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --sjdbGTFfeatureExon exon \
         --sjdbScore 1 \
         --sjdbOverhang 5 \
-        --alignMatesGapMax %d\
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
-            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, max_mates_gap_length)
+            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db)
 
     sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
     try:
