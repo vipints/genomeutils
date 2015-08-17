@@ -257,13 +257,11 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
             # skip the genome sequence 
             if not re.search('\t', rec):
                 continue
-
             parts = rec.split('\t')
             assert len(parts) >= 8, rec
 
             ftype, tags = GFFParser.attribute_tags(parts[-1])
             break 
-
         gff_hand.close() 
 
         ## according to the file type 
@@ -291,8 +289,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
         try:
             os.makedirs(out_dir)
         except OSError:
-            print "error: cannot create the directory %s." % out_dir
-            sys.exit(0)
+            exit("error: cannot create the directory %s." % out_dir)
     else:## if present any other old index files clean up the folder 
         for the_file in os.listdir(out_dir):
             file_path = os.path.join(out_dir, the_file)
@@ -302,7 +299,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception, e:
-                print e 
+                print(e) 
     
     ## start the indexing job 
     sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
@@ -317,12 +314,10 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
         if returncode != 0:
             raise Exception, "return code = %i" % returncode
         
-        print 
-        print "STAR genome index files are stored at %s" % out_dir
-        print 
+        print("\nSTAR genome index files are stored at %s\n" % out_dir)
 
     except Exception, e:
-        print 'Error running STAR.\n%s' %  str( e )
+        exit('Error running STAR.\n%s' %  str( e ))
 
 
 if __name__=="__main__":
