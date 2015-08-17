@@ -309,7 +309,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
                 print(e) 
     
     ## start the indexing job 
-    sys.stdout.write('\trunning STAR program as: %s \n' % cli_cmd)
+    sys.stdout.write('\trunning program as: %s \n' % cli_cmd)
     try:
         ## changing the working dir to run STAR 
         os.chdir(out_dir)
@@ -321,7 +321,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
         if returncode != 0:
             raise Exception, "return code = %i" % returncode
         
-        print("\nSTAR genome index files are stored at %s\n" % out_dir)
+        print("\nGenome index files are stored at %s\n" % out_dir)
 
     except Exception, e:
         exit('Error running STAR.\n%s' %  str( e ))
