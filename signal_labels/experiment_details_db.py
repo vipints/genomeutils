@@ -39,7 +39,7 @@ def experiment_db(config_file, opt_action):
     exp_path = config_map['experiment_data_path']['dir']
 
     org_fasta_file = dict( A_carolinensis = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.fas' % data_path,
-    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.fas.bz2" % data_path,
+    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.fas" % data_path,
     O_cuniculus = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.fas" % data_path,
     M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.fas.bz2" % data_path, 
     B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis_str_a0193.GCA_000181915.1.21.dna.toplevel.fa' % data_path,
@@ -68,7 +68,7 @@ def experiment_db(config_file, opt_action):
     H_sapiens = '%s/H_sapiens/hg19_bowtie2/hg19.fa' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release-69/Ornithorhynchus_anatinus.OANA5.69-filtered_dna.fa' % data_path,
     N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis_dna_sm.fa' % data_path,
-    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
+    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fas' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206.fa' % data_path,
     Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181.fa' % data_path,
     A_thaliana = '%s/A_thaliana/arabidopsis_tair10/sequences/TAIR9_chr_all.fas' % data_path,
@@ -78,11 +78,13 @@ def experiment_db(config_file, opt_action):
     O_latipes = '%s/O_latipes/ensembl_release_79/ensembl_release_79.fas' % data_path,
     R_norvegicus = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     C_briggsae = '%s/C_briggsae/ensembl_release_22/ensembl_release_22.fas.bz2' % data_path,
+    G_gorilla = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    P_paniscus = '%s/P_paniscus/eva_mpg_de/eva_mpg_de.fas' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
 
     org_gtf_file = dict( A_carolinensis = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf.bz2" % data_path,
+    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
     O_cuniculus = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
     M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf.bz2" % data_path, 
     B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis' % data_path,
@@ -113,7 +115,7 @@ def experiment_db(config_file, opt_action):
     D_simulans = '%s/D_simulans/ensembl_release_22/ensembl_release_22.gff.bz2' % data_path,
     H_sapiens = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
-    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
+    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
     Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181_gene.gff3' % data_path,
     A_thaliana = '%s/A_thaliana/arabidopsis_tair10/annotations/TAIR10_GFF3_genes.gff' % data_path,
@@ -127,6 +129,7 @@ def experiment_db(config_file, opt_action):
     C_remanei = '%s/C_remanei/ensembl_release-22/Caenorhabditis_remanei.C_remanei-15.0.1.22.gff3' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/Drosophila_pseudoobscura.HGSC2.22.gff3' % data_path,
     T_pseudonana = '%s/T_pseudonana/Thaps3/Thaps3_chromosomes_geneModels_FilteredModels2.gff' % data_path,
+    G_gorilla = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
     )
 
