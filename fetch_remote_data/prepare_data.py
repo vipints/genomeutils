@@ -35,9 +35,9 @@ def clean_anno_file(chr_names, gtf_file, gtf_out):
 
     @args chr_names: different contig names with a valid genome sequence 
     @type chr_names: dict
-    @args gtf_file: genome sequence in fasta file  
+    @args gtf_file: genome annotation in gtf/gff form 
     @type gtf_file: str 
-    @args gtf_out: new genome sequence file in fasta format 
+    @args gtf_out: new genome annotation in gtf/gff form 
     @type gtf_out: str 
     """
 
@@ -81,6 +81,8 @@ def read_genome_file(fas_file):
 
     @args fas_file: genome sequence in fasta file  
     @type fas_file: str 
+
+    returns a list with contig_names and length
     """
     
     # get the filehandler from input file
