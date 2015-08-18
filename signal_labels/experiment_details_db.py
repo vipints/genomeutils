@@ -52,7 +52,7 @@ def experiment_db(config_file, opt_action):
     B_rapa = '%s/B_rapa/phytozome_v9.0/Brapa_197_stable.fa' % data_path,
     C_japonica = '%s/C_japonica/STARgenome/Caenorhabditis_japonica.C_japonica-7.0.1.22.dna_sm.stable.fa' % data_path,
     G_gallus = '%s/G_gallus/ensembl_release_79/ensembl_release_79.fas' % data_path,
-    M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,  
+    M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.fas' % data_path,  
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/phytozome_v9.0.fas.bz2' % data_path,
     A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel3_sm.fasta' % data_path,
     B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
@@ -97,7 +97,7 @@ def experiment_db(config_file, opt_action):
     B_rapa = '%s/B_rapa/phytozome_v9.0/Brapa_197_gene.gff3' % data_path,
     C_japonica = '%s/C_japonica/ensembl_release-22/Caenorhabditis_japonica.C_japonica-7.0.1.22.gff3' % data_path,
     G_gallus = '%s/G_gallus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,  
+    M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.gtf' % data_path,  
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/phytozome_v9.0.gff.bz2' % data_path,
     A_mellifera = '%s/A_mellifera/apiMel3_ucsc/apiMel2_ucsc.gtf' % data_path,
     B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
@@ -223,7 +223,6 @@ def experiment_db(config_file, opt_action):
 
         ## check the genome annotation 
         if short_name in org_gtf_file:
-
             if os.path.isfile(org_gtf_file[short_name]):
                 org_db[short_name]['gtf'] = org_gtf_file[short_name]
 
@@ -234,12 +233,12 @@ def experiment_db(config_file, opt_action):
                     org_db[short_name]['max_intron_len'] = feat_len_db['max_intron']
                     org_db[short_name]['max_exon_len'] = feat_len_db['max_exon']
             else:
-                print "error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name]
+                exit("error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name])
         else:
-                print "warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
-                org_db[short_name]['gtf'] = None
-                org_db[short_name]['max_intron_len'] = None
-                org_db[short_name]['max_exon_len'] = None
+            print "warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
+            org_db[short_name]['gtf'] = None
+            org_db[short_name]['max_intron_len'] = None
+            org_db[short_name]['max_exon_len'] = None
         
         print "fetched details for %s" % short_name 
             
