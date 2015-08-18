@@ -4,11 +4,6 @@ modules for downloading RNA-sequencing reads trace file from
 NCBI Short Read Archive, genome sequence and genome annotations 
 from ENSEMBL and Phytozome server. 
 
-Usage: 
-    import download_data as dl 
-    dl.download_sra_file.__doc__
-    dl.decompress_sra_file.__doc__
-
 Requirement:
     fastq-dump - sratoolkit: http://www.ncbi.nlm.nih.gov/Traces/sra/?view=software
 """
@@ -25,7 +20,10 @@ class MyException( Exception ):
 
 def fetch_silva_rRNA_fasta(release_version):
     """
+    Downloading ribosomal rna contents from arb-silva database 
 
+    @args release_version: release version (example: 117) 
+    @type release_version: int
     """
     ## FASTA format 
     ## LSU release version
@@ -37,7 +35,6 @@ def fetch_silva_rRNA_fasta(release_version):
     except urllib2.URLError, err_release:
         sys.stdout.write("release number %s is NOT found\n" % release_version)
         exit(err_release)
-
 
 
 def fetch_phytozome_gff(release_version, species_name, download_path):
