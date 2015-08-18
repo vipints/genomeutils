@@ -66,7 +66,6 @@ def experiment_db(config_file, opt_action):
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_filtered.fa' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release_22/ensembl_release_22.fas.bz2' % data_path,
     H_sapiens = '%s/H_sapiens/hg19_bowtie2/hg19.fa' % data_path,
-    O_anatinus = '%s/O_anatinus/ensembl_release-69/Ornithorhynchus_anatinus.OANA5.69-filtered_dna.fa' % data_path,
     N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis_dna_sm.fa' % data_path,
     P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fas' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206.fa' % data_path,
@@ -80,6 +79,8 @@ def experiment_db(config_file, opt_action):
     C_briggsae = '%s/C_briggsae/ensembl_release_22/ensembl_release_22.fas.bz2' % data_path,
     G_gorilla = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.fas' % data_path,
     P_paniscus = '%s/P_paniscus/eva_mpg_de/eva_mpg_de.fas' % data_path,
+    C_porcellus = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
 
@@ -114,7 +115,6 @@ def experiment_db(config_file, opt_action):
     C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
     D_simulans = '%s/D_simulans/ensembl_release_22/ensembl_release_22.gff.bz2' % data_path,
     H_sapiens = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
-    O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
     P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
     Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181_gene.gff3' % data_path,
@@ -130,10 +130,13 @@ def experiment_db(config_file, opt_action):
     D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/Drosophila_pseudoobscura.HGSC2.22.gff3' % data_path,
     T_pseudonana = '%s/T_pseudonana/Thaps3/Thaps3_chromosomes_geneModels_FilteredModels2.gff' % data_path,
     G_gorilla = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_porcellus = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
     )
 
     ## TODO algorithms details 
+    #O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
 
     ## experiment details  
     org_db = defaultdict()
@@ -235,11 +238,11 @@ def experiment_db(config_file, opt_action):
             else:
                 exit("error: the provided gtf file %s is not available to read. Please check!" % org_gtf_file[short_name])
         else:
-            print "warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version)
+            print("warning: missing annotation file for %s under %s/%s/%s" % (short_name, data_path, short_name, genome_build_version))
             org_db[short_name]['gtf'] = None
             org_db[short_name]['max_intron_len'] = None
             org_db[short_name]['max_exon_len'] = None
         
-        print "fetched details for %s" % short_name 
+        print("fetched details for %s" % short_name) 
             
     return org_db
