@@ -81,6 +81,9 @@ def experiment_db(config_file, opt_action):
     P_paniscus = '%s/P_paniscus/eva_mpg_de/eva_mpg_de.fas' % data_path,
     C_porcellus = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    A_platyrhynchos = '%s/A_platyrhynchos/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    O_niloticus = '%s/O_niloticus/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    L_chalumnae = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.fas' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
 
@@ -132,11 +135,14 @@ def experiment_db(config_file, opt_action):
     G_gorilla = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     C_porcellus = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    A_platyrhynchos = '%s/A_platyrhynchos/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    O_niloticus = '%s/O_niloticus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    L_chalumnae = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
     )
 
     ## TODO algorithms details 
-    #O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
+    #L_chalumnae = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
 
     ## experiment details  
     org_db = defaultdict()
