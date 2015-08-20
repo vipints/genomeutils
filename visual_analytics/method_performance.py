@@ -65,7 +65,6 @@ def best_test_perf_with_eval(filename, methods=None, org_names=None):
             best_eval_perf[m_idx, n_idx] = np.mean(tmp_eval)
             best_test_perf[m_idx, n_idx] = np.mean(tmp_test)
  
-
         print m, best_test_perf[m_idx].mean(), best_eval_perf[m_idx].mean()
 
     df_eval = pd.DataFrame(best_eval_perf, columns=org_names, index=methods)
@@ -625,6 +624,47 @@ def mean_plot_diff_run(data_dir, res_file, signal="cleave signal"):
     ylabel = "auROC"
     pylab.ylabel(ylabel, fontsize = 15)
     pylab.savefig(res_file) 
+
+
+def data_for_plotly(filename, method="individual", org_name="H_sapiens"):
+    """
+    plotly compact plotting data formating
+
+    @args filename: input pickle file from arts experiments
+    @type filename: str 
+    @args method: method name default: individual
+    @type method: str 
+    @args org_name: organism name default: H_sapiens
+    @type org_name: str 
+    """
+
+    import bz2 
+    import cPickle
+    fh = bz2.BZ2File(filename, "rb")
+    data = cPickle.load(fh) 
+
+    try:
+        best_eval = np.argmax(data[method][0][org_name], axis = 1 )
+    except:
+        exit("method %s or organism %s not found in the pickle file %s" % (method, org_name, filename) )
+    test_perf = [] 
+    for i, v_idx in enumerate(best_eval):
+        test_perf.append(data[method][1][org_name][i][v_idx])
+        
+    min_max = [] 
+    for idx, ele in enumerate(test_perf):
+        min_max.append(ele) 
+        idx += 1 
+        print("fold%d\t%f" % (idx, ele)) 
+    
+    print("mean\t" % sum(test_perf)/len(test_perf))
+    
+    print 
+    min_max.sort()
+    ymax = min_max[-1]*1.1 
+    ymin = min_max[0]*0.9
+    print ymin, ymax 
+    fh.close()
 
 
 if __name__=="__main__":
