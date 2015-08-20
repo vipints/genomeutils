@@ -46,7 +46,7 @@ def experiment_db(config_file, opt_action):
     C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
     D_melanogaster = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.fas' % data_path,
     E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
-    M_domestica = '%s/M_domestica/ensembl_release_79/ensembl_release_79.fa' % data_path,
+    M_domestica = '%s/M_domestica/ensembl_release_79/ensembl_release_79.fas' % data_path,
     O_sativa = '%s/O_sativa/phytozome_v9.0/Osativa_204.fa' % data_path,
     A_gambiae = '%s/A_gambiae/anoGam1_ucsc/anoGam1_rm.fasta' % data_path,
     B_rapa = '%s/B_rapa/phytozome_v9.0/Brapa_197_stable.fa' % data_path,
