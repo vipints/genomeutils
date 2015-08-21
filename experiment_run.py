@@ -428,20 +428,20 @@ def align_rnaseq_reads(yaml_config):
         lib_type = 'SE' if len(det['fastq'])==1 else lib_type
 
         ## library insert size 
-        lib_insert_size = 1000
-        num_cpu = 4 
+        lib_insert_size = 100000
+        num_cpu = 5
 
         arg = [[det, lib_type, lib_insert_size, num_cpu]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
-        job.mem="88gb"
-        job.vmem="88gb"
-        job.pmem="22gb"
-        job.pvmem="22gb"
+        job.mem="150gb"
+        job.vmem="150gb"
+        job.pmem="30gb"
+        job.pvmem="30gb"
         job.nodes = 1
         job.ppn = num_cpu
-        job.walltime = "64:00:00"
+        job.walltime = "48:00:00"
         
         Jobs.append(job)
     print 
@@ -480,16 +480,17 @@ def create_genome_index(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], 2, det['read_length']-1]]
+        num_cpus = 5 
+        arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], num_cpus, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
     
-        job.mem="48gb"
-        job.vmem="48gb"
-        job.pmem="24gb"
-        job.pvmem="24gb"
+        job.mem="36gb"
+        job.vmem="36gb"
+        job.pmem="36gb"
+        job.pvmem="36gb"
         job.nodes = 1
-        job.ppn = 2
+        job.ppn = num_cpus
         job.walltime = "24:00:00"
         
         Jobs.append(job)
