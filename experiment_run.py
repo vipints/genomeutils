@@ -429,7 +429,7 @@ def align_rnaseq_reads(yaml_config):
 
         ## library insert size 
         lib_insert_size = 100000
-        num_cpu = 5
+        num_cpu = 2
 
         arg = [[det, lib_type, lib_insert_size, num_cpu]]
 
@@ -480,15 +480,15 @@ def create_genome_index(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        num_cpus = 5 
+        num_cpus = 2 
         arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], num_cpus, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
     
-        job.mem="36gb"
-        job.vmem="36gb"
-        job.pmem="36gb"
-        job.pvmem="36gb"
+        job.mem="46gb"
+        job.vmem="46gb"
+        job.pmem="46gb"
+        job.pvmem="46gb"
         job.nodes = 1
         job.ppn = num_cpus
         job.walltime = "24:00:00"
@@ -633,9 +633,10 @@ def download_fasta(yaml_config):
             job = pg.cBioJob(call_phytozome_fasta, arg) 
         elif det['release_db'] == 'ensembl_genome':
             job = pg.cBioJob(call_ensembl_fasta, arg) 
+        elif det['release_db'] == 'ensembl_fungi_genome':
+            job = pg.cBioJob(call_fungi_fasta, arg) 
         else:
-            print "error: download fasta plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db']
-            sys.exit(0)
+            exit("error: download fasta plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db'])
 
         job.mem="2gb"
         job.vmem="2gb"
