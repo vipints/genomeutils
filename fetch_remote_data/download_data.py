@@ -294,9 +294,7 @@ def fetch_ensembl_gtf(release_version, species_name, download_path):
     try:
         org_file = urllib2.urlopen(base_url_gtf)
     except urllib2.URLError, err_release:
-        print "ensembl_release_version %s is NOT found" % release_version
-        print err_release
-        sys.exit(-1)
+        exit("ensembl_release_version %s is NOT found for %s" % (release_version, species_name))
 
     org_name_valid = False 
     for org_name in org_file:
