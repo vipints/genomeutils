@@ -587,7 +587,16 @@ def decompose_sra_file(yaml_config):
     print "sending decompress SRA file jobs to worker"
     print 
     processedJobs = pg.process_jobs(Jobs)
-       
+
+def call_fungi_fasta(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_fungi_fasta(release_num, organism, genome_path)
+    return 'done'
+      
 def call_metazoa_fasta(args_list):
     """
     wrapper for submitting jobs to pygrid
@@ -652,6 +661,16 @@ def download_fasta(yaml_config):
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+
+def call_fungi_gtf(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_fungi_gtf(release_num, organism, genome_path)
+    return 'done'
+
 def call_metazoa_gtf(args_list):
     """
     wrapper for submitting jobs to pygrid
@@ -697,9 +716,10 @@ def download_gtf(yaml_config):
             job = pg.cBioJob(call_phytozome_gtf, arg) 
         elif det['release_db'] == 'ensembl_genome':
             job = pg.cBioJob(call_ensembl_gtf, arg) 
+        elif det['release_db'] == 'ensembl_fungi_genome':
+            job = pg.cBioJob(call_fungi_gtf, arg) 
         else:
-            print "error: download gtf plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db']
-            sys.exit(0)
+            exit("error: download gtf plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db'])
 
         job.mem="2gb"
         job.vmem="2gb"
