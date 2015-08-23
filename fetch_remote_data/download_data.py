@@ -192,6 +192,82 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
         print "URL checked %s/%s" % (base_url_fasta, species_name) 
 
 
+def fetch_ensembl_fungi_gtf(release_version, species_name, download_path):
+    """
+    Download genome annotation from ENSEMBLGENOMES ftp page.
+    
+    @args release_version: ensembl release version (example: 28) 
+    @type release_version: str 
+    @args species_name: organism name (example: schizosaccharomyces_pombe)
+    @type species_name: str 
+    @args download_path: file download path 
+    @type download_path: str 
+    
+    %download_path/A_gambiae/ensembl_release_28/Schizosaccharomyces_pombe.ASMP3.22.gtf.gz
+    """
+    ## check the url for getting the recent version of the repository 
+    base_url_gtf = "ftp://ftp.ensemblgenomes.org/pub/fungi/release-%s/gtf/" % release_version 
+    
+    try:
+        org_file = urllib2.urlopen(base_url_gtf)
+    except urllib2.URLError, err_release:
+        exit("ensembl_release_version %s is NOT found for %s" % (release_version, species_name)
+
+    org_name_valid = False
+    for org_name in org_file:
+        org_name=org_name.strip("\n\r")
+
+        ## check the organism directory at ftp remote folder 
+        if org_name.split()[-1] != species_name: 
+            continue
+        
+        org_name_valid = True
+        ## updating the base url 
+        base_url_gtf = '%s%s/' % (base_url_gtf, org_name.split()[-1])
+
+        try:
+            gtf_files = urllib2.urlopen(base_url_gtf)
+        except urllib2.URLError, err_gtf:
+            exit("ensembl_release genome annotation missing" % base_url_gtf)
+
+        ## mapping to short names  Arabidopsis_thaliana --> A_thaliana
+        genus, species = species_name.strip().split("_")
+        org_short_name = "%s_%s" % (genus[0].upper(), species)
+
+        base_file_path = "%s/%s/ensembl_release_%s" % (download_path, org_short_name, release_version)
+        if not os.path.exists(base_file_path):
+            try:
+                os.makedirs(base_file_path)
+            except OSError:
+                exit("error: cannot create the directory %s." % base_file_path)
+            
+        for gtf_name in gtf_files:
+            gtf_name =gtf_name.strip('\n\r')
+
+            if re.search(r'.*.\d+.gtf.gz$', gtf_name.split()[-1]):
+                gtf_file = "%s/%s" % (base_file_path, gtf_name.split()[-1])
+                tempfile=open(gtf_file, "wb")
+
+                try:
+                    ftp_file=urllib2.urlopen(base_url_gtf+gtf_name.split()[-1])
+                except urllib2.URLError, err_file:
+                    exit(err_file)
+
+                sys.stdout.write('\tdownloading %s ...\n' % gtf_name.split()[-1])
+                shutil.copyfileobj(ftp_file, tempfile)
+                sys.stdout.write('\t... saved at %s \n' % gtf_file)
+
+                tempfile.close()
+                ftp_file.close()
+
+        gtf_files.close()
+    org_file.close()
+
+    if not org_name_valid:
+        print("error: fasta file for %s is not present in ensemblgenomes release version %s" % (species_name, release_version)) 
+        print("URL checked %s/%s" % (base_url_gtf, species_name))
+
+
 def fetch_ensembl_metazoa_gtf(release_version, species_name, download_path):
     """
     Download genome annotation from ENSEMBLGENOMES ftp page.
