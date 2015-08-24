@@ -43,9 +43,9 @@ def experiment_db(config_file, opt_action):
     O_cuniculus = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.fas" % data_path,
     M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.fas.bz2" % data_path, 
     B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis_str_a0193.GCA_000181915.1.21.dna.toplevel.fa' % data_path,
-    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
+    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.fas' % data_path,
     D_melanogaster = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.fas' % data_path,
-    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
+    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     M_domestica = '%s/M_domestica/ensembl_release_79/ensembl_release_79.fas' % data_path,
     O_sativa = '%s/O_sativa/phytozome_v9.0/Osativa_204.fa' % data_path,
     A_gambiae = '%s/A_gambiae/ensembl_release_28/ensembl_release_28.fas' % data_path,
@@ -54,7 +54,7 @@ def experiment_db(config_file, opt_action):
     M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.fas' % data_path,  
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/phytozome_v9.0.fas.bz2' % data_path,
     A_mellifera = '%s/A_mellifera/ensembl_release_28/ensembl_release_28.fas' % data_path,
-    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.fas.bz2' % data_path,
+    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.fa.gz' % data_path,
     D_rerio = '%s/D_rerio/ensembl_release_79/ensembl_release_79.fas' % data_path,
     G_max = '%s/G_max/phytozome_v9.0/Gmax_189_filter.fa' % data_path,
@@ -93,6 +93,8 @@ def experiment_db(config_file, opt_action):
     S_cerevisiae = '%s/S_cerevisiae/ensembl_release_79/ensembl_release_79.fas' % data_path,
     S_pombe = '%s/S_pombe/ensembl_release_28/ensembl_release_28.fas' % data_path,
     A_aegypti = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.fas' % data_path,
+    C_hircus = '%s/C_hircus/ncbi_genome/ncbi_genome.fas' % data_path,
+    F_catus = '%s/F_catus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
 
@@ -101,9 +103,9 @@ def experiment_db(config_file, opt_action):
     O_cuniculus = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
     M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf.bz2" % data_path, 
     B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis' % data_path,
-    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
+    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     D_melanogaster = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
+    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_domestica = '%s/M_domestica/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     O_sativa = '%s/O_sativa/phytozome_v9.0/Osativa_204_gene.gff3' % data_path,
     A_gambiae = '%s/A_gambiae/ensembl_release_28/ensembl_release_28.gtf' % data_path,
@@ -112,7 +114,7 @@ def experiment_db(config_file, opt_action):
     M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.gtf' % data_path,  
     V_vinifera = '%s/V_vinifera/phytozome_v9.0/phytozome_v9.0.gff.bz2' % data_path,
     A_mellifera = '%s/A_mellifera/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
+    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     C_jacchus = '%s/C_jacchus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.gff3' % data_path,
     D_rerio = '%s/D_rerio/ensembl_release_79/ensembl_release_79.gtf' % data_path,
@@ -152,14 +154,16 @@ def experiment_db(config_file, opt_action):
     P_marinus = '%s/P_marinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     S_cerevisiae = '%s/S_cerevisiae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     C_japonica = '%s/C_japonica/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    F_catus = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     A_aegypti = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    C_hircus = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
     T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
     )
 
     ## TODO algorithms details 
     #A_aegypti = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    #S_cerevisiae = '%s/S_cerevisiae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    #H_glaber = '%s/H_glaber/naked_mole_rat_db/naked_mole_rat_db.gtf' % data_path,
+    #F_catus = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    #C_hircus = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
     #H_glaber = '%s/H_glaber/naked_mole_rat_db/naked_mole_rat_db.gtf' % data_path,
 
     ## experiment details  
