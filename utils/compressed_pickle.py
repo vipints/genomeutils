@@ -8,7 +8,7 @@ import cPickle
 
 def save(filename, myObj):
     """
-    save the object to a file using pickle
+    save the object to a file using compressed pickle in bz2 
 
     @args filename: result file name 
     @type filename: str 
@@ -29,7 +29,7 @@ def save(filename, myObj):
 
 def load(filename):
     """
-    load a pickled file
+    load a compressed pickled file in bz2 format
 
     @args filename: name of the file to load 
     @type filename: str
