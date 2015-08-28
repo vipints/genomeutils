@@ -240,7 +240,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     
     file_prefx, ext = os.path.splitext(fasta_file)
     if ext in [".bz2", ".gz", ".lzma"]: ## checking for the compressed form of the file extension 
-        exit("error: STAR - Generating genome indexes - recommended to use the uncompressed file %s." % fasta_file)
+        exit("error: STAR - Generating genome indexes - recommended to use the uncompressed FASTA file %s." % fasta_file)
     
     if not genome_anno:
         cli_cmd = 'STAR \
@@ -251,7 +251,7 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     else:
         file_prefx, ext = os.path.splitext(genome_anno)
         if ext in [".bz2", ".gz", ".lzma"]: 
-            exit("error: STAR - Generating genome indexes - recommended to use the uncompressed file %s." % genome_anno)
+            exit("error: STAR - Generating genome indexes - recommended to use the uncompressed GTF/GFF file %s." % genome_anno)
 
         ## check for the file type  
         gff_hand = helper.open_file(genome_anno)
