@@ -1,5 +1,6 @@
 
-import numpy as np
+import numpy 
+import pandas 
 import matplotlib.pyplot as plt
 
 import bz2 
@@ -21,6 +22,40 @@ def data_process(fname):
     return data 
 
 
+def bar_chart():
+    """
+    draw a bar chart
+    """
+
+    ## load data 
+    file = "tss_pos_1k_score_70co_ce5b9c8a-4f41-11e5-add3-90e2ba3a73f4"
+    tss_score = data_process(file) 
+    
+    ## max prediction output value from each example
+    max_pred_out = numpy.zeros(len(tss_score[0]))
+    for idx, ele in enumerate(tss_score):
+        pos = numpy.argmax(ele)
+        max_pred_out[pos] += 1
+
+    ## position based frequency of examples
+    pred_out = numpy.zeros((len(max_pred_out), 2))
+    for idx, numb in enumerate(max_pred_out):
+        pred_out[idx] = numpy.array([idx, numb])
+
+    df_pred_score = pandas.DataFrame(pred_out)
+    
+    ## plotting settings  
+    fig = plt.figure()
+    width = .1
+    ind = numpy.arange(len(tss_score[0]))
+
+    plt.bar(ind, df_pred_score[1], color="green", edgecolor='white')
+    plt.xlabel('Max prediction output value of positive examples')
+    plt.ylabel("frequency")
+
+    fout_name ="max_pred_out_score_examples.pdf"
+    plt.savefig(fout_name)
+
 
 def signal_line(file):
     """
@@ -34,7 +69,7 @@ def signal_line(file):
     ## plot settings
     dt = 1.0
     x_axis_pos = 100
-    t = np.arange(0, x_axis_pos, dt)
+    t = numpy.arange(0, x_axis_pos, dt)
 
     ## multiple signal lines with different colors 
     plt.plot(t, tss_score[7], 'b-')
@@ -57,7 +92,7 @@ def signal_line(file):
     #plt.annotate('local max', xy=(2, 1), xytext=(3, 1.5),
     #            arrowprops=dict(facecolor='black', shrink=0.05),
     #                        )
-    #argrelextrema(tss_score[0], np.greater)
+    #argrelextrema(tss_score[0], numpy.greater)
 
     fout_name = "examples_pred_out_score.pdf"
     plt.savefig(fout_name)
