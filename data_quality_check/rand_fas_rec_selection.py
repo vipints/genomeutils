@@ -15,7 +15,7 @@ import random
 from Bio import SeqIO
 
 
-def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=46000, sub_sample_records=12000):
+def fetch_random_label_seq(fasta_in, fa_out, category="+1", total_record_count=46000, sub_sample_records=4000):
     """
     fetch random label sequence record from a fasta file using the label type
     
@@ -36,6 +36,7 @@ def fetch_random_label_seq(fasta_in, fa_out, category="-1", total_record_count=4
     except:
         accept_prob = 1
     
+    accept_prob = 0.939 
     cnt = 1
     fas_rec = 0 
 
