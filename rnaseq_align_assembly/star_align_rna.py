@@ -276,6 +276,53 @@ def read_directions_count(bam_file):
     return {'forward_reads_count': forward_cnt, 'reverse_reads_count': reverse_cnt} 
 
 
+def fixing_multimap_reads(bam_file, threads=3):
+    """
+    a pythonic wrapper for multiple mapper resolution program
+
+    @args bam_file: aligned reads file
+    @type bam_file: str 
+    @args threads: number of threads to use for the run (default: 3)
+    @type threads: int  
+    """
+    import pysam
+
+    try:
+        subprocess.call(["mmr"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `mmr` binary is in your $PATH")
+
+    ## mmr works well with bam file sorted by read id, match to an unsorted bam from STAR output  
+    if not os.path.isfile(bam_file):
+        exit("error: failed to fetch STAR read alignment file %s\n" % bam_file)
+    bam_file_pfx = re.search(r"(.*)_Aligned.out.bam", bam_file).group(1) 
+
+    sorted_bam = "%s_Aligned.sortedByName.out" % bam_file_pfx
+    if not os.path.isfile("%s.bam" % sorted_bam):
+        sys.stdout.write("sort by read id with output prefix as: %s\n" % sorted_bam)
+        pysam.sort("-n", bam_file, sorted_bam)
+    sorted_bam_file = "%s.bam" % sorted_bam
+
+    outFile = "%s_Aligned_mmr.bam" % bam_file_pfx
+    iterations = 3 
+    cli_mmr = "module load gcc; mmr -b -p -V -t %d -I %d -o %s %s" % (threads, iterations, outFile, sorted_bam_file)  
+
+    try:
+        sys.stdout.write('\trun MMR as: %s \n' % cli_mmr)
+        process = subprocess.Popen(cli_mmr, shell=True) 
+        returncode = process.wait()
+
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
+
+        sys.stdout.write('MMR run finished. result file stored at %s\n' % outFile)
+    except Exception, e:
+        exit('Error running MMR.\n%s' %  str( e ))
+
+    #import ipdb 
+    #ipdb.set_trace()
+
+   
 def calculate_insert_size_from_bam(bam_file):
     """
     estimate the insert size from uniquely mapped reads in a BAM file 
