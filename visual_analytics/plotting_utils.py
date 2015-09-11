@@ -175,3 +175,48 @@ def signal_line(file):
     fout_name = "examples_pred_out_score.pdf"
     plt.savefig(fout_name)
 
+
+def max_pred_out_range(file):
+    """
+    calculate the range of max pred output from each position on center offset
+    """
+    from collections import defaultdict
+
+    file = "tss_pos_1k_score_66302e2c-4e66-11e5-9783-90b11c42b574"
+    data = data_process(file) 
+
+    max_pred_out = numpy.zeros(len(data[0]))
+
+    max_pos_score_range = defaultdict(list) 
+
+    for idx, ele in enumerate(data):
+        pos = numpy.argmax(ele)
+        max_pred_out[pos] += 1
+        max_pos_score_range[pos].append(ele.max())
+        
+    pred_max_range = numpy.zeros((len(data[0]), 3))
+    for idx, freq in enumerate(max_pred_out):
+        max_pos_score_range[idx].sort()
+        min_value = max_pos_score_range[idx][0] 
+        max_value = max_pos_score_range[idx][-1] 
+
+        pred_max_range[idx] = numpy.array([freq, min_value, max_value])
+        
+    df_pred_max_range = pandas.DataFrame(pred_max_range)  
+
+    ## bar chart to show frequency in each positions
+    ## plotting settings  
+    fig = plt.figure()
+    width = .1
+    ind = numpy.arange(len(data[0]))
+
+    plt.bar(ind, df_pred_max_range[0], color="green", edgecolor='white')
+    plt.xlabel('Max prediction output value of positive examples', fontsize=10)
+    plt.ylabel("frequency", fontsize=10)
+
+    plt.yticks()
+
+    fout_name ="max_pred_out_score_pos_examples.pdf"
+    plt.savefig(fout_name)
+
+
