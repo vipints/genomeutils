@@ -429,7 +429,7 @@ def align_rnaseq_reads(yaml_config):
 
         ## library insert size 
         lib_insert_size = 100000
-        num_cpu = 2
+        num_cpu = 4
 
         arg = [[det, lib_type, lib_insert_size, num_cpu]]
 
@@ -480,7 +480,7 @@ def create_genome_index(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        num_cpus = 2 
+        num_cpus = 4 
         arg = [[det['fasta'], det['genome_index_dir'], det['gtf'], num_cpus, det['read_length']-1]]
 
         job = pg.cBioJob(call_genome_index, arg) 
