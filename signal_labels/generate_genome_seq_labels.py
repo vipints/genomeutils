@@ -96,6 +96,7 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
 
         label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
 
+        label_cnt = 6500
         negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
         sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (nCOUNT, signal))
 
@@ -278,7 +279,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         assert plus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
 
         try:
-            accept_prob = (1.0*plus_label_cnt)/feat_count
+            accept_prob = (1.0*plus_label_cnt)/len(non_dup_ent)
         except:
             accept_prob = 1
 
