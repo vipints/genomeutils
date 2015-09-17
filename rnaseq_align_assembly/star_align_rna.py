@@ -319,6 +319,38 @@ def fixing_multimap_reads(bam_file, threads=3):
     except Exception, e:
         exit('Error running MMR.\n%s' %  str( e ))
 
+
+def bam_sort_index(bam_file):
+    """
+    sorting and indexing a bam file 
+
+    @args bam_file: aligned reads in bam format 
+    @type bam_file: str 
+    """
+
+    import pysam 
+
+    if not os.path.isfile(bam_file):
+        exit("error: failed to fetch read alignment file %s\n" % bam_file)
+
+    file_prefx, ext = os.path.splitext(bam_file)
+    sorted_bam = "%s_sortbyCoord" % file_prefx
+    sys.stdout.write("sorting based on the coordinates with output prefix as: %s\n" % sorted_bam)
+
+    if not os.path.isfile("%s.bam" % sorted_bam):
+        try:
+            pysam.sort(bam_file, sorted_bam)
+        except Exception, e:
+            exit("error: running pysam sort\n%s" % str(e))
+
+    sorted_bam_file = "%s.bam" % sorted_bam
+    
+    if not os.path.exists(sorted_bam_file + ".bai"):
+        try:
+            pysam.index(sorted_bam_file)
+        except Exception, e:
+            exit("error: running pysam index\n%s" % str(e))
+
     #import ipdb 
     #ipdb.set_trace()
 
