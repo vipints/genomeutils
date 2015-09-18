@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-module to recenter the example based on the manual shifting of tss signal region.
+module to recenter the labels based on the manual shifting of tss signal region.
 """
 
 import uuid
@@ -14,32 +14,39 @@ from promoter_kernel import ShogunPredictor
 
 import libpyjobrunner as pg
 
-
 def load_data_from_fasta(signal, org, data_path):
     """
     load examples and labels from fasta file
     """
+    
+    #fn_pos = "%s/%s_sig_%s_example_900.fa" % (data_path, signal, "pos")
+    fn_neg = "%s/%s_sig_%s_example_1800.fa" % (data_path, signal, "neg")
 
-    fn_pos = "%s/%s_sig_%s_label.fa" % (data_path, signal, "plus")
-    fn_neg = "%s/%s_sig_%s_label.fa" % (data_path, signal, "minus")
-
-    print "loading: \n %s \n %s" % (fn_pos, fn_neg) 
+    #print "loading: \n %s \n %s" % (fn_pos, fn_neg) 
+    #print "loading: \n %s" % (fn_pos) 
+    print "loading: \n %s" % (fn_neg) 
 
     # parse file
-    xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
+    #xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
     xt_neg = [str(rec.seq) for rec in SeqIO.parse(fn_neg, "fasta")]
 
-    labels = [+1] * len(xt_pos) + [-1] * len(xt_neg)
-    examples = xt_pos + xt_neg
+    #labels = [+1] * len(xt_pos) + [-1] * len(xt_neg)
+    #labels =  [+1] * len(xt_pos)
+    labels =  [-1] * len(xt_neg)
 
-    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
+    #examples = xt_pos + xt_neg
+    #examples =  xt_pos
+    examples =  xt_neg
+
+    #print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
+    #print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos)))
+    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_neg)))
 
     examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
 
     ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
 
     return ret
-
 
 def train_shifted_wdk_svm(org_code):
     """
@@ -51,7 +58,7 @@ def train_shifted_wdk_svm(org_code):
 
     ## load data
     signal = "tss" 
-    data_path = "SRA-rnaseq/%s/signal_labels/trsk_30K_train" % (org_code)
+    data_path = "SRA-rnaseq/%s/signal_labels/set_4k_1" % (org_code)
 
     data = load_data_from_fasta(signal, org_code, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
@@ -122,49 +129,38 @@ def plot_tss_score(tss_score_file):
     plt.savefig(out_file)
 
 
-def predict_around_region(args_list):
-    """
-    """
-    start_scan, stop_scan, model, datum = args_list 
-
-    tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
-
-    ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
-    for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
-        model.param["center_pos"] = shifted_cen
-        out = model.predict(datum)
-        tss_score[idy] = out[0] 
-
-    return tss_score
-
-
 def predict_and_recenter(args_list):
     """
+    fix the position
+    recenter the signal position according to the local max pred out 
     """
 
-    start_scan, stop_scan, model, datum = args_list 
+    start_scan, stop_scan, model, data_set = args_list 
+    trimed_seq_list = [] 
+    
+    for datum in data_set:## wrapping multiple sequence 
 
-    tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
+        tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
 
-    ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
-    for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
-        model.param["center_pos"] = shifted_cen
-        out = model.predict(datum)
-        tss_score[idy] = out[0] 
+        ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
+        for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
+            model.param["center_pos"] = shifted_cen
+            out = model.predict(datum)
+            tss_score[idy] = out[0] 
 
+        max_pred_out = numpy.argmax(tss_score)
+        center_pos = 1200
+        left_offset = center_pos - start_scan
+        
+        if max_pred_out < left_offset: ## center_offset left 
+            rel_cen_pos = (center_pos - left_offset) + max_pred_out ## center_pos 
+        else:
+            rel_cen_pos = center_pos + (max_pred_out-left_offset)
 
-    max_pred_out = numpy.argmax(tss_score)
-    center_pos = 1200
-    left_offset = center_pos - start_scan
+        trimed_seq = datum[0][rel_cen_pos-1100:rel_cen_pos] + datum[0][rel_cen_pos:(rel_cen_pos+1100)] 
+        trimed_seq_list.append(trimed_seq)
 
-    if max_pred_out < left_offset: ## center_offset left 
-        rel_cen_pos = (center_pos - left_offset) + max_pred_out ## center_pos 
-    else:
-        rel_cen_pos = center_pos + (max_pred_out-left_offset)
-
-    trimed_seq = datum[0][rel_cen_pos-1100:rel_cen_pos] + datum[0][rel_cen_pos:(rel_cen_pos+1100)] 
-
-    return trimed_seq
+    return trimed_seq_list
 
 
 def manual_pos_shift(svm_file, org):
@@ -174,7 +170,7 @@ def manual_pos_shift(svm_file, org):
 
     ## load data
     signal = "tss" 
-    data_path = "SRA-rnaseq/%s/signal_labels/set_4k_4" % (org)
+    data_path = "SRA-rnaseq/%s/signal_labels/set_4k_2" % (org)
 
     data = load_data_from_fasta(signal, org, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
@@ -188,81 +184,78 @@ def manual_pos_shift(svm_file, org):
     fh.close() 
     
     ## getting the model information 
-    center_offset = model.param["center_offset"]
     center_pos = model.param["center_pos"]
+    center_offset = model.param["center_offset"]
+    
+    print "model - center pos: %i, center reg: %i" % (center_pos, center_offset) 
 
-    ## array of example X number of positions scanned 
-    #tss_score_plus = numpy.zeros((1000, center_offset*2))
-    #tss_score_minus = numpy.zeros((3000, center_offset*2))
-   
-    #center_offset = 70
-    center_offset = 50
     start_scan = center_pos-center_offset
     stop_scan = center_pos+center_offset
-    
-    argument_list = [] 
+
     cnt = 0
+    argument_list = [] 
+    data_set = [] 
     ## get the individual examples to recenter the signal position manually
     for idx, single_example in enumerate(data["examples"]):  
-        datum = [single_example]
 
+        datum = [single_example]
         label_info = data['labels'][idx]
         
-        if label_info != -1: 
+        if label_info != 1: 
             cnt += 1
 
-            arg = [start_scan, stop_scan, model, datum]
-            argument_list.append(arg)
+            if cnt % 30 == 0: ## packing 10 seq to one job 
+                data_set.append(datum)
 
-            ###
-            if cnt == 1000:
-                break 
-    
-        ## recenter the signal position according to the local max or ... TODO 
-        ## fix the position
+                arg = [start_scan, stop_scan, model, data_set]
+                argument_list.append(arg)
 
-        ## trim the whole sequence length to 2300 nucleotides 
-        ## fix the sequence and save in fasta format TODO  
+                data_set = [] 
+            else:
+                data_set.append(datum)
+                
     
     local = False 
-    resource = {'pvmem':'6gb', 'pmem':'6gb', 'mem':'6gb', 'vmem':'6gb','ppn':'1', 'nodes':'1', 'walltime':'4:00:00'}
-    intermediate_ret = pg.pg_map(predict_around_region, argument_list, param=param, local=local, maxNumThreads=2, mem="6gb") 
-
-    ## fasta writing 
-    #intermediate_ret = MapReduce(predict_and_recenter, reduce_modified_seq, 20)
-    #new_example_seq = intermediate_ret(argument_list)
-
+    cluster_resource = {'pvmem':'4gb', 'pmem':'4gb', 'mem':'4gb', 'vmem':'4gb','ppn':'1', 'nodes':'1', 'walltime':'4:00:00'}
+    intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
     print "Done with computation"
 
-    #write_fasta_rec(new_example_seq, signal)
+    fixed_example_seq = reduce_modified_seq(intm_ret) 
+    print "Done reducing the results"
 
-    ## save the scores 
-    fname = "%s_trsk_30K_test1K_score_on_arts_%s" % (signal, uuid.uuid1()) 
-    compressed_pickle.save(fname, pred_out_val) 
-    print( "saving the score in file %s" % fname )
-    
+    write_fasta_rec(fixed_example_seq, signal) 
+
     import ipdb 
     ipdb.set_trace() 
-
-    ## plot the score 
-    #plot_tss_score(fname)
-
-
-def write_fasta_rec(seq_list, signal):
     
-    fname = "%s_pos_examples_2200seq.fa" % signal
+
+    ## save the scores 
+    fname = "%s_neg_3k_score_%s" % (signal, uuid.uuid1()) 
+    compressed_pickle.save(fname, pred_out_val) 
+    
+    print( "saving the score in file %s" % fname )
+
+
+def write_fasta_rec(seq_list_total, signal):
+    """ write fasta file from the seq records 
+    """
+    
+    fname = "%s_neg_examples_2200seq.fa" % signal
 
     from Bio.Seq import Seq
     from Bio.SeqRecord import SeqRecord
 
     out_fh = open(fname, "w")
-    for idx, seq_rec in enumerate(seq_list):
-        faseq_out = SeqRecord(Seq(seq_rec), id="example_%d" % idx, description="+1")
-        out_fh.write(faseq_out.format('fasta'))
+    for seq_list in seq_list_total: 
+        for seq_rec in seq_list:
+            faseq_out = SeqRecord(Seq(seq_rec), id="example_%s" % uuid.uuid1(), description="+1")
+            out_fh.write(faseq_out.format('fasta'))
     out_fh.close() 
 
 
 def reduce_modified_seq(flat_result):
+    """ return the result 
+    """
     
     return flat_result
 
@@ -284,8 +277,7 @@ def main():
 
     org_code = "H_sapiens"
     #model = train_shifted_wdk_svm("H_sapiens")
-
-    model =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c" ## model trained with 30K train 
+    model =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c"
     manual_pos_shift(model, org_code)
  
 
