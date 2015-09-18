@@ -14,60 +14,6 @@ from promoter_kernel import ShogunPredictor
 
 import libpyjobrunner as pg
 
-import multiprocessing
-import collections
-import itertools
-
-class MapReduce(object):
-    
-    def __init__(self, map_func, reduce_func, num_workers=None):
-        """
-        map_func
-          Function to map inputs to intermediate data. Takes as
-          argument one input value and returns a tuple with the key
-          and a value to be reduced.
-        
-        reduce_func
-          Function to reduce partitioned version of intermediate data
-          to final output. Takes as argument a key as produced by
-          map_func and a sequence of the values associated with that
-          key.
-         
-        num_workers
-          The number of workers to create in the pool. Defaults to the
-          number of CPUs available on the current host.
-        """
-        self.map_func = map_func
-        self.reduce_func = reduce_func
-        self.pool = multiprocessing.Pool(num_workers)
-    
-    def partition(self, mapped_values):
-        """Organize the mapped values by their key.
-        Returns an unsorted sequence of tuples with a key and a sequence of values.
-        """
-        partitioned_data = collections.defaultdict(list)
-        for key, value in mapped_values:
-            partitioned_data[key].append(value)
-        return partitioned_data.items()
-    
-    def __call__(self, inputs, chunksize=1):
-        """Process the inputs through the map and reduce functions given.
-        
-        inputs
-          An iterable containing the input data to be processed.
-        
-        chunksize=1
-          The portion of the input data to hand to each worker.  This
-          can be used to tune performance during the mapping phase.
-        """
-        map_responses = self.pool.map(self.map_func, inputs, chunksize=chunksize)
-        #partitioned_data = self.partition(itertools.chain(*map_responses))
-        #reduced_values = self.pool.map(self.reduce_func, partitioned_data)
-
-        reduced_values = reduce_result(map_responses)
-        #reduced_values = reduce_modified_seq(map_responses)
-        return reduced_values
-
 
 def load_data_from_fasta(signal, org, data_path):
     """
@@ -263,7 +209,6 @@ def manual_pos_shift(svm_file, org):
         label_info = data['labels'][idx]
         
         if label_info != -1: 
-            print("fixing example %d" % idx)
             cnt += 1
 
             arg = [start_scan, stop_scan, model, datum]
@@ -279,14 +224,9 @@ def manual_pos_shift(svm_file, org):
         ## trim the whole sequence length to 2300 nucleotides 
         ## fix the sequence and save in fasta format TODO  
     
-    #local = False 
-    #param = {'pvmem':'6gb', 'pmem':'6gb', 'mem':'6gb', 'vmem':'6gb','ppn':'1', 'nodes':'1', 'walltime':'4:00:00'}
-    #intermediate_ret = pg.pg_map(predict_around_region, argument_list, param=param, local=local, maxNumThreads=2, mem="6gb") 
-    print cnt 
-
-    ## score 
-    intermediate_ret = MapReduce(predict_around_region, reduce_result, 20)
-    pred_out_val = intermediate_ret(argument_list)
+    local = False 
+    resource = {'pvmem':'6gb', 'pmem':'6gb', 'mem':'6gb', 'vmem':'6gb','ppn':'1', 'nodes':'1', 'walltime':'4:00:00'}
+    intermediate_ret = pg.pg_map(predict_around_region, argument_list, param=param, local=local, maxNumThreads=2, mem="6gb") 
 
     ## fasta writing 
     #intermediate_ret = MapReduce(predict_and_recenter, reduce_modified_seq, 20)
