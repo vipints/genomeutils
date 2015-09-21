@@ -15,41 +15,6 @@ from promoter_kernel import ShogunPredictor
 import libpyjobrunner as pg
 
 
-def load_data_from_fasta(signal, org, data_path):
-    """
-    load examples and labels from fasta file
-    """
-    
-    #fn_pos = "%s/%s_sig_%s_example_900.fa" % (data_path, signal, "pos")
-    fn_neg = "%s/%s_sig_%s_example_1800.fa" % (data_path, signal, "neg")
-
-    #print "loading: \n %s \n %s" % (fn_pos, fn_neg) 
-    #print "loading: \n %s" % (fn_pos) 
-    print "loading: \n %s" % (fn_neg) 
-
-    # parse file
-    #xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
-    xt_neg = [str(rec.seq) for rec in SeqIO.parse(fn_neg, "fasta")]
-
-    #labels = [+1] * len(xt_pos) + [-1] * len(xt_neg)
-    #labels =  [+1] * len(xt_pos)
-    labels =  [-1] * len(xt_neg)
-
-    #examples = xt_pos + xt_neg
-    #examples =  xt_pos
-    examples =  xt_neg
-
-    #print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
-    #print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos)))
-    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_neg)))
-
-    examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
-
-    ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
-
-    return ret
-
-
 def reduce_modified_seq(flat_result):
     """ return the result 
     """
@@ -137,43 +102,6 @@ def train_shifted_wdk_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     print("time taken for the experiment: ", time_taken)
 
     return fname 
-
-
-def plot_tss_score(tss_score_file):
-    """
-    """
-
-    import bz2 
-    import cPickle 
-    import matplotlib.pyplot as plt
-
-    ## local maxima and local minima 
-    from scipy.signal import argrelextrema
-
-    fh = bz2.BZ2File(tss_score_file, "rb")
-
-    tss_score = cPickle.load(fh)
-    fh.close()
-
-    #argrelextrema(tss_score[0], numpy.greater)
-    #plt.annotate('local max', xy=(2, 1), xytext=(3, 1.5),
-    #            arrowprops=dict(facecolor='black', shrink=0.05),
-    #                        )
-
-    dt = 1.0
-    t = numpy.arange(0, len(tss_score[0]), dt)
-
-    ## plotting two lines
-    plt.plot(t, tss_score[0], 'b-', t, tss_score[1], 'g-')
-    plt.xlim(0.0,100.0)
-
-    plt.xlabel('-/+ 50 nucleotides flanking region of tss signal')
-    plt.ylabel('model prediction score')
-    plt.grid(True)
-
-    #plt.show()
-    out_file = "arts.pdf"
-    plt.savefig(out_file)
 
 
 def predict_and_recenter(args_list):
@@ -267,7 +195,6 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     task_type = 0 # 1 recenter seq, 0 predict score  
 
     if task_type:
-
         intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
         print "Done with computation"
 
@@ -277,7 +204,6 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
         write_fasta_rec(fixed_example_seq, signal) 
 
     else:
-        
         intm_ret = pg.pg_map(predict_around_region, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
         print "Done with computation"
 
