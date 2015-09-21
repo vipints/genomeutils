@@ -138,6 +138,44 @@ def predict_and_recenter(args_list):
     return trimed_seq_list
 
 
+def predict_around_region(args_list):
+    """
+    predict around the center offset region of the signal
+    """
+
+    start_scan, stop_scan, model, data_set = args_list 
+    trimed_seq_list = [] 
+
+    for datum in data_set:
+        tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
+
+        ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
+        for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
+            model.param["center_pos"] = shifted_cen
+            out = model.predict(datum)
+            tss_score[idy] = out[0] 
+
+        trimed_seq_list.append(tss_score)
+    
+    return trimed_seq_list
+
+
+def reduce_pred_score(flat_result_list):
+    """
+    collect the results from different worker
+    """
+    
+    idx = 0 
+    merged_arr = numpy.zeros((100, 100))
+
+    for flat_result in flat_result_list:
+        for element in flat_result:
+            merged_arr[idx] = element
+            idx += 1 
+
+    return merged_arr
+
+
 def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     """
     manually look at the position around the original position 
@@ -207,30 +245,14 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
         intm_ret = pg.pg_map(predict_around_region, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
         print "Done with computation"
 
-        #import ipdb 
-        #ipdb.set_trace() 
-
-        pred_out_val = reduce_result(intm_ret) 
+        pred_out_val = reduce_pred_score(intm_ret) 
         print "Done reducing the results"
     
         ## save the scores 
-        fname = "%s_pos_centeroff2K_score_%s" % (signal, uuid.uuid1()) 
+        fname = "%s_pred_score_%s" % (signal, uuid.uuid1()) 
         compressed_pickle.save(fname, pred_out_val) 
+
         print( "saving the score in file %s" % fname )
-
-
-
-def reduce_result(flat_result):
-    """
-    collect the results from different worker
-    """
-
-    merged_arr = numpy.zeros((len(flat_result), len(flat_result[0])))
-    
-    for idx, element in enumerate(flat_result):
-        merged_arr[idx] = element
-
-    return merged_arr
 
 
 def main():
