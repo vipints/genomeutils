@@ -14,6 +14,7 @@ from promoter_kernel import ShogunPredictor
 
 import libpyjobrunner as pg
 
+
 def load_data_from_fasta(signal, org, data_path):
     """
     load examples and labels from fasta file
@@ -48,19 +49,42 @@ def load_data_from_fasta(signal, org, data_path):
 
     return ret
 
-def train_shifted_wdk_svm(org_code):
+
+def load_examples_from_fasta(signal, org, data_path):
     """
-    train SVM on trsk labels 
+    load examples from fasta file
+    """
+    
+    fn_pos = "%s/%s_sig_%s_example.fa" % (data_path, signal, "pos")
+    fn_neg = "%s/%s_sig_%s_example.fa" % (data_path, signal, "neg")
+    print "loading: \n %s \n %s" % (fn_pos, fn_neg) 
+
+    # parse file
+    xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
+    xt_neg = [str(rec.seq) for rec in SeqIO.parse(fn_neg, "fasta")]
+
+    labels = [+1] * len(xt_pos) + [-1] * len(xt_neg)
+    examples = xt_pos + xt_neg
+
+    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
+
+    examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
+    ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
+
+    return ret
+
+
+
+def train_shifted_wdk_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
+    """
+    train SVM based on the examples from different sources 
     """
 
     import time 
     t0 = time.time()
 
-    ## load data
-    signal = "tss" 
-    data_path = "SRA-rnaseq/%s/signal_labels/set_4k_1" % (org_code)
-
-    data = load_data_from_fasta(signal, org_code, data_path)
+    ## loading data
+    data = load_examples_from_fasta(signal, org_code, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
 
     ## split the data 
@@ -82,10 +106,10 @@ def train_shifted_wdk_svm(org_code):
     svm.train(train_examples, train_labels)
 
     ## save the model 
-    fname = "%s_%s" % (signal, uuid.uuid1()) 
+    fname = "%s_model_%s" % (signal, uuid.uuid1()) 
     compressed_pickle.save(fname, svm) 
-    
-    print( "saving the model in file %s" % fname )
+    print("saving the model in file %s" % fname)
+
     time_taken = time.time() - t0
     print("time taken for the experiment: ", time_taken)
 
@@ -163,16 +187,13 @@ def predict_and_recenter(args_list):
     return trimed_seq_list
 
 
-def manual_pos_shift(svm_file, org):
+def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     """
     manually look at the position around the original position 
     """
 
     ## load data
-    signal = "tss" 
-    data_path = "SRA-rnaseq/%s/signal_labels/set_4k_2" % (org)
-
-    data = load_data_from_fasta(signal, org, data_path)
+    data = load_examples_from_fasta(signal, org, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
 
     ## unpack the model
@@ -276,9 +297,10 @@ def reduce_result(flat_result):
 def main():
 
     org_code = "H_sapiens"
-    #model = train_shifted_wdk_svm("H_sapiens")
-    model =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c"
-    manual_pos_shift(model, org_code)
+    model_file_name = train_shifted_wdk_svm(org_code)
+
+    model_file_name =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c"
+    manual_pos_shift(model_file_name, org_code)
  
 
 if __name__ == "__main__":
