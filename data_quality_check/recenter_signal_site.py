@@ -50,6 +50,30 @@ def load_data_from_fasta(signal, org, data_path):
     return ret
 
 
+def reduce_modified_seq(flat_result):
+    """ return the result 
+    """
+    
+    return flat_result
+
+
+def write_fasta_rec(seq_list_total, signal):
+    """ write fasta file from the seq records 
+    """
+    seq_type = "+1" 
+    fname = "trimmed_%s_pos_examples.fa" % signal
+
+    from Bio.Seq import Seq
+    from Bio.SeqRecord import SeqRecord
+
+    out_fh = open(fname, "w")
+    for seq_list in seq_list_total: 
+        for seq_rec in seq_list:
+            faseq_out = SeqRecord(Seq(seq_rec), id="example_%s" % uuid.uuid1(), description=seq_type)
+            out_fh.write(faseq_out.format('fasta'))
+    out_fh.close() 
+
+
 def load_examples_from_fasta(signal, org, data_path):
     """
     load examples from fasta file
@@ -72,7 +96,6 @@ def load_examples_from_fasta(signal, org, data_path):
     ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
 
     return ret
-
 
 
 def train_shifted_wdk_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
@@ -192,7 +215,7 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     manually look at the position around the original position 
     """
 
-    ## load data
+    ## loading data
     data = load_examples_from_fasta(signal, org, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
 
@@ -208,24 +231,27 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     center_pos = model.param["center_pos"]
     center_offset = model.param["center_offset"]
     
-    print "model - center pos: %i, center reg: %i" % (center_pos, center_offset) 
+    print("model - center pos: %i, center reg: %i" % (center_pos, center_offset))
 
     start_scan = center_pos-center_offset
     stop_scan = center_pos+center_offset
 
     cnt = 0
-    argument_list = [] 
     data_set = [] 
+    argument_list = [] 
+
+    label_type = -1 ## label_type will be +1/-1
+
     ## get the individual examples to recenter the signal position manually
     for idx, single_example in enumerate(data["examples"]):  
 
         datum = [single_example]
         label_info = data['labels'][idx]
         
-        if label_info != 1: 
+        if label_info != label_type: 
             cnt += 1
 
-            if cnt % 30 == 0: ## packing 10 seq to one job 
+            if cnt % 10 == 0: ## packing 10 seq to one job 
                 data_set.append(datum)
 
                 arg = [start_scan, stop_scan, model, data_set]
@@ -238,47 +264,34 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     
     local = False 
     cluster_resource = {'pvmem':'4gb', 'pmem':'4gb', 'mem':'4gb', 'vmem':'4gb','ppn':'1', 'nodes':'1', 'walltime':'4:00:00'}
-    intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
-    print "Done with computation"
+    task_type = 0 # 1 recenter seq, 0 predict score  
 
-    fixed_example_seq = reduce_modified_seq(intm_ret) 
-    print "Done reducing the results"
+    if task_type:
 
-    write_fasta_rec(fixed_example_seq, signal) 
+        intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
+        print "Done with computation"
 
-    import ipdb 
-    ipdb.set_trace() 
+        fixed_example_seq = reduce_modified_seq(intm_ret) 
+        print "Done reducing the results"
+
+        write_fasta_rec(fixed_example_seq, signal) 
+
+    else:
+        
+        intm_ret = pg.pg_map(predict_around_region, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
+        print "Done with computation"
+
+        #import ipdb 
+        #ipdb.set_trace() 
+
+        pred_out_val = reduce_result(intm_ret) 
+        print "Done reducing the results"
     
+        ## save the scores 
+        fname = "%s_pos_centeroff2K_score_%s" % (signal, uuid.uuid1()) 
+        compressed_pickle.save(fname, pred_out_val) 
+        print( "saving the score in file %s" % fname )
 
-    ## save the scores 
-    fname = "%s_neg_3k_score_%s" % (signal, uuid.uuid1()) 
-    compressed_pickle.save(fname, pred_out_val) 
-    
-    print( "saving the score in file %s" % fname )
-
-
-def write_fasta_rec(seq_list_total, signal):
-    """ write fasta file from the seq records 
-    """
-    
-    fname = "%s_neg_examples_2200seq.fa" % signal
-
-    from Bio.Seq import Seq
-    from Bio.SeqRecord import SeqRecord
-
-    out_fh = open(fname, "w")
-    for seq_list in seq_list_total: 
-        for seq_rec in seq_list:
-            faseq_out = SeqRecord(Seq(seq_rec), id="example_%s" % uuid.uuid1(), description="+1")
-            out_fh.write(faseq_out.format('fasta'))
-    out_fh.close() 
-
-
-def reduce_modified_seq(flat_result):
-    """ return the result 
-    """
-    
-    return flat_result
 
 
 def reduce_result(flat_result):
