@@ -14,6 +14,7 @@ import sys
 import subprocess
 from collections import defaultdict
 
+import pysam
 
 def run_mmr(org_name, read_map_dir, threads=3):
     """
@@ -26,7 +27,6 @@ def run_mmr(org_name, read_map_dir, threads=3):
     @args threads: number of threads to use for the run (default: 3)
     @type threads: int  
     """
-    import pysam
 
     try:
         subprocess.call(["mmr"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -209,7 +209,6 @@ def uniq_mapped_reads(bam_file, multi_map=1):
     @args multi_map: number of hits of a read (default 1) 
     @type multi_map: integer 
     """
-    import pysam
 
     ## indexing the in bam file 
     if not os.path.exists(bam_file + ".bai"):
@@ -254,8 +253,6 @@ def read_directions_count(bam_file):
     @type bam_file: str 
     """
 
-    import pysam 
-
     ## indexing the in bam file 
     if not os.path.exists(bam_file + ".bai"):
         pysam.index(bam_file) 
@@ -285,7 +282,6 @@ def fixing_multimap_reads(bam_file, threads=3):
     @args threads: number of threads to use for the run (default: 3)
     @type threads: int  
     """
-    import pysam
 
     try:
         subprocess.call(["mmr"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -328,8 +324,6 @@ def bam_sort_index(bam_file):
     @type bam_file: str 
     """
 
-    import pysam 
-
     if not os.path.isfile(bam_file):
         exit("error: failed to fetch read alignment file %s\n" % bam_file)
 
@@ -350,9 +344,6 @@ def bam_sort_index(bam_file):
             pysam.index(sorted_bam_file)
         except Exception, e:
             exit("error: running pysam index\n%s" % str(e))
-
-    #import ipdb 
-    #ipdb.set_trace()
 
    
 def calculate_insert_size_from_bam(bam_file):
