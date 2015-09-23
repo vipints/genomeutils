@@ -15,9 +15,9 @@ import random
 from Bio import SeqIO
 
 
-def fetch_random_label_seq(fasta_in, fa_out, category="+1", total_record_count=46000, sub_sample_records=4000):
+def fetch_random_example_seq(fasta_in, fa_out, category="+1", total_record_count=46000, sub_sample_records=4000):
     """
-    fetch random label sequence record from a fasta file using the label type
+    fetch random example signal sequence record from a fasta file using the label type
     
     @args fasta_in: fastafile with label records 
     @type fasta_in: str or a filehandler 
@@ -71,4 +71,4 @@ if __name__=="__main__":
         print __doc__
         sys.exit(-1)
     
-    fetch_random_label_seq(inh, outh)
+    fetch_random_example_seq(inh, outh)
