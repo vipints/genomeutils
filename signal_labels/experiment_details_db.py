@@ -57,7 +57,7 @@ def experiment_db(config_file, opt_action):
     A_mellifera     = '%s/A_mellifera/ensembl_release_28/ensembl_release_28.fas' % data_path,
     B_taurus        = '%s/B_taurus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     C_rubella       = '%s/C_rubella/phytozome_v9.0/Crubella_183.fa.gz' % data_path,
-    D_rerio         ='%s/D_rerio/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    D_rerio         = '%s/D_rerio/ensembl_release_79/ensembl_release_79.fas' % data_path,
     G_max           = '%s/G_max/phytozome_v9.0/Gmax_189_filter.fa' % data_path,
     M_truncatula    = '%s/M_truncatula/STARgenome/Mtruncatula_198.fa' % data_path,
     P_pacificus     = '%s/P_pacificus/' % data_path,
@@ -99,66 +99,67 @@ def experiment_db(config_file, opt_action):
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
 
-    org_gtf_file = dict( A_carolinensis = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    M_mulatta = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
-    O_cuniculus = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
-    M_gallopavo = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf.bz2" % data_path, 
-    B_anthracis = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis' % data_path,
-    C_familiaris = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    D_melanogaster = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    E_caballus = '%s/E_caballus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    M_domestica = '%s/M_domestica/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    O_sativa = '%s/O_sativa/phytozome_v9.0/Osativa_204_gene.gff3' % data_path,
-    A_gambiae = '%s/A_gambiae/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    B_rapa = '%s/B_rapa/phytozome_v9.0/Brapa_197_gene.gff3' % data_path,
-    G_gallus = '%s/G_gallus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    M_musculus = '%s/M_musculus/ensembl_release_79/ensembl_release_79.gtf' % data_path,  
-    V_vinifera = '%s/V_vinifera/phytozome_v9.0/phytozome_v9.0.gff.bz2' % data_path,
-    A_mellifera = '%s/A_mellifera/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    B_taurus = '%s/B_taurus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_jacchus = '%s/C_jacchus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_rubella = '%s/C_rubella/phytozome_v9.0/Crubella_183.gff3' % data_path,
-    D_rerio = '%s/D_rerio/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    G_max = '%s/G_max/phytozome_v9.0/Gmax_189_gene.gff3' % data_path,
-    N_vitripennis = '%s/N_vitripennis/ensembl_release_22/N_vitripennis.gtf' % data_path,
-    O_aries = '%s/O_aries/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    M_truncatula = '%s/M_truncatula/' % data_path,
-    P_pacificus = '%s/P_pacificus/ensembl_release-22/Pristionchus_pacificus.P_pacificus-5.0.22.gtf' % data_path,
-    S_scrofa = '%s/S_scrofa/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    X_tropicalis = '%s/X_tropicalis/JGIv4-1/JGIv4-1.gff' % data_path,
-    C_sativus = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
-    D_simulans = '%s/D_simulans/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    H_sapiens = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
-    P_troglodytes = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    S_tuberosum = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
-    Z_mays = '%s/Z_mays/phytozome_v9.0/Zmays_181_gene.gff3' % data_path,
-    A_thaliana = '%s/A_thaliana/arabidopsis_tair10/annotations/TAIR10_GFF3_genes.gff' % data_path,
-    C_elegans = '%s/C_elegans/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    D_discoideum = '%s/D_discoideum/' % data_path,
-    D_yakuba = '%s/D_yakuba/ensembl_release-22/Drosophila_yakuba.dyak_r1.3_FB2008_07.22.gff3' % data_path,
-    O_latipes = '%s/O_latipes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    R_norvegicus = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/Drosophila_pseudoobscura.HGSC2.22.gff3' % data_path,
-    T_pseudonana = '%s/T_pseudonana/Thaps3/Thaps3_chromosomes_geneModels_FilteredModels2.gff' % data_path,
-    G_gorilla = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_porcellus = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    O_anatinus = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    org_gtf_file = dict( 
+    A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    M_mulatta       = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
+    O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
+    M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf.bz2" % data_path, 
+    B_anthracis     = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis' % data_path,
+    C_familiaris    = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    D_melanogaster  = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    E_caballus      = '%s/E_caballus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    M_domestica     = '%s/M_domestica/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    O_sativa        = '%s/O_sativa/phytozome_v9.0/Osativa_204_gene.gff3' % data_path,
+    A_gambiae       = '%s/A_gambiae/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    B_rapa          = '%s/B_rapa/phytozome_v9.0/Brapa_197_gene.gff3' % data_path,
+    G_gallus        = '%s/G_gallus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    M_musculus      = '%s/M_musculus/ensembl_release_79/ensembl_release_79.gtf' % data_path,  
+    V_vinifera      = '%s/V_vinifera/phytozome_v9.0/phytozome_v9.0.gff.bz2' % data_path,
+    A_mellifera     = '%s/A_mellifera/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    B_taurus        = '%s/B_taurus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_jacchus       = '%s/C_jacchus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_rubella       = '%s/C_rubella/phytozome_v9.0/Crubella_183.gff3' % data_path,
+    D_rerio         = '%s/D_rerio/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    G_max           = '%s/G_max/phytozome_v9.0/Gmax_189_gene.gff3' % data_path,
+    N_vitripennis   = '%s/N_vitripennis/ensembl_release_22/N_vitripennis.gtf' % data_path,
+    O_aries         = '%s/O_aries/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    M_truncatula    = '%s/M_truncatula/' % data_path,
+    P_pacificus     = '%s/P_pacificus/ensembl_release-22/.gtf' % data_path,
+    S_scrofa        = '%s/S_scrofa/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    X_tropicalis    = '%s/X_tropicalis/JGIv4-1/JGIv4-1.gff' % data_path,
+    C_sativus       = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
+    D_simulans      = '%s/D_simulans/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    H_sapiens       = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.gtf.bz2' % data_path,
+    P_troglodytes   = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    S_tuberosum     = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
+    Z_mays          = '%s/Z_mays/phytozome_v9.0/Zmays_181_gene.gff3' % data_path,
+    A_thaliana      = '%s/A_thaliana/arabidopsis_tair10/annotations/TAIR10_GFF3_genes.gff' % data_path,
+    C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    D_discoideum    = '%s/D_discoideum/' % data_path,
+    D_yakuba        = '%s/D_yakuba/ensembl_release-22/.gff3' % data_path,
+    O_latipes       = '%s/O_latipes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    R_norvegicus    = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/.gff3' % data_path,
+    T_pseudonana    = '%s/T_pseudonana/Thaps3/.gff' % data_path,
+    G_gorilla       = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_porcellus     = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    O_anatinus      = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     A_platyrhynchos = '%s/A_platyrhynchos/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    O_niloticus = '%s/O_niloticus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    L_chalumnae = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_briggsae = '%s/C_briggsae/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    M_eugenii = '%s/M_eugenii/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_remanei = '%s/C_remanei/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    C_brenneri = '%s/C_brenneri/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    C_intestinalis = '%s/C_intestinalis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    S_pombe = '%s/S_pombe/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    P_marinus = '%s/P_marinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    S_cerevisiae = '%s/S_cerevisiae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_japonica = '%s/C_japonica/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    F_catus = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    A_aegypti = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    C_hircus = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
-    T_nigroviridis = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
+    O_niloticus     = '%s/O_niloticus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    L_chalumnae     = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_briggsae      = '%s/C_briggsae/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    M_eugenii       = '%s/M_eugenii/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_remanei       = '%s/C_remanei/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    C_brenneri      = '%s/C_brenneri/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    C_intestinalis  = '%s/C_intestinalis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    S_pombe         = '%s/S_pombe/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    P_marinus       = '%s/P_marinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    S_cerevisiae    = '%s/S_cerevisiae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_japonica      = '%s/C_japonica/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    F_catus         = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    A_aegypti       = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    C_hircus        = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
+    T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
     )
 
     ## TODO algorithms details 
@@ -214,8 +215,7 @@ def experiment_db(config_file, opt_action):
                 try:
                     os.makedirs(work_path)
                 except OSError:
-                    print "error: cannot create the directory %s." % work_path
-                    sys.exit(0)
+                    exit("error: cannot create the directory %s." % work_path)
 
         org_db[short_name]['read_map_dir'] = "%s/%s/read_mapping" % (exp_path, short_name)
         org_db[short_name]['read_assembly_dir'] = "%s/%s/trans_pred" % (exp_path, short_name)
@@ -248,8 +248,7 @@ def experiment_db(config_file, opt_action):
             try:
                 os.makedirs("%s/%s/%s/STARgenome" % (data_path, short_name, genome_build_version))
             except OSError:
-                print "error: cannot create the directory %s/%s/%s" % (data_path, short_name, genome_build_version) 
-                sys.exit(0)
+                exit("error: cannot create the directory %s/%s/%s" % (data_path, short_name, genome_build_version))
 
         org_db[short_name]['genome_index_dir'] = "%s/%s/%s/STARgenome/" % (data_path, short_name, genome_build_version) 
 
