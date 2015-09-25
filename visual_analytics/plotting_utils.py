@@ -8,6 +8,32 @@ import cPickle
 
 from scipy.signal import argrelextrema
 
+def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"):
+    """
+    """
+
+    import pylab 
+
+    distance = pandas.read_csv(distance_csv_file, header=0)
+    C = numpy.tril(distance)
+    sim = 1-distance
+    C = numpy.tril(sim)
+    N = sim.shape[1]
+    C = numpy.ma.masked_array(C, C == 0)
+
+    A = numpy.array([(y, x) for x in range(N, -1, -1) for y in range(N + 1)])
+    t = numpy.array([[0.5, 1], [0.5, -1]])
+    A = numpy.dot(A, t)
+    X = A[:, 1].reshape(N + 1, N + 1)
+    Y = A[:, 0].reshape(N + 1, N + 1)
+    fig = pylab.figure(figsize=(20,20))
+    ax = fig.add_subplot(121, frame_on=False, aspect=2.0)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    caxes = pylab.pcolormesh(X, Y, np.flipud(C), axes=ax)
+    ax.set_xlim(right=0)
+    fig.savefig(outfile, bbox_inches='tight')
+
 
 def bar_chart_auroc(file)
     """
