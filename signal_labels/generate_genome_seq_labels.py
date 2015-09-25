@@ -96,7 +96,6 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
 
         label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
 
-        label_cnt = 6500
         negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
         sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (nCOUNT, signal))
 
@@ -201,20 +200,20 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
     for signal in sig_type:
         # 1 remove the same rec.id presents in the file 
         fas_rec_ids = dict() 
-        for fas_rec in SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta'):
+        for fas_rec in SeqIO.parse("%s_sig_neg_example.fa" % signal, 'fasta'):
             fas_rec_ids[fas_rec.id] = 0 
         
         # remove the duplicated records based on the record name 
-        fasta_out = open("%s_sig_minus_label.bkp" % signal, 'w')
-        for fas_rec in SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta'):
+        fasta_out = open("%s_sig_neg_example.bkp" % signal, 'w')
+        for fas_rec in SeqIO.parse("%s_sig_neg_example.fa" % signal, 'fasta'):
             if fas_rec.id in fas_rec_ids:
                 SeqIO.write([fas_rec], fasta_out, "fasta")
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
-        shutil.move('%s_sig_minus_label.bkp' % signal, '%s_sig_minus_label.fa' % signal)
+        shutil.move('%s_sig_neg_example.bkp' % signal, '%s_sig_neg_example.fa' % signal)
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
-        fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_minus_label.fa" % signal, 'fasta')) 
+        fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_neg_example.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
@@ -235,8 +234,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
             sys.stdout.write('    still trying ... %d\n' % counter)
 
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
-        shutil.move('%s_sig_minus_label.bkp' % signal, '%s_sig_minus_label.fa' % signal )
-        sys.stdout.write('cleaned %d minus %s signal labels stored in %s_sig_minus_label.fa\n' % (counter, signal, signal))
+        shutil.move('%s_sig_neg_example.bkp' % signal, '%s_sig_neg_example.fa' % signal )
+        sys.stdout.write('cleaned %d minus %s signal examples stored in %s_sig_neg_example.fa\n' % (counter, signal, signal))
 
         return label_seq_ids
 
@@ -258,20 +257,20 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
     for signal in sig_type:
         # 1 remove the same rec.id presents in the file 
         fas_rec_ids = dict() 
-        for fas_rec in SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta'):
+        for fas_rec in SeqIO.parse("%s_sig_pos_example.fa" % signal, 'fasta'):
             fas_rec_ids[fas_rec.id] = 0 
         
         # remove the duplicated records based on the record name 
-        fasta_out = open("%s_sig_plus_label.bkp" % signal, 'w')
-        for fas_rec in SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta'):
+        fasta_out = open("%s_sig_pos_example.bkp" % signal, 'w')
+        for fas_rec in SeqIO.parse("%s_sig_pos_example.fa" % signal, 'fasta'):
             if fas_rec.id in fas_rec_ids:
                 SeqIO.write([fas_rec], fasta_out, "fasta")
                 del fas_rec_ids[fas_rec.id]
         fasta_out.close() 
-        shutil.move('%s_sig_plus_label.bkp' % signal, '%s_sig_plus_label.fa' % signal)
+        shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
-        fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_plus_label.fa" % signal, 'fasta')) 
+        fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_pos_example.fa" % signal, 'fasta')) 
         dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
@@ -291,8 +290,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
                 break
             sys.stdout.write('    still trying ... %d\n' % counter)
 
-        shutil.move('%s_sig_plus_label.bkp' % signal, '%s_sig_plus_label.fa' % signal)
-        sys.stdout.write('cleaned %d plus %s signal labels stored in %s_sig_plus_label.fa\n' % (counter, signal, signal))
+        shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
+        sys.stdout.write('cleaned %d plus %s signal examples stored in %s_sig_pos_example.fa\n' % (counter, signal, signal))
 
         return label_seq_ids
 
@@ -998,7 +997,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
     @type sample: int  
     """
 
-    out_min_fh = open("tss_sig_minus_label.fa", 'w')
+    out_min_fh = open("tss_sig_neg_example.fa", 'w')
     true_label = 0 
 
     foh = helper.open_file(fnam)
@@ -1232,7 +1231,7 @@ def plus_tss_cleave_seq_fetch(signal, fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    out_pos_fh = open(signal + "_sig_plus_label.fa", 'w')
+    out_pos_fh = open(signal + "_sig_pos_example.fa", 'w')
     true_label = 0 
 
     foh = helper.open_file(fnam)
