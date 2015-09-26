@@ -368,6 +368,7 @@ def call_alignment_filter(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
+
     from rnaseq_align_assembly import star_align_rna as filter
     org_name, out_dir, num_cpus = args_list
     filter.run_mmr(org_name, out_dir, num_cpus)
@@ -383,19 +384,21 @@ def alignment_filter(yaml_config):
 
     Jobs = []
     for org_name, det in orgdb.items():
+
+        num_cpus = 4
         ## arguments to pygrid 
-        arg = [[det['short_name'], det['read_map_dir'], 3]]
+        arg = [[det['short_name'], det['read_map_dir'], num_cpus]]
 
         job = pg.cBioJob(call_alignment_filter, arg) 
 
         ## native specifications 
-        job.mem="72gb"
-        job.vmem="72gb"
-        job.pmem="24gb"
-        job.pvmem="24gb"
+        job.pmem="30gb"
+        job.pvmem="30gb"
+        job.mem="120gb"
+        job.vmem="120gb"
         job.nodes = 1
-        job.ppn = 2
-        job.walltime = "68:00:00"
+        job.ppn = num_cpus
+        job.walltime = "48:00:00"
 
         Jobs.append(job)
     print 
