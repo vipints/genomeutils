@@ -66,4 +66,7 @@ def run_ninja(msa_file, distance_mat="distance_matrix.csv"):
 
     cli = 'ninja --alph_type d --out_type d --corr_type n %s > %s' % (msa_file, distance_mat) 
     process = subprocess.Popen(cli, shell=True) 
-    process.wait()
+    returnval = process.wait()
+
+    if returnval !=0: 
+        raise Exception, "Exit status return code = %i" % returnval
