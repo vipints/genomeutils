@@ -10,6 +10,9 @@ from scipy.signal import argrelextrema
 
 def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"):
     """
+    plotting distance matrix between organisms 
+
+    the distance between the organisms are calculated based on the difference in their sequence composition 
     """
 
     import pylab 
