@@ -36,7 +36,10 @@ def MAFFTrun(infile, outfile, threads=2):
 
     cl = ['mafft --thread %d --threadit %d --reorder --anysymbol --auto -OUTPUT=%s %s' % (threads, 0, outfile, infile)]
     process = subprocess.Popen(' '.join(cl), shell=True, stderr=tlf, stdout=tlf)
-    rval = process.wait()
+    returnval = process.wait()
+
+    if returnval !=0: 
+        raise Exception, "Exit status return code = %i" % returnval
     tlf.close() 
 
 
