@@ -345,6 +345,27 @@ def bam_sort_index(bam_file):
         except Exception, e:
             exit("error: running pysam index\n%s" % str(e))
 
+
+def merge_bam_files(output_bam, input_bam):
+    """
+    merge the bam files and create the index 
+
+    @args output_bam: merged result file 
+    @type output_bam: str 
+    @args input_bam: list of input bam files 
+    @type input_bam: list 
+    """
+
+    for bam_file in input_bam:
+        if not os.path.isfile(bam_file):
+            exit("error: failed to fetch alignment file %s\n" % bam_file) 
+
+    try:
+        pysam.merge(output_bam, input_bam[0], input_bam[1])
+    except:
+        exit("error: running pysam merge\n%s" % str(e))
+
+
    
 def calculate_insert_size_from_bam(bam_file):
     """
