@@ -84,9 +84,15 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
     elif signal == 'tis':
         label_count_plus = true_tis_seq_fetch(faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
-        print 
 
-        label_count = false_tis_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
+        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
+        print 
+        negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
+        sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (nCOUNT, signal))
+
+        diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
+
+        label_count = false_tis_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal)
         
     elif signal == "tss": 
@@ -645,7 +651,7 @@ def true_tis_seq_fetch(fnam, Label, boundary=100):
     @type boundary: int
     """
 
-    out_pos_fh = open("tis_sig_plus_label.fa", 'w')
+    out_pos_fh = open("tis_sig_pos_example.fa", 'w')
     true_label = 0 
 
     foh = helper.open_file(fnam)
