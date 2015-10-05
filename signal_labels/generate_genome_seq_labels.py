@@ -234,7 +234,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         print accept_prob
 
         while True: # to ensure that we are considering every element 
-            counter, label_seq_ids = random_pick(signal, 'minus', non_dup_ent, minus_label_cnt, accept_prob)
+            counter, label_seq_ids = random_pick(signal, 'neg', non_dup_ent, minus_label_cnt, accept_prob)
             if minus_label_cnt <= counter:
                 break
             sys.stdout.write('    still trying ... %d\n' % counter)
@@ -291,7 +291,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         print accept_prob
         ## default acceptance probability 
         while True: # to ensure that we are considering every element 
-            counter, label_seq_ids = random_pick(signal, 'plus', non_dup_ent, plus_label_cnt, accept_prob)
+            counter, label_seq_ids = random_pick(signal, 'pos', non_dup_ent, plus_label_cnt, accept_prob)
             if plus_label_cnt <= counter:
                 break
             sys.stdout.write('    still trying ... %d\n' % counter)
@@ -322,10 +322,10 @@ def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
     label_seq_ids = dict()
 
     #fasta_out_plus = open(out_path + "/" + signal +"_sig_plus_label.bkp", 'w')
-    fasta_out_plus = open("%s_sig_%s_label.bkp" % (signal, plus_minus), 'w')
+    fasta_out_plus = open("%s_sig_%s_example.bkp" % (signal, plus_minus), 'w')
 
     #plus_hd = open(out_path + "/"+ signal + "_sig_plus_label.fa", "rU")
-    plus_hd = open("%s_sig_%s_label.fa" % (signal, plus_minus), "rU")
+    plus_hd = open("%s_sig_%s_example.fa" % (signal, plus_minus), "rU")
     for rec in SeqIO.parse(plus_hd, 'fasta'):
         if not rec.seq:
             continue
@@ -487,7 +487,7 @@ def false_tis_seq_fetch(fnam, Label, tis_check, tr_gene_mp, boundary=100, sample
     @type sample: int  
     """
 
-    out_min_fh = open("tis_sig_minus_label.fa", 'w')
+    out_min_fh = open("tis_sig_neg_example.fa", 'w')
     true_label = 0 
 
     foh = helper.open_file(fnam)
