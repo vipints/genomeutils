@@ -11,9 +11,14 @@ Requirement:
 import sys
 from Bio import SeqIO 
 
+fasta_name = sys.argv[1]
+
+for rec in SeqIO.parse(fasta_name, "fasta"):
+    
+    
+
+"""
 def __main__():
-    """
-    """
     try:
         label_type_1 = sys.argv[1] # train data 
         label_type_2 = sys.argv[2] # test data 
@@ -30,9 +35,6 @@ def __main__():
 
 
 def fasta_reader(fasname):
-    """
-    read fasta file and return the records locations
-    """
     location_marks = dict() 
     for rec in SeqIO.parse(fasname, "fasta"):
 
@@ -43,3 +45,4 @@ def fasta_reader(fasname):
 
 if __name__=="__main__":
     __main__()
+"""
