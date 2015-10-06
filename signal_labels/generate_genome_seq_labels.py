@@ -231,6 +231,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
+        accept_prob += 0.1
         print accept_prob
 
         while True: # to ensure that we are considering every element 
