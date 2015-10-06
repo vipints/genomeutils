@@ -27,6 +27,7 @@ from signal_labels import experiment_details_db as expdb
 
 assert sys.version_info[:2] >= ( 2, 4 )
 
+
 def main():
     """
     Managing the experiment run in different operation mode: 
@@ -91,7 +92,7 @@ def main():
         parser.print_help()
         sys.exit(-1)
         
-    print 'Using config file %s for the experiment.' % config_file
+    print('Using config file %s for the experiment.' % config_file)
 
     if options.download_sra:
         print 'Operation selected: Download sequencing reads file from ncbi-sra'
@@ -109,7 +110,8 @@ def main():
         print 'Operation selected: Create STAR genome index'
         create_genome_index(config_file)
     elif options.insert_size:
-        print 'Operation selected: Calculate the library insert size from sequencing read files'
+        print 'Operation selected: Calculate the library insert size from sequencing \
+            read files'
         calculate_insert_size(config_file)
     elif options.read_mapping: 
         print 'Operation selected: Read alignment with STAR'
@@ -121,28 +123,37 @@ def main():
         print 'Operation selected: Find uniquely mapped reads from star alignment'
         find_uniq_reads(config_file) 
     elif options.trsk_pred:
-        print 'Operation selected: Transcript prediction based on mapped RNASeq read data with TranscriptSkimmer'
+        print 'Operation selected: Transcript prediction based on mapped RNASeq read \
+            data with TranscriptSkimmer'
         transcript_prediction_trsk(config_file)
     elif options.cuff_pred:
-        print 'Operation selected: Transcript assembly based on mapped RNASeq read data with Cufflinks'
+        print 'Operation selected: Transcript assembly based on mapped RNASeq read data \
+            with Cufflinks'
         transcript_prediction_cuff(config_file)
     elif options.filter_trsk:
-        print 'Operation selected: Filter out gene models from TranscriptSkimmer predictions - criteria: splice-site consensus and length of the ORF.'
+        print 'Operation selected: Filter out gene models from TranscriptSkimmer \
+            predictions - criteria: splice-site consensus and length of the ORF.'
         filter_genes(config_file, "trsk")
     elif options.filter_cuff:
-        print 'Operation selected: Filter out gene models from cufflinks predictions - criteria: splice-site consensus, length of the ORF and read coverage to the region.'
+        print 'Operation selected: Filter out gene models from cufflinks predictions - \
+            criteria: splice-site consensus, length of the ORF and read coverage to the \
+            region.'
         filter_genes(config_file, "cufflinks")
     elif options.filter_db:
-        print 'Operation selected: Filter out gene models from public database - criteria: splice-site consensus and length of the ORF'
+        print 'Operation selected: Filter out gene models from public database - criteria: \
+            splice-site consensus and length of the ORF'
         filter_genes(config_file, "onlinedb")
     elif options.trsk_label:
-        print 'Operation selected: Extract different genomic signal label sequences from TranscriptSkimmer.'
+        print 'Operation selected: Extract different genomic signal label sequences from \
+            TranscriptSkimmer.'
         fetch_db_signals(config_file, "trsk")
     elif options.cuff_label:
-        print 'Operation selected: Extract different genomic signal label sequences from cufflinks.'
+        print 'Operation selected: Extract different genomic signal label sequences from \
+            cufflinks.'
         fetch_db_signals(config_file, "cufflinks")
     elif options.db_label:
-        print 'Operation selected: Extract different genomic signal label sequences from online database files.'
+        print 'Operation selected: Extract different genomic signal label sequences from \
+            online database files.'
         fetch_db_signals(config_file, "onlinedb")
 
 
