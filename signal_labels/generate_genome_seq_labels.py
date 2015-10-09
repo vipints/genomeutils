@@ -231,7 +231,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         except:
             accept_prob = 1
 
-        accept_prob += 0.1
+        #accept_prob += 0.1
         print accept_prob
 
         while True: # to ensure that we are considering every element 
@@ -278,7 +278,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
 
         # 2 remove duplicate sequences, expecting the file to be in cwd path!  
         fh_seq = SeqIO.to_dict(SeqIO.parse("%s_sig_pos_example.fa" % signal, 'fasta')) 
-        dup_ent = dict( (str(v.seq), k) for k,v in fh_seq.iteritems())
+        dup_ent = dict((str(v.seq), k) for k,v in fh_seq.iteritems())
         non_dup_ent = dict((ele, 0) for ele in dup_ent.values())
         dup_ent.clear()
 
