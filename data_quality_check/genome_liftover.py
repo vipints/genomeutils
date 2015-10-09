@@ -14,28 +14,31 @@ from Bio import SeqIO
 
 
 
-def lift_genome():
+def lift_genome(trainig_example_file):
+    """
+    """
     
-    try:
-        arts_labels = sys.argv[1]
-    except:
-        print __doc__
-        sys.exit(-1)
+    ## load arts v1 training dataset 
+    for rec in SeqIO.parse(trainig_example_file, "fasta"):
 
-    genome_v_from = "hg16"
-    genome_v_to = "hg19"
+        location = re.match(r'(\w{1,2})([+-]?)(.*)', rec.id)
 
-    # fetch the genome coordinates 
-    for rec in SeqIO.parse(arts_labels, "fasta"):
-        id = re.split("\+|\-", rec.id) 
         
-        print '%s:%s-%s' % (id[0], id[1], id[1])
 
-        #break
+        break
 
     # wrapping the liftover tool 
+    genome_v_from = "hg16"
+    genome_v_to = "hg19"
 
 
 
 if __name__=="__main__":
-    lift_genome()
+    
+    try:
+        arts_training_data = sys.argv[1]
+    except:
+        print __doc__
+        sys.exit(-1)
+
+    lift_genome(arts_training_data)
