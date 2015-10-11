@@ -11,6 +11,8 @@ fetch genome coordinates from old version of human genome and run UCSC liftover 
 import re 
 import sys
 from Bio import SeqIO 
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 
 
@@ -49,68 +51,77 @@ def data_processing(training_example_file):
     return out_file
 
 
-def write_lifted_example_seq(): 
+def write_lifted_example_seq(lifted_coord_file, genome_seq): 
     """
     TSS example sequence writer 
     """
     
-    lifted_coord_file = ""
-    fcod = open(lifted_coord_file, "rU")
-     
-    for rec in fcod:
-        rec = rec.strip('\n\r')
+    from collections import defaultdict 
 
+    ## creating the features db 
+    example_db = defaultdict(list) 
+
+    fcod = open(lifted_coord_file, "rU")
+    for line in fcod:
+        line = line.strip('\n\r')
+        parts = line.split("\t") 
+
+        example_db[parts[0]].append((parts[0], parts[3], parts[1], parts[4], parts[5]))
     fcod.close() 
+    ## ('chr1', '+', '155838683', '-1', 'NM_152280')
 
     out_pos_fh = open("tss_sig_pos_example.fa", 'w')
     out_neg_fh = open("tss_sig_neg_example.fa", 'w')
 
-    foh = helper.open_file(fnam)
-    for rec in SeqIO.parse(foh, "fasta"):
-        if rec.id in Label:
-            for Lsub_feat in Label[rec.id]:
-                for fid, loc in Lsub_feat.items():
+    boundary = 1200 
+    ## getting the genome sequence 
+    for rec in SeqIO.parse(genome_seq, "fasta"):
+        if rec.id in example_db:
+            for feat_det in example_db[rec.id]:
 
-                    #motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary+1] # TSS ---A---
-                    motif_seq = rec.seq[int(loc[0])-boundary:int(loc[0])+boundary] # TSS ---A--
+                motif_seq = rec.seq[int(feat_det[2])-boundary:int(feat_det[2])+boundary] # TSS ---A--
 
-                    if loc[1] == '-': 
-                        motif_seq = motif_seq.reverse_complement()
+                if feat_det[1] == "-":
+                    motif_seq = motif_seq.reverse_complement()
+                
+                # sanity check for the fetched sequence 
+                if len(motif_seq) != boundary*2: 
+                    continue
+                if not motif_seq:
+                    continue
+                if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
+                    continue
 
-                    # sanity check for the fetched sequence 
-                    if len(motif_seq) != boundary*2: 
-                        continue
-                    if not motif_seq:
-                        continue
-                    if not all (XJ in 'ATCG' for XJ in str(motif_seq.upper())):
-                        continue
+                # write to fasta out 
+                if feat_det[3] == "+1":
 
-                    # write to fasta out 
-                    fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, loc[1], int(loc[0])), description='+1 %s' % fid)
+                    fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, feat_det[1], int(feat_det[2])), description='+1 %s' % feat_det[4])
                     out_pos_fh.write(fseq.format("fasta"))
+                elif feat_det[3] == "-1":
 
+                    fseq = SeqRecord(motif_seq.upper(), id='%s%s%d' % (rec.id, feat_det[1], int(feat_det[2])), description='-1 %s' % feat_det[4])
+                    out_neg_fh.write(fseq.format("fasta"))
+
+    
     out_pos_fh.close()
     out_neg_fh.close()
 
-    foh.close()
-    
 
 
 if __name__=="__main__":
     
-    """
     try:
         arts_training_data = sys.argv[1]
     except:
         print __doc__
         sys.exit(-1)
-    """
 
-    #chrom_bed_file = data_processing(arts_training_data) 
-    #lift_bed_file = lift_genome(chrom_bed_file)
+    chrom_bed_file = data_processing(arts_training_data) 
+    lift_bed_file = lift_genome(chrom_bed_file)
 
-    lift_bed_file = "hg19_examples.bed"
-    genome_file = "" 
+    #lift_bed_file = "hg19_examples.bed"
 
-    #write_lifted_example_seq()
+    genome_file = "hg19.fa" 
+
+    write_lifted_example_seq(lift_bed_file, genome_file)
     
