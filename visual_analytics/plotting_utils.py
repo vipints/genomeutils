@@ -8,6 +8,7 @@ import cPickle
 
 from scipy.signal import argrelextrema
 
+
 def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"):
     """
     plotting distance matrix between organisms 
@@ -129,14 +130,13 @@ def data_process(fname):
     return data 
 
 
-def bar_chart():
+def bar_chart(score_file, fout_name):
     """
     draw a bar chart
     """
 
     ## load data 
-    file = "tss_pos_1k_score_70co_ce5b9c8a-4f41-11e5-add3-90e2ba3a73f4"
-    tss_score = data_process(file) 
+    tss_score = data_process(score_file) 
     
     ## max prediction output value from each example
     max_pred_out = numpy.zeros(len(tss_score[0]))
@@ -160,7 +160,7 @@ def bar_chart():
     plt.xlabel('Max prediction output value of positive examples')
     plt.ylabel("frequency")
 
-    fout_name ="max_pred_out_score_examples.pdf"
+    #fout_name ="max_pred_out_score_examples.pdf"
     plt.savefig(fout_name)
 
 
