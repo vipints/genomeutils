@@ -137,9 +137,10 @@ def bar_chart(score_file, fout_name):
 
     ## load data 
     tss_score = data_process(score_file) 
+    x_axis_row = len(tss_score[0])
     
     ## max prediction output value from each example
-    max_pred_out = numpy.zeros(len(tss_score[0]))
+    max_pred_out = numpy.zeros(x_axis_row)
     for idx, ele in enumerate(tss_score):
         pos = numpy.argmax(ele)
         max_pred_out[pos] += 1
@@ -149,18 +150,29 @@ def bar_chart(score_file, fout_name):
     for idx, numb in enumerate(max_pred_out):
         pred_out[idx] = numpy.array([idx, numb])
 
+    #col1-index and col2-score 
     df_pred_score = pandas.DataFrame(pred_out)
+
+    #import ipdb 
+    #ipdb.set_trace() 
     
     ## plotting settings  
+    width = 0.1
     fig = plt.figure()
-    width = .1
-    ind = numpy.arange(len(tss_score[0]))
 
-    plt.bar(ind, df_pred_score[1], color="green", edgecolor='white')
-    plt.xlabel('Max prediction output value of positive examples')
-    plt.ylabel("frequency")
+    ind = numpy.arange(x_axis_row)
+    #plt.bar(ind, df_pred_score[1], color="#7FB3D5", edgecolor='#7FB3D5')
+    plt.bar(ind, df_pred_score[1], color="#73C6B6", edgecolor='#73C6B6')
 
-    #fout_name ="max_pred_out_score_examples.pdf"
+    tick_step = 100 ## step size defined by the number of xaxis ticks  
+    xlocations = [tick_step*i+tick_step for i in xrange(x_axis_row/tick_step)] 
+
+    plt.yticks(fontsize=9)
+    plt.xticks(xlocations, fontsize=9) 
+
+    plt.xlabel('max. prediction output value of positive examples', fontsize=9)
+    plt.ylabel("frequency", fontsize=9)
+
     plt.savefig(fout_name)
 
 
@@ -191,7 +203,7 @@ def signal_line(file):
     #    plt.plot(t, content, 'y-')
  
     plt.xlim(0.0,100.0)
-    plt.xlabel('50 nucleotides upstream and downstream flanking region of tss signal')
+    plt.xlabel('50 nucleotides upstream and downstream flanking region of tss signal', fontsize=4)
     plt.ylabel('model prediction output score')
     plt.grid(True)
 
