@@ -39,7 +39,7 @@ def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"
     fig.savefig(outfile, bbox_inches='tight')
 
 
-def bar_chart_auroc(file)
+def bar_chart_auroc(file):
     """
     plot a bar chart based on the test performance from diff CV
     """
