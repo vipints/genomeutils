@@ -33,7 +33,37 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def chrom_name_consistency(fasta_fname, gff_content):
+    """
+    check the chromosome name consistency in gff file and fasta file 
+
+    @args fasta_fname: fasta file 
+    @type fasta_fname: string 
+    @args gff_content: parsed object from gtf/gff file 
+    @type gff_content: numpy array 
+    """
+    
+    chrom_fasta = dict() 
+    fasta_h = helper.open_file(fasta_fname)
+    for fas_rec in SeqIO.parse(fasta_h, "fasta"):
+        chrom_fasta[fas_rec.id] = 0 
+
+    chrom_gff = dict() 
+    for gff_rec in gff_content:
+        chrom_gff[gff_rec['chr']] = 0 
+
+    cnt = 0 
+    for chrom in chrom_fasta:
+        if not chrom in chrom_gff:
+            sys.stdout.write('%s NOT found in GFF/GTF file\n' % chrom)
+            cnt += 1  
+    
+    if cnt == len(chrom_fasta):
+        exit('error: chromosome/contig names are different in provided fasta, gff/gtf file.')
+
+
+
+def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit to fetch genomic signal label sequences 
 
@@ -52,18 +82,20 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
     @args flanks: flanking sequence length 
     @type flanks: integer
     """
-
-    if filecmp.cmp(faname, gfname):## compare the files  
+    
+    ## check the files
+    if filecmp.cmp(faname, gfname):
         exit("Do the two files are exactly same? Please check that!")
 
-    # FIXME required input variables including the result path   
+    ##FIXME required input variables including the result path   
     #base_path = ''
 
-    sys.stdout.write('reading genome annotation from %s... ' % gfname)
-    anno_file_content = GFFParser.Parse(gfname) # extract genome annotation from gtf/gff type file 
+    ## extract genome annotation from gtf/gff type file 
+    sys.stdout.write('reading genome annotation from %s...' % gfname)
+    anno_file_content = GFFParser.Parse(gfname) 
     sys.stdout.write('...done.\n')
 
-    # check the consistency of chr names in fasta and gff file 
+    ## check the consistency of chr names in fasta and gff file 
     chrom_name_consistency(faname, anno_file_content) 
     
     gtf_db, feature_cnt, signal_checks, tid_gene_map = get_label_regions(anno_file_content, signal)
@@ -155,35 +187,6 @@ def fetch_unique_labels(firstLabel, secondLabel):
            
     return unique_label_loc
 
-
-def chrom_name_consistency(fasta_fname, gff_content):
-    """
-    check the chromosome name consistency in gff file and fasta file 
-
-    @args fasta_fname: fasta file 
-    @type fasta_fname: string 
-    @args gff_content: parsed object from gtf/gff file 
-    @type gff_content: numpy array 
-    """
-    
-    chrom_fasta = dict() 
-    fasta_h = helper.open_file(fasta_fname)
-    for fas_rec in SeqIO.parse(fasta_h, "fasta"):
-        chrom_fasta[fas_rec.id] = 0 
-
-    chrom_gff = dict() 
-    for gff_rec in gff_content:
-        chrom_gff[gff_rec['chr']] = 0 
-
-    cnt = 0 
-    for chrom in chrom_fasta:
-        if not chrom in chrom_gff:
-            sys.stdout.write('%s NOT found in GFF/GTF file\n' % chrom)
-            cnt += 1  
-    
-    if cnt == len(chrom_fasta):
-        sys.stdout.write('error: chromosome/contig names are different in provided fasta, gff/gtf file.\n')
-        sys.exit(-1)
 
 
 def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
@@ -1337,5 +1340,5 @@ if __name__=="__main__":
     except:
         print __doc__
         sys.exit(-1) 
-
-    main(fas_name, gff_name)
+    
+    get_feature_seq(fas_name, gff_name)
