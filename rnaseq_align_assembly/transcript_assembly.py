@@ -17,6 +17,19 @@ import pysam
 import shutil
 import subprocess
 
+def run_stringtie(org_db, num_cpus=4):
+    """
+    run stringtie program on mapped reads without annotation 
+    """
+
+    try:
+        subprocess.call(["stringtie"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `stringtie` binary is in your $PATH")
+
+    org_name = org_db['short_name'] 
+    print "preparing for stringtie run for organism %s" % org_name
+    
 
 def run_cufflinks(org_db, num_cpus=4):
     """
