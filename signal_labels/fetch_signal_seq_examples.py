@@ -716,9 +716,9 @@ def get_label_regions(gtf_content, signal):
     """
 
     feat_cnt = 0
+    trans_gene_map = dict() 
     anno_db = defaultdict(list) 
     signal_point = defaultdict(list)
-    trans_gene_map = dict() 
     
     for feature in gtf_content: # gene list from GFFParse function 
         mod_anno_db = dict()
@@ -764,8 +764,8 @@ def get_label_regions(gtf_content, signal):
                                 feature['strand'],
                                 (int(feature['start']), int(feature['stop']))
                                 )
-        elif signal == 'splice':
-            for xp, ftid in enumerate(feature['transcripts']):# considering each annotated transcript 
+        elif signal == 'splice':# considering each annotated transcript 
+            for xp, ftid in enumerate(feature['transcripts']):
                 exons_count = len(feature['exons'][xp])
                 
                 if exons_count > 2:# spliced transcripts 
