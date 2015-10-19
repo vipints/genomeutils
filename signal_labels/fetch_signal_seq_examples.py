@@ -12,7 +12,7 @@ Extract genomic signal label sequences from the genome sequence and annotation f
 The signal sequence are flanked by defined number of nucleotides upstream and downstream of genome signal region.
 
 Usage: 
-    python fetch.py in.fasta.(gz|bz2) in.gtf.(gz|bz2)
+    python fetch_signal_seq_examples.py in.fasta.(gz|bz2) in.gtf.(gz|bz2)
 
 Requirements:
     BioPython:- http://biopython.org 
@@ -31,36 +31,6 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from collections import defaultdict
 from gfftools import helper, GFFParser 
-
-
-def chrom_name_consistency(fasta_fname, gff_content):
-    """
-    check the chromosome name consistency in gff file and fasta file 
-
-    @args fasta_fname: fasta file 
-    @type fasta_fname: string 
-    @args gff_content: parsed object from gtf/gff file 
-    @type gff_content: numpy array 
-    """
-    
-    chrom_fasta = dict() 
-    fasta_h = helper.open_file(fasta_fname)
-    for fas_rec in SeqIO.parse(fasta_h, "fasta"):
-        chrom_fasta[fas_rec.id] = 0 
-
-    chrom_gff = dict() 
-    for gff_rec in gff_content:
-        chrom_gff[gff_rec['chr']] = 0 
-
-    cnt = 0 
-    for chrom in chrom_fasta:
-        if not chrom in chrom_gff:
-            sys.stdout.write('%s NOT found in GFF/GTF file\n' % chrom)
-            cnt += 1  
-    
-    if cnt == len(chrom_fasta):
-        exit('error: chromosome/contig names are different in provided fasta, gff/gtf file.')
-
 
 
 def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
@@ -93,7 +63,7 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000,
     ## extract genome annotation from gtf/gff type file 
     sys.stdout.write('reading genome annotation from %s...' % gfname)
     anno_file_content = GFFParser.Parse(gfname) 
-    sys.stdout.write('...done.\n')
+    sys.stdout.write(' ...done.\n')
 
     ## check the consistency of chr names in fasta and gff file 
     chrom_name_consistency(faname, anno_file_content) 
@@ -104,7 +74,24 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000,
     posLabel, COUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
     sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (COUNT, signal))
 
-    if signal == 'splice':
+    if signal == "tss": 
+        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
+        print 'selected %d positive %s signal examples' % (label_count_plus, signal) 
+
+        label_count_minus = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
+        print 'selected %d negative %s signal examples' % (label_count_minus, signal) 
+
+        ## check for the consistent examples ratio from plus and minus set  
+        label_count_pos = strip_examples_without_proper_pairs(signal) 
+
+        ## remove the extra labels fetched from the previous step 
+        matching_pos_neg_example(signal, label_count_pos)
+         
+    #import ipdb 
+    #ipdb.set_trace()
+    
+    """
+    elif signal == 'splice':
         acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
         print 'selected %d acc %d don _positive_ %s signal lables' % (acc_cnt, don_cnt, signal)
         label_count_plus = (acc_cnt + don_cnt)/2
@@ -127,7 +114,7 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000,
         label_count = false_tis_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal lables' % (label_count, signal)
         
-    elif signal == "tss": 
+    elif signal == "tss-old": 
 
         label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
         sys.stdout.write('selected %d positive %s signal lables\n' % (label_count_plus, signal)) 
@@ -158,10 +145,145 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000,
 
     # remove the extra labels fetched from the previous step 
     label_id_minus = minus_label_cleanup([signal], minus_cnt, label_count)
-
+    """
     # signal label processing over 
     print '%s signal done.' % signal
     print 
+
+
+def strip_examples_without_proper_pairs(signal):
+    """
+    This helps to get the final list of examples with 1:1 ratio of pos and neg examples 
+    """
+
+    min_pos_neg_ratio = 3 
+
+    in_fas_pos = "%s_sig_pos_example.fa" % signal
+    in_fas_neg = "%s_sig_neg_example.fa" % signal
+
+    pos_fas_rec = defaultdict(list) 
+    for rec in SeqIO.parse(in_fas_pos, 'fasta'):
+        desc = rec.description.split(" ")
+        pos_fas_rec[desc[-1]].append(rec.description) ## FIXME if the transcript_id is not uniq 
+
+    pos_neg_ratio = defaultdict(int) 
+    for rec_neg in SeqIO.parse(in_fas_neg, 'fasta'):
+        desc_neg = rec_neg.description.split(" ")
+        if desc_neg[-1] in pos_fas_rec:
+            pos_neg_ratio[desc_neg[-1]] += 1
+    
+    ## change the pos examples and write a new file 
+    pos_rec_fas_file = "%s_sig_pos_example.bkp" % signal
+    pos_rec_fas_fh = open(pos_rec_fas_file, "w") 
+    pair_pos_example = 0 
+    for rec in SeqIO.parse(in_fas_pos, 'fasta'):
+        desc = rec.description.split(" ")
+        if desc[-1] in pos_neg_ratio:
+            if pos_neg_ratio[desc[-1]] != min_pos_neg_ratio:
+                continue
+            pos_rec_fas_fh.write(rec.format("fasta"))
+            pair_pos_example += 1 
+             
+    pos_rec_fas_fh.close()
+    print "%d positive examples with proper pairs" % pair_pos_example
+
+    shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
+
+    return pair_pos_example
+    
+
+def matching_pos_neg_example(signal, total_record_count):
+    """
+    fetch random pos examples and corresponding neg example in 1:1 ratio 
+    ## based on the pos examples 
+    """
+
+    in_fas_pos = "%s_sig_pos_example.fa" % signal
+    in_fas_neg = "%s_sig_neg_example.fa" % signal
+    
+    ## FIXME this has to be automatized 
+    sub_sample_records = 1000  
+    neg_sample_ratio = 3 ## sub sample ratio pos:neg  
+
+    try:
+        accept_prob = (1.0*sub_sample_records)/total_record_count
+    except:
+        accept_prob = 1
+
+    print accept_prob
+    out_fas_pos = "%s_sig_pos_example.bkp" % signal
+    pos_fas_out = open(out_fas_pos, "w") 
+    
+    fasta_rec = 0 
+    sample_cnt = 1
+    pos_fas_rec = defaultdict(list) 
+    for rec in SeqIO.parse(in_fas_pos, 'fasta'):
+        fasta_rec += 1 
+        desc = rec.description.split(" ")
+        rnb = random.random()
+
+        if rnb <= accept_prob:
+            pos_fas_out.write(rec.format("fasta"))
+            pos_fas_rec[desc[-1]].append(rec.description) ## NOT SURE the transcript_id is uniq. Assuming it is
+            if sample_cnt == sub_sample_records:
+                break 
+            sample_cnt += 1 
+
+    pos_fas_out.close()
+    sys.stdout.write('%d number of records scanned\n' % fasta_rec)
+    sys.stdout.write('%d number of pos examples dumped\n' % sample_cnt)
+
+    shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
+
+    neg_rec_cnt = 0 
+    pos_neg_ratio = defaultdict(int) 
+    out_fas_neg = "%s_sig_neg_example.bkp" % signal 
+    neg_fas_out = open(out_fas_neg, "w") 
+    for rec_neg in SeqIO.parse(in_fas_neg, 'fasta'):
+        desc_neg = rec_neg.description.split(" ")
+
+        if desc_neg[-1] in pos_fas_rec:
+            pos_neg_ratio[desc_neg[-1]] += 1
+             
+            if pos_neg_ratio[desc_neg[-1]] > neg_sample_ratio:
+                continue 
+
+            neg_fas_out.write(rec_neg.format("fasta"))
+            neg_rec_cnt += 1 
+
+    neg_fas_out.close() 
+    sys.stdout.write('%d number of neg examples dumped\n' % neg_rec_cnt)
+
+    shutil.move('%s_sig_neg_example.bkp' % signal, '%s_sig_neg_example.fa' % signal)
+
+
+def chrom_name_consistency(fasta_fname, gff_content):
+    """
+    check the chromosome name consistency in gff file and fasta file 
+
+    @args fasta_fname: fasta file 
+    @type fasta_fname: string 
+    @args gff_content: parsed object from gtf/gff file 
+    @type gff_content: numpy array 
+    """
+    
+    chrom_fasta = dict() 
+    fasta_h = helper.open_file(fasta_fname)
+    for fas_rec in SeqIO.parse(fasta_h, "fasta"):
+        chrom_fasta[fas_rec.id] = 0 
+
+    chrom_gff = dict() 
+    for gff_rec in gff_content:
+        chrom_gff[gff_rec['chr']] = 0 
+
+    cnt = 0 
+    for chrom in chrom_fasta:
+        if not chrom in chrom_gff:
+            sys.stdout.write('%s NOT found in GFF/GTF file\n' % chrom)
+            cnt += 1  
+    
+    if cnt == len(chrom_fasta):
+        exit('error: chromosome/contig names are different in provided fasta, gff/gtf file.')
 
 
 def fetch_unique_labels(firstLabel, secondLabel):
@@ -1293,7 +1415,6 @@ def select_labels(feat_db, feat_count, label_cnt):
     except:
         accept_prob = 1
     
-    #print 'acceptprob - ', accept_prob 
     while True: # ensure the label count 
         counter, LSet = recursive_fn(feat_db, label_cnt, accept_prob)
         if label_cnt <= counter:
