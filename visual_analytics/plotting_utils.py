@@ -39,13 +39,12 @@ def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"
     fig.savefig(outfile, bbox_inches='tight')
 
 
-def bar_chart_auroc(file):
+def bar_chart_auroc(file, fout_name, plot_title="performance"):
     """
     plot a bar chart based on the test performance from diff CV
     """
 
-    file = "hs_s32_trsk_tss.pickle"
-
+    #file = "hs_s32_trsk_tss.pickle"
     ## loading the data 
     data = data_process(file)
 
@@ -61,7 +60,7 @@ def bar_chart_auroc(file):
 
     ## plot settings 
     import pylab
-    pylab.figure(figsize=(3,4))
+    pylab.figure(figsize=(5,4))
     pylab.rcParams.update({'figure.autolayout':True})
 
     offset = 0 
@@ -76,7 +75,7 @@ def bar_chart_auroc(file):
     for idk, ele in enumerate(test_perf):
         xlocations.append(offset + 0.05)
         min_max.append(ele) 
-        rects.append(pylab.bar(offset, ele, width, color="#88aa33", edgecolor="white"))
+        rects.append(pylab.bar(offset, ele, width, color="#73C6B6", edgecolor="white"))
         offset += width
 
         idk += 1 
@@ -84,7 +83,7 @@ def bar_chart_auroc(file):
         x_axis_marks.append(cvname) 
         
     ## mean bar 
-    rects.append(pylab.bar(offset, test_perf.mean(), width, color="#ff9999", edgecolor="white")) 
+    rects.append(pylab.bar(offset, test_perf.mean(), width, color="#EC7063", edgecolor="white")) 
     xlocations.append(offset + 0.05)
     offset += width
 
@@ -99,14 +98,13 @@ def bar_chart_auroc(file):
     tick_step = 0.02 
     ticks = [tick_step*i for i in xrange(int(round(ymax/tick_step)+1))]
 
-    pylab.yticks(ticks)
-    pylab.xticks(xlocations, x_axis_marks, rotation="vertical")
+    pylab.yticks(ticks, fontsize=8)
+    pylab.xticks(xlocations, x_axis_marks, rotation="vertical", fontsize=8)
 
     pylab.xlim(0, offset) 
     pylab.ylim(ymin, ymax) 
 
-    plot_title = "title of the figure" 
-    pylab.title(plot_title)
+    pylab.title(plot_title, fontsize=8)
 
     pylab.gca().get_yaxis().tick_left()
     pylab.gca().get_xaxis().tick_bottom()
@@ -114,7 +112,9 @@ def bar_chart_auroc(file):
     pylab.gca().get_yaxis().grid(True)
     pylab.gca().get_xaxis().grid(False)
 
-    fout_name ="test_performance_with_CV.pdf"
+    pylab.ylabel("auROC", fontsize=8)
+
+    #fout_name ="test_performance_with_CV.pdf"
     pylab.savefig(fout_name)
 
 
