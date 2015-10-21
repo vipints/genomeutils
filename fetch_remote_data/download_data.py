@@ -102,14 +102,12 @@ def fetch_phytozome_gff(release_version, species_name, download_path):
 
                 tempfile.close()
                 ftp_file.close()
-
                 sys.stdout.write("\t... saved at %s\n" % gtf_file)
         gff_files.close()
     org_names.close()
 
     if not org_name_valid:
-        sys.stdout.write("error: gff file for %s is not present in phytozome release version %s\n" % (species_name, release_version))   
-        sys.stdout.write("URL checked %s/%s\n" % (base_url_gff, species_name))
+        sys.stdout.write("error: gff file for %s is not present in phytozome release version %s URL %s/%s\n" % (species_name, release_version, base_url_gff, species_name))   
 
 
 def fetch_phytozome_fasta(release_version, species_name, download_path):
@@ -132,8 +130,7 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
         org_names = urllib2.urlopen(base_url_fasta)
     except urllib2.URLError, err_release:
         print "phytozome_release_version %s is NOT found" % release_version
-        print err_release
-        sys.exit(-1)
+        exit(err_release)
 
     org_name_valid = False
     for ORG in org_names:
@@ -149,8 +146,7 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
             fa_files = urllib2.urlopen(base_url_fasta)
         except urllib2.URLError, err_faseq:
             print "phytozome_release genome sequence missing" % base_url_fasta
-            print err_faseq
-            sys.exit(-1)
+            exit(err_faseq)
 
         ## mapping to short names  Athaliana --> A_thaliana
         org_short_name = "%s_%s" % (species_name[0], species_name[1:])
@@ -161,8 +157,7 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
             try:
                 os.makedirs(base_file_path)
             except OSError:
-                print "error: cannot create the directory %s." % base_file_path
-                sys.exit(0)
+                exit("error: cannot create the directory %s." % base_file_path)
 
         for fa_name in fa_files:
             fa_name =fa_name.strip('\n\r')
@@ -174,22 +169,19 @@ def fetch_phytozome_fasta(release_version, species_name, download_path):
                 try:
                     ftp_file=urllib2.urlopen(base_url_fasta+fa_name.split()[-1])
                 except urllib2.URLError, err_file:
-                    print err_file
-                    sys.exit(-1)
+                    exit(err_file)
 
-                sys.stdout.write('\tdownloading %s ... \n' % fa_name.split()[-1])
+                sys.stdout.write('\tdownloading %s...\n' % fa_name.split()[-1])
                 shutil.copyfileobj(ftp_file, tempfile)
                 tempfile.close()
                 ftp_file.close()
 
-                sys.stdout.write("\t... saved at %s \n" % fasta_file)
+                sys.stdout.write("\t ...saved at %s\n" % fasta_file)
         fa_files.close()
     org_names.close()
 
     if not org_name_valid:
-        print 
-        print "error: fasta file for %s is not present in phytozome release version %s" % (species_name, release_version)   
-        print "URL checked %s/%s" % (base_url_fasta, species_name) 
+        exit("error: fasta file for %s is not present in phytozome release version %s URL %s/%s" % (species_name, release_version, base_url_fasta, species_name))
 
 
 def fetch_ensembl_fungi_gtf(release_version, species_name, download_path):
