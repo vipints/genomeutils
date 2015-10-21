@@ -113,7 +113,6 @@ def bar_chart_auroc(file, fout_name, plot_title="performance"):
 
     pylab.ylabel("auROC", fontsize=8)
 
-    #fout_name ="test_performance_with_CV.pdf"
     pylab.savefig(fout_name)
 
 
@@ -160,7 +159,7 @@ def bar_chart(score_file, fout_name, plot_title="position relative to true TSS")
     #plt.bar(ind, df_pred_score[1], color="#7FB3D5", edgecolor='#7FB3D5')
     plt.bar(ind, df_pred_score[1], color="#73C6B6", edgecolor='#73C6B6')
 
-    tick_step = 200 ## step size defined by the number of xaxis ticks  
+    tick_step = 100 ## step size defined by the number of xaxis ticks  
     xlocations = [tick_step*i+tick_step for i in xrange(x_axis_row/tick_step)] 
 
     plt.yticks(fontsize=9)
