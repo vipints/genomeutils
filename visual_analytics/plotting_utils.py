@@ -44,7 +44,6 @@ def bar_chart_auroc(file, fout_name, plot_title="performance"):
     plot a bar chart based on the test performance from diff CV
     """
 
-    #file = "hs_s32_trsk_tss.pickle"
     ## loading the data 
     data = data_process(file)
 
@@ -130,9 +129,9 @@ def data_process(fname):
     return data 
 
 
-def bar_chart(score_file, fout_name):
+def bar_chart(score_file, fout_name, plot_title="position relative to true TSS"):
     """
-    draw a bar chart
+    draw a bar chart based on the max. prediction score of each example 
     """
 
     ## load data 
@@ -153,9 +152,6 @@ def bar_chart(score_file, fout_name):
     #col1-index and col2-score 
     df_pred_score = pandas.DataFrame(pred_out)
 
-    #import ipdb 
-    #ipdb.set_trace() 
-    
     ## plotting settings  
     width = 0.1
     fig = plt.figure()
@@ -164,14 +160,15 @@ def bar_chart(score_file, fout_name):
     #plt.bar(ind, df_pred_score[1], color="#7FB3D5", edgecolor='#7FB3D5')
     plt.bar(ind, df_pred_score[1], color="#73C6B6", edgecolor='#73C6B6')
 
-    tick_step = 100 ## step size defined by the number of xaxis ticks  
+    tick_step = 200 ## step size defined by the number of xaxis ticks  
     xlocations = [tick_step*i+tick_step for i in xrange(x_axis_row/tick_step)] 
 
     plt.yticks(fontsize=9)
     plt.xticks(xlocations, fontsize=9) 
 
-    plt.xlabel('max. prediction output value of positive examples', fontsize=9)
-    plt.ylabel("frequency", fontsize=9)
+    plt.title(plot_title, fontsize=9)
+    plt.xlabel('svm max. prediction output value of examples', fontsize=9)
+    plt.ylabel("features frequency", fontsize=9)
 
     plt.savefig(fout_name)
 
