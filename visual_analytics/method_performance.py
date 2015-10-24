@@ -34,6 +34,7 @@ def best_test_perf_with_eval(filename, methods=None, org_names=None):
     """
     for each method report the best param based on the validation performance
     """
+    ##FIXME the docs to the function 
 
     data = compressed_pickle.load(filename) 
     
@@ -303,7 +304,8 @@ def single_perf_barplot(df_perf, res_file, plot_title="", ylabel="auROC"):
     width = 0.20
     separator = 0.10
     offset = 0
-    used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
+    #used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
+    used_colors = ["#7DCEA0", "#85C1E9", "#E74C3C", "#5D6D7E"]
     xlocations = []
     min_max = [] 
     mean_perf = defaultdict(list) 
