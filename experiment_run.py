@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 """
-master script to control different operations in training label data generating pipeline.
+master script to control different operations in training examples generating pipeline.
 
 usage:
     python experiment_run.py <YAML config> -h 
