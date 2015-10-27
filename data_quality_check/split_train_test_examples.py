@@ -112,7 +112,6 @@ def get_matching_neg_example(in_fas_pos, in_fas_neg, out_fas_neg):
     for rec in SeqIO.parse(in_fas_pos, 'fasta'):
         desc = rec.description.split(" ")
 
-        pos_fas_out.write(rec.format("fasta"))
         pos_fas_rec[desc[-1]].append(rec.description) 
         
     print "%d number of positive records" % len(pos_fas_rec) 
