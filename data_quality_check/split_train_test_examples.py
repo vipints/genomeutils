@@ -56,8 +56,7 @@ def split_data_random_non_overlap(signal="tss", total_record_count=5000):
     """
 
     in_fas_pos = "%s_sig_pos_example.fa" % signal
-    in_fas_neg = "%s_sig_neg_example.fa" % signal
-
+    #FIXME 
     sub_sample_records = 1000
 
     try:
@@ -92,18 +91,22 @@ def split_data_random_non_overlap(signal="tss", total_record_count=5000):
         print "set_2 recounting" 
     shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example_2.fa' % signal)
 
+    #FIXME 
     sub_sample_records = 3000
     split_data_rest(signal, in_fas_pos, sub_sample_records, pos_fas_rec)
 
     shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example_3.fa' % signal)
 
-    import ipdb 
-    ipdb.set_trace() 
+    #FIXME
+    # need a master module to control the cleaning of pos and neg example cleanup 
 
 
 def get_matching_neg_example(in_fas_pos, in_fas_neg, out_fas_neg):
     """
     """
+
+    #in_fas_pos = "%s_sig_pos_example.fa" % signal
+    #in_fas_neg = "%s_sig_neg_example.fa" % signal
     
     pos_fas_rec = defaultdict(list) 
     for rec in SeqIO.parse(in_fas_pos, 'fasta'):
