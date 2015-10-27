@@ -33,7 +33,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def get_feature_seq(faname, gfname, signal='tss', label_cnt=7000, plus_cnt=5000, minus_cnt=15000, flanks=1200):
+def get_feature_seq(faname, gfname, signal='tss', label_cnt=9000, plus_cnt=5000, minus_cnt=15000, flanks=1200):
     """
     core unit to fetch genomic signal label sequences 
 
@@ -194,7 +194,31 @@ def strip_examples_without_proper_pairs(signal):
     shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
 
     return pair_pos_example
-    
+
+
+def iterative_fetch(in_fas_pos, out_fas_pos, sub_sample_records, accept_prob):
+    """
+    FIXME the variables etc 
+    """
+    pos_fas_out = open(out_fas_pos, "w") 
+    fasta_rec = 0 
+    sample_cnt = 1
+    pos_fas_rec = defaultdict(list) 
+    for rec in SeqIO.parse(in_fas_pos, 'fasta'):
+        fasta_rec += 1 
+        desc = rec.description.split(" ")
+        rnb = random.random()
+
+        if rnb <= accept_prob:
+            pos_fas_out.write(rec.format("fasta"))
+            pos_fas_rec[desc[-1]].append(rec.description) ## transcript_id is uniq. 
+            if sample_cnt == sub_sample_records:
+                break 
+            sample_cnt += 1 
+
+    pos_fas_out.close()
+    return fasta_rec, sample_cnt, pos_fas_rec
+   
 
 def matching_pos_neg_example(signal, total_record_count):
     """
@@ -214,26 +238,14 @@ def matching_pos_neg_example(signal, total_record_count):
     except:
         accept_prob = 1
 
-    print accept_prob
     out_fas_pos = "%s_sig_pos_example.bkp" % signal
-    pos_fas_out = open(out_fas_pos, "w") 
-    
-    fasta_rec = 0 
-    sample_cnt = 1
-    pos_fas_rec = defaultdict(list) 
-    for rec in SeqIO.parse(in_fas_pos, 'fasta'):
-        fasta_rec += 1 
-        desc = rec.description.split(" ")
-        rnb = random.random()
 
-        if rnb <= accept_prob:
-            pos_fas_out.write(rec.format("fasta"))
-            pos_fas_rec[desc[-1]].append(rec.description) ## NOT SURE the transcript_id is uniq. Assuming it is
-            if sample_cnt == sub_sample_records:
-                break 
-            sample_cnt += 1 
-
-    pos_fas_out.close()
+    while True:
+        fasta_rec, sample_cnt, pos_fas_rec = iterative_fetch(in_fas_pos, out_fas_pos, sub_sample_records, accept_prob) 
+        if sample_cnt <= sub_sample_records:
+            break
+        sys.stdout.write('still trying ... %d\n' % sample_cnt) 
+ 
     sys.stdout.write('%d number of records scanned\n' % fasta_rec)
     sys.stdout.write('%d number of pos examples dumped\n' % sample_cnt)
 
