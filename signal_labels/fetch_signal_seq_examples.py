@@ -33,7 +33,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def get_feature_seq(faname, gfname, signal='tss', label_cnt=7000, plus_cnt=5000, minus_cnt=15000, flanks=1200):
     """
     core unit to fetch genomic signal label sequences 
 
@@ -80,6 +80,10 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000,
 
         label_count_minus = minus_tss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
         print 'selected %d negative %s signal examples' % (label_count_minus, signal) 
+
+        #FIXME cleanup 
+        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
+        label_id_minus = minus_label_cleanup([signal], minus_cnt, label_count_minus)
 
         ## check for the consistent examples ratio from plus and minus set  
         label_count_pos = strip_examples_without_proper_pairs(signal) 
@@ -202,7 +206,7 @@ def matching_pos_neg_example(signal, total_record_count):
     in_fas_neg = "%s_sig_neg_example.fa" % signal
     
     ## FIXME this has to be automatized 
-    sub_sample_records = 1000  
+    sub_sample_records = 5000  
     neg_sample_ratio = 3 ## sub sample ratio pos:neg  
 
     try:
@@ -350,21 +354,8 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         dup_ent.clear()
         
         assert minus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
-
-        try:
-            accept_prob = (1.0*minus_label_cnt)/feat_count
-        except:
-            accept_prob = 1
-
-        #accept_prob += 0.1
-        print accept_prob
-
-        while True: # to ensure that we are considering every element 
-            counter, label_seq_ids = random_pick(signal, 'neg', non_dup_ent, minus_label_cnt, accept_prob)
-            if minus_label_cnt <= counter:
-                break
-            sys.stdout.write('    still trying ... %d\n' % counter)
-
+        counter, label_seq_ids = random_pick(signal, 'neg', non_dup_ent, minus_label_cnt)
+        
         #os.system('mv ' + out_path + '/'+ signal + '_sig_minus_label.bkp '+ out_path + "/" + signal + "_sig_minus_label.fa")
         shutil.move('%s_sig_neg_example.bkp' % signal, '%s_sig_neg_example.fa' % signal )
         sys.stdout.write('cleaned %d minus %s signal examples stored in %s_sig_neg_example.fa\n' % (counter, signal, signal))
@@ -408,19 +399,8 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         dup_ent.clear()
 
         assert plus_label_cnt < len(non_dup_ent), 'DUPLICATE ENTRIES PRESENT NON-DUPLICATE ONES ARE %d' % len(non_dup_ent)  
-
-        try:
-            accept_prob = (1.0*plus_label_cnt)/len(non_dup_ent)
-        except:
-            accept_prob = 1
-
-        print accept_prob
-        ## default acceptance probability 
-        while True: # to ensure that we are considering every element 
-            counter, label_seq_ids = random_pick(signal, 'pos', non_dup_ent, plus_label_cnt, accept_prob)
-            if plus_label_cnt <= counter:
-                break
-            sys.stdout.write('    still trying ... %d\n' % counter)
+        #FIXME cleanup 
+        counter, label_seq_ids = random_pick(signal, 'pos', non_dup_ent, plus_label_cnt)
 
         shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
         sys.stdout.write('cleaned %d plus %s signal examples stored in %s_sig_pos_example.fa\n' % (counter, signal, signal))
@@ -428,7 +408,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         return label_seq_ids
 
 
-def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
+def random_pick(signal, plus_minus, non_dup_ent, lb_cnt):
     """
     navigate through the filtered set and fetch the right number of plus and minus labels 
 
@@ -440,8 +420,6 @@ def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
     @type non_dup_ent: dict 
     @args lb_cnt: plus or minus label count  
     @type lb_cnt: int  
-    @args apt_prob: acceptence probability 
-    @type apt_prob: flaot   
     """
 
     cnt = 0 
@@ -460,15 +438,12 @@ def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
         if not rec.id in non_dup_ent:
             continue
 
-        rnb = random.random()
-        if rnb <= apt_prob:
-            if lb_cnt == cnt:
-                break
-            SeqIO.write([rec], fasta_out_plus, "fasta")
-            cnt += 1
+        SeqIO.write([rec], fasta_out_plus, "fasta")
+        cnt += 1
 
-            desc = rec.description.split(' ')
-            label_seq_ids[desc[-1]] = 0
+        desc = rec.description.split(' ')
+        #FIXME cleanup 
+        label_seq_ids[desc[-1]] = 0
 
     plus_hd.close()
     fasta_out_plus.close()
