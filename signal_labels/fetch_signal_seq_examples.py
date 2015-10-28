@@ -242,7 +242,7 @@ def matching_pos_neg_example(signal, total_record_count):
 
     while True:
         fasta_rec, sample_cnt, pos_fas_rec = iterative_fetch(in_fas_pos, out_fas_pos, sub_sample_records, accept_prob) 
-        if sample_cnt <= sub_sample_records:
+        if sample_cnt >= sub_sample_records:
             break
         sys.stdout.write('still trying ... %d\n' % sample_cnt) 
  
