@@ -33,7 +33,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def get_feature_seq(faname, gfname, signal='tss', label_cnt=9000, plus_cnt=5000, minus_cnt=15000, flanks=1200):
+def get_feature_seq(faname, gfname, signal='tss', label_cnt=3000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
     """
     core unit to fetch genomic signal label sequences 
 
@@ -89,10 +89,8 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=9000, plus_cnt=5000,
         label_count_pos = strip_examples_without_proper_pairs(signal) 
 
         ## remove the extra labels fetched from the previous step 
-        matching_pos_neg_example(signal, label_count_pos)
+        matching_pos_neg_example(signal, label_count_pos, plus_cnt)
          
-    #import ipdb 
-    #ipdb.set_trace()
     
     """
     elif signal == 'splice':
@@ -220,18 +218,17 @@ def iterative_fetch(in_fas_pos, out_fas_pos, sub_sample_records, accept_prob):
     return fasta_rec, sample_cnt, pos_fas_rec
    
 
-def matching_pos_neg_example(signal, total_record_count):
+def matching_pos_neg_example(signal, total_record_count, sub_sample_records):
     """
     fetch random pos examples and corresponding neg example in 1:1 ratio 
     ## based on the pos examples 
     """
 
+    ## FIXME this has to be automatized 
+    neg_sample_ratio = 3 ## sub sample ratio pos:neg  
+
     in_fas_pos = "%s_sig_pos_example.fa" % signal
     in_fas_neg = "%s_sig_neg_example.fa" % signal
-    
-    ## FIXME this has to be automatized 
-    sub_sample_records = 5000  
-    neg_sample_ratio = 3 ## sub sample ratio pos:neg  
 
     try:
         accept_prob = (1.0*sub_sample_records)/total_record_count
