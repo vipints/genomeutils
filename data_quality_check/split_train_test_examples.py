@@ -79,7 +79,7 @@ def split_data_second(signal, in_fas_pos, sub_sample_records, accept_prob, selec
 
 
 
-def split_data_random_non_overlap(signal="tss", total_record_count=5000):
+def split_data_random_non_overlap(signal="tss", total_record_count=2000):
     """
     """
 
@@ -107,6 +107,7 @@ def split_data_random_non_overlap(signal="tss", total_record_count=5000):
     except:
         accept_prob = 1
 
+    """
     while True:
         counter, pos_rec_second = split_data_second(signal, in_fas_pos, sub_sample_records, accept_prob, pos_rec_selected)
 
@@ -119,9 +120,10 @@ def split_data_random_non_overlap(signal="tss", total_record_count=5000):
     ## FIXME better way - concatenate two defaultdict 
     for rec_id in pos_rec_second:
         pos_rec_selected[rec_id] = 0 
+    """
 
     #FIXME 
-    sub_sample_records = 3000
+    sub_sample_records = 1000
     split_data_rest(signal, in_fas_pos, sub_sample_records, pos_rec_selected)
 
     shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example_3.fa' % signal)
@@ -171,3 +173,9 @@ def get_matching_neg_example(in_fas_pos, in_fas_neg, out_fas_neg):
     print "%d number of negative records" % neg_rec_cnt 
     neg_fas_out.close()
 
+
+if __name__=="__main__":
+
+    ## expecting the example file under the PWD 
+    split_data_random_non_overlap() 
+    #get_matching_neg_example("tss_sig_pos_example_1.fa", "tss_sig_neg_example.fa", "tss_sig_neg_example_1.fa") 
