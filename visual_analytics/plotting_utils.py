@@ -90,11 +90,12 @@ def bar_chart_auroc(file, fout_name, plot_title="performance"):
 
     ## adjusting the axis range 
     min_max.sort()
-    ymax = min_max[-1]*1.05 
+
+    ymax = min_max[-1]*1.03 
     ymin = min_max[0]*0.98
 
     ## set the ticks
-    tick_step = 0.02 
+    tick_step = 0.01 
     ticks = [tick_step*i for i in xrange(int(round(ymax/tick_step)+1))]
 
     pylab.yticks(ticks, fontsize=8)
