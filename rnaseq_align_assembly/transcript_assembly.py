@@ -17,9 +17,11 @@ import pysam
 import shutil
 import subprocess
 
-def run_stringtie(org_db, num_cpus=4):
+
+def run_stringtie(bam_file, trans_pred_file, num_cpus=4):
     """
     run stringtie program on mapped reads without annotation 
+    #~/app-engine/stringtie-1.1.0.Linux_x86_64/stringtie ../../../sra_rnaseq_data/H_sapiens/read_mapping/H_sapiens_Aligned_mmr_sortbyCoord.bam -o H_sapiens_stringtie_genes.gff -f 0.7 -m 400 -j 10 -c 10         
     """
 
     try:
@@ -27,9 +29,29 @@ def run_stringtie(org_db, num_cpus=4):
     except:
         exit("Please make sure that the `stringtie` binary is in your $PATH")
 
-    org_name = org_db['short_name'] 
-    print "preparing for stringtie run for organism %s" % org_name
-    
+    #org_name = org_db['short_name'] 
+    #print "preparing for stringtie run for organism %s" % org_name
+
+    strtie_run="stringtie %s \
+        -o %s \
+        -f 0.7 \
+        -m 400 \
+        -j 10 \
+        -c 10 \
+        " % (bam_file, trans_pred_file)
+
+    print('\trun stringtie as: %s \n' % strtie_run)
+
+    try:
+        process = subprocess.Popen(strtie_run, shell=True) 
+        returncode = process.wait()
+
+        if returncode !=0:
+            raise Exception, "Exit status return code = %i" % returncode
+
+    except Exception, e:
+        print 'Error running stringtie.\n%s' %  str( e )
+ 
 
 def run_cufflinks(org_db, num_cpus=4):
     """
@@ -155,7 +177,7 @@ def run_trsk(org_db, out_gff_file="tmp_trsk_genes.gff"):
 
     cli_trsk = "infer_genes -gio %s -bam %s -gff %s %s" % (gio_file, bam_file, out_gff_file, options)  
     sys.stdout.write('\trun TransriptSkimmer as: %s \n' % cli_trsk)
-    
+
     try:
         os.chdir(result_dir)
         process = subprocess.Popen(cli_trsk, shell=True) 
