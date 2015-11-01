@@ -24,15 +24,17 @@ def run_stringtie(bam_file, trans_pred_file, num_cpus=4):
     #~/app-engine/stringtie-1.1.0.Linux_x86_64/stringtie ../../../sra_rnaseq_data/H_sapiens/read_mapping/H_sapiens_Aligned_mmr_sortbyCoord.bam -o H_sapiens_stringtie_genes.gff -f 0.7 -m 400 -j 10 -c 10         
     """
 
+    """
     try:
         subprocess.call(["stringtie"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except:
         exit("Please make sure that the `stringtie` binary is in your $PATH")
+    """
 
     #org_name = org_db['short_name'] 
     #print "preparing for stringtie run for organism %s" % org_name
 
-    strtie_run="stringtie %s \
+    strtie_run="~/app-engine/stringtie-1.1.0.Linux_x86_64/stringtie %s \
         -o %s \
         -f 0.7 \
         -m 400 \
