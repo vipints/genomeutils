@@ -87,6 +87,9 @@ def filter_gene_models(gff_name, fas_file, outFile):
                 spliced_cand +=1
             else:
                 sing_exon_gen +=1 
+                #TODO orf length of the single exon gene will be good 
+                # to look, some histone genes are long enough to have 
+                # strong TSS region 
         
         if spliced_transcript: 
             transcripts_region[gene_recd['chr']].append(spliced_transcript)
