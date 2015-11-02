@@ -350,10 +350,10 @@ def transcript_prediction_trsk(yaml_config):
         job = pg.cBioJob(call_transcript_prediction_trsk, arg) 
 
         ## native specifications 
-        job.mem="16gb"
-        job.vmem="16gb"
-        job.pmem="16gb"
-        job.pvmem="16gb"
+        job.mem="12gb"
+        job.vmem="12gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
         job.nodes = 1
         job.ppn = 1
         job.walltime = "6:00:00"
@@ -362,7 +362,52 @@ def transcript_prediction_trsk(yaml_config):
     print 
     print "sending transcript assembly trsk jobs to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs)
+
+    local = False ## cluster compute switch 
+    processedJobs = pg.process_jobs(Jobs, local=True)
+
+
+def call_transcript_prediction_stringtie(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+
+    from rnaseq_align_assembly import transcript_assembly as tsa
+    org_db = args_list
+    tsa.run_stringtie(org_db)
+    return "done"
+
+
+def transcript_prediction_stringtie(yaml_config):
+    """
+    transcript prediction using StringTie
+    """
+
+    operation_seleted = "4"
+    orgdb = expdb.experiment_db(yaml_config, operation_seleted)
+
+    Jobs = []
+    for org_name, det in orgdb.items():
+        ## arguments to pygrid 
+        arg = [det]
+
+        job = pg.cBioJob(call_transcript_prediction_trsk, arg) 
+
+        ## native specifications 
+        job.mem="12gb"
+        job.vmem="12gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
+        job.nodes = 1
+        job.ppn = 1
+        job.walltime = "6:00:00"
+
+        Jobs.append(job)
+    print 
+    print "sending transcript assembly trsk jobs to worker"
+    print 
+
+    processedJobs = pg.process_jobs(Jobs, local=True)
 
 
 def find_uniq_reads(yaml_config):
@@ -461,7 +506,7 @@ def align_rnaseq_reads(yaml_config):
     print 
     print "sending read alignment with STAR jobs to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs)
+    processedJobs = pg.process_jobs(Jobs, local=True)
 
 
 def calculate_insert_size(yaml_config):
