@@ -249,6 +249,7 @@ def max_pred_out_range(file):
     ind = numpy.arange(len(data[0]))
 
     plt.bar(ind, df_pred_max_range[0], color="green", edgecolor='white')
+    plt.bar(ind, df_pred_max_range[2], color="red", edgecolor='white')
     plt.xlabel('Max prediction output value of positive examples', fontsize=10)
     plt.ylabel("frequency", fontsize=10)
 
@@ -256,5 +257,6 @@ def max_pred_out_range(file):
 
     fout_name ="max_pred_out_score_pos_examples.pdf"
     plt.savefig(fout_name)
+
 
 
