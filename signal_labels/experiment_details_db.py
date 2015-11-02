@@ -73,7 +73,7 @@ def experiment_db(config_file, opt_action):
     A_thaliana      = '%s/A_thaliana/arabidopsis_tair10/sequences/TAIR9_chr_all.fas' % data_path,
     O_aries         = '%s/O_aries/ensembl_release_79/ensembl_release_79.fas' % data_path,
     C_jacchus       = '%s/C_jacchus/ensembl_release_79/ensembl_release_79.fas' % data_path,
-    C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    C_elegans       = '%s/C_elegans/ensembl_release-69/Caenorhabditis_elegans.WBcel215.69.dna.toplevel.fa"' % data_path,
     O_latipes       = '%s/O_latipes/ensembl_release_79/ensembl_release_79.fas' % data_path,
     R_norvegicus    = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     G_gorilla       = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.fas' % data_path,
@@ -98,6 +98,7 @@ def experiment_db(config_file, opt_action):
     F_catus         = '%s/F_catus/ensembl_release_79/ensembl_release_79.fas' % data_path,
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
+    #C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.fas' % data_path,
 
     org_gtf_file = dict( 
     A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
