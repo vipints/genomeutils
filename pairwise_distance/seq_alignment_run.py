@@ -66,5 +66,8 @@ def ClustalWrun(infile, outfile, data_type, outform):
     cl = ['clustalw2 -INFILE=%s -OUTFILE=%s -OUTORDER=%s -TYPE=%s -OUTPUT=%s' % (infile, outfile, out_order, data_type, outform)]
     process = subprocess.Popen(' '.join(cl), shell=True, stderr=tlf, stdout=tlf)
     rval = process.wait()
+
+    if rval !=0: 
+        raise Exception, "Exit status return code = %i" % rval
     tlf.close() 
 
