@@ -33,7 +33,7 @@ from collections import defaultdict
 from gfftools import helper, GFFParser 
 
 
-def get_feature_seq(faname, gfname, signal='tss', label_cnt=3000, plus_cnt=1000, minus_cnt=3000, flanks=1200):
+def get_feature_seq(faname, gfname, signal='tss', label_cnt=4000, plus_cnt=3000, minus_cnt=9000, flanks=1200):
     """
     core unit to fetch genomic signal label sequences 
 
@@ -196,17 +196,28 @@ def strip_examples_without_proper_pairs(signal):
 
 def iterative_fetch(in_fas_pos, out_fas_pos, sub_sample_records, accept_prob):
     """
-    FIXME the variables etc 
+    the iterative mode of selecting records to match the required number
+
+    @args in_fas_pos:
+    @type in_fas_pos:
+    @args out_fas_pos:
+    @type out_fas_pos:
+    @args sub_sample_records:
+    @type sub_sample_records:
+    @args accept_prob:
+    @type accept_prob:
     """
-    pos_fas_out = open(out_fas_pos, "w") 
+
     fasta_rec = 0 
     sample_cnt = 1
     pos_fas_rec = defaultdict(list) 
+    pos_fas_out = open(out_fas_pos, "w") 
+
     for rec in SeqIO.parse(in_fas_pos, 'fasta'):
         fasta_rec += 1 
         desc = rec.description.split(" ")
-        rnb = random.random()
 
+        rnb = random.random()
         if rnb <= accept_prob:
             pos_fas_out.write(rec.format("fasta"))
             pos_fas_rec[desc[-1]].append(rec.description) ## transcript_id is uniq. 
@@ -215,6 +226,7 @@ def iterative_fetch(in_fas_pos, out_fas_pos, sub_sample_records, accept_prob):
             sample_cnt += 1 
 
     pos_fas_out.close()
+
     return fasta_rec, sample_cnt, pos_fas_rec
    
 
