@@ -350,21 +350,21 @@ def transcript_prediction_trsk(yaml_config):
         job = pg.cBioJob(call_transcript_prediction_trsk, arg) 
 
         ## native specifications 
-        job.mem="12gb"
-        job.vmem="12gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.mem="32gb"
+        job.vmem="32gb"
+        job.pmem="32gb"
+        job.pvmem="32gb"
         job.nodes = 1
         job.ppn = 1
-        job.walltime = "6:00:00"
+        job.walltime = "9:00:00"
 
         Jobs.append(job)
     print 
     print "sending transcript assembly trsk jobs to worker"
     print 
 
-    local = False ## cluster compute switch 
-    processedJobs = pg.process_jobs(Jobs, local=True)
+    local = False  ## cluster compute switch 
+    processedJobs = pg.process_jobs(Jobs, local=local)
 
 
 def call_transcript_prediction_stringtie(args_list):
@@ -391,7 +391,7 @@ def transcript_prediction_stringtie(yaml_config):
         ## arguments to pygrid 
         arg = [det]
 
-        job = pg.cBioJob(call_transcript_prediction_trsk, arg) 
+        job = pg.cBioJob(call_transcript_prediction_stringtie, arg) 
 
         ## native specifications 
         job.mem="12gb"
@@ -404,7 +404,7 @@ def transcript_prediction_stringtie(yaml_config):
 
         Jobs.append(job)
     print 
-    print "sending transcript assembly trsk jobs to worker"
+    print "sending transcript assembly stringtie jobs to worker"
     print 
 
     processedJobs = pg.process_jobs(Jobs, local=True)
