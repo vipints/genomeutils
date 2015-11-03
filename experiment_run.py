@@ -48,6 +48,7 @@ def main():
     -u uniq_read recover uniquely aligned reads from the star alignment 
     -4 trsk_pred transcript prediction using TranscriptSkimmer
     -c cuff_pred transcript assembly by Cufflinks 
+    -s stringtie_pred transcript assembly by StringTie
     -5 filter_trsk applying filter to the trsk predicted gene models 
     -b filter_cuff applying filter to the cufflinks predicted gene models 
     -f filter_db applying filter to the online db genome annotations
@@ -69,6 +70,7 @@ def main():
     parser.add_option( "-u", "--uniq_read", action="store_true", dest="uniq_read", default=False, help="Fetching uniquely mapped reads from bam file." )
     parser.add_option( "-4", "--trsk_pred", action="store_true", dest="trsk_pred", default=False, help="Transcript prediction using TranscriptSkimmer." )
     parser.add_option( "-c", "--cuff_pred", action="store_true", dest="cuff_pred", default=False, help="Transcript assembly using Cufflinks." )
+    parser.add_option( "-s", "--stringtie_pred", action="store_true", dest="stringtie_pred", default=False, help="Transcript assembly using StringTie." )
     parser.add_option( "-5", "--filter_trsk", action="store_true", dest="filter_trsk", default=False, help="Apply filters to trsk predicted gene models." )
     parser.add_option( "-b", "--filter_cuff", action="store_true", dest="filter_cuff", default=False, help="Apply filter to the cufflinks predicted gene models." )
     parser.add_option( "-f", "--filter_db", action="store_true", dest="filter_db", default=False, help="Apply filter to the online db annotation gene models." )
@@ -88,7 +90,7 @@ def main():
             options.read_mapping ^ options.multi_map ^ options.uniq_read ^ \
             options.trsk_pred ^ options.cuff_pred ^ options.filter_trsk ^ \
             options.trsk_label ^ options.filter_cuff ^ options.filter_db ^ \
-            options.cuff_label ^ options.db_label):
+            options.cuff_label ^ options.db_label ^ options.stringtie_pred):
         parser.print_help()
         sys.exit(-1)
         
@@ -130,6 +132,10 @@ def main():
         print 'Operation selected: Transcript assembly based on mapped RNASeq read data \
             with Cufflinks'
         transcript_prediction_cuff(config_file)
+    elif options.stringtie_pred:
+        print 'Operation selected: Transcript assembly based on mapped RNASeq read data \
+            with StringTie'
+        transcript_prediction_stringtie(config_file)
     elif options.filter_trsk:
         print 'Operation selected: Filter out gene models from TranscriptSkimmer \
             predictions - criteria: splice-site consensus and length of the ORF.'
@@ -392,22 +398,23 @@ def transcript_prediction_stringtie(yaml_config):
         arg = [det]
 
         job = pg.cBioJob(call_transcript_prediction_stringtie, arg) 
-
+        
+        cpus = 1 
         ## native specifications 
         job.mem="12gb"
         job.vmem="12gb"
         job.pmem="12gb"
         job.pvmem="12gb"
         job.nodes = 1
-        job.ppn = 1
+        job.ppn = cpus
         job.walltime = "6:00:00"
 
         Jobs.append(job)
-    print 
-    print "sending transcript assembly stringtie jobs to worker"
-    print 
+    print("\nsending transcript assembly stringtie jobs to worker\n")
 
-    processedJobs = pg.process_jobs(Jobs, local=True)
+    local_compute = True ## switching between local multithreading and cluster computing
+    
+    processedJobs = pg.process_jobs(Jobs, local=local_compute)
 
 
 def find_uniq_reads(yaml_config):
