@@ -48,6 +48,7 @@ def compute_distance_matrix(msa_file, csvfile="distance_mat.csv"):
         writer.writerows(master_dm)
     
     output.close() 
+    # TODO the manual adding of a column left to the distance measure
 
 
 def run_ninja(msa_file, distance_mat="distance_matrix.csv"):
