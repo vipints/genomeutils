@@ -20,13 +20,11 @@ try:
     import libpyjobrunner as pg
 except:
     sys.stdout.write('warning: pygridtools are not available, distributed computing task will be disrupted\n')
-    print __doc__
 
 from optparse import OptionParser
 from signal_labels import experiment_details_db as expdb
 
 assert sys.version_info[:2] >= ( 2, 4 )
-
 
 def main():
     """
@@ -82,8 +80,7 @@ def main():
     try:
         config_file = args[0]
     except:
-        print __doc__
-        sys.exit(-1)
+        exit(__doc__)
 
     if not (options.download_sra ^ options.decompose_sra ^ options.annotation ^ \
             options.genome ^ options.genome_index ^ options.insert_size ^ \
