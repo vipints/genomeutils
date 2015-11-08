@@ -91,63 +91,6 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=4000, plus_cnt=3000,
         ## remove the extra labels fetched from the previous step 
         matching_pos_neg_example(signal, label_count_pos, plus_cnt)
          
-    
-    """
-    elif signal == 'splice':
-        acc_cnt, don_cnt = true_ss_seq_fetch(faname, posLabel) 
-        print 'selected %d acc %d don _positive_ %s signal lables' % (acc_cnt, don_cnt, signal)
-        label_count_plus = (acc_cnt + don_cnt)/2
-
-        acc_cnt, don_cnt = false_ss_seq_fetch(faname, posLabel, signal_checks, tid_gene_map)
-        print 'selected %d acc %d don _negative_ %s signal lables' % (acc_cnt, don_cnt, signal)
-        label_count = (acc_cnt + don_cnt)/2
-    
-    elif signal == 'tis':
-        label_count_plus = true_tis_seq_fetch(faname, posLabel, flanks)
-        print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
-
-        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
-        print 
-        negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (nCOUNT, signal))
-
-        diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
-
-        label_count = false_tis_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
-        print 'selected %d negative %s signal lables' % (label_count, signal)
-        
-    elif signal == "tss-old": 
-
-        label_count_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
-        sys.stdout.write('selected %d positive %s signal lables\n' % (label_count_plus, signal)) 
-
-        label_ids_plus = plus_label_cleanup([signal], plus_cnt, label_count_plus)
-
-        negLabel, nCOUNT = select_labels(gtf_db, feature_cnt, label_cnt) 
-        sys.stdout.write('selecting %d RANDOM %s signal regions\n' % (nCOUNT, signal))
-
-        diff_features = fetch_unique_labels(label_ids_plus, negLabel) 
-
-        label_count = minus_tss_seq_fetch(faname, diff_features, signal_checks, tid_gene_map, flanks)
-        sys.stdout.write('selected %d negative %s signal lables\n' % (label_count, signal)) 
-
-    elif signal == "cleave":
-        label_count_plus, label_ids_plus = plus_tss_cleave_seq_fetch(signal, faname, posLabel, flanks)
-        print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
-
-        label_count = minus_cleave_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
-        print 'selected %d negative %s signal lables' % (label_count, signal) 
-
-    elif signal == 'cdsstop':
-        label_count_plus = true_cdsStop_seq_fetch(faname, posLabel, flanks)
-        print 'selected %d positive %s signal lables' % (label_count_plus, signal)
-
-        label_count = false_cdsStop_seq_fetch(faname, posLabel, signal_checks, tid_gene_map, flanks)
-        print 'selected %d negative %s signal lables' % (label_count, signal)
-
-    # remove the extra labels fetched from the previous step 
-    label_id_minus = minus_label_cleanup([signal], minus_cnt, label_count)
-    """
     # signal label processing over 
     print '%s signal done.' % signal
     print 
