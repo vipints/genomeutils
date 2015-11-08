@@ -383,13 +383,14 @@ def calculate_insert_size(org_db):
     import re 
     from glob import glob 
 
-
     #FIXME 
     """
-    $ python ~/tmp/7281991/estimate-insert-sizes Salmonella_enterica_subsp_enterica_serovar_typhimurium_str_lt2.GCA_000006945.1.21.dna.toplevel.fa SRR863221_1.fastq.bz2 SRR863221_2.fastq.bz2
+    $ python ~/tmp/7281991/estimate-insert-sizes 
+    Salmonella_enterica_subsp_enterica_serovar_typhimurium_str_lt2.GCA_000006945.1.21.dna.toplevel.fa SRR863221_1.fastq.bz2 
+    SRR863221_2.fastq.bz2
     Processing:
-     SRR863221_1.fastq.bz2
-      SRR863221_2.fastq.bz2
+    SRR863221_1.fastq.bz2
+    SRR863221_2.fastq.bz2
       [M::mem_pestat] # candidate unique pairs for (FF, FR, RF, RR): (0, 0, 0, 0)
       [M::mem_pestat] skip orientation FF as there are not enough pairs
       [M::mem_pestat] skip orientation FR as there are not enough pairs
@@ -399,5 +400,4 @@ def calculate_insert_size(org_db):
         File "/home/vipin/tmp/7281991/estimate-insert-sizes", line 100, in <module>
             mean = most_likely[1]['mean']
             KeyError: 'mean'
-
     """
