@@ -35,6 +35,7 @@ def filter_gene_models(gff_name, fas_file, outFile):
     @args outFile: filtered gene output file 
     @type outFile: str 
     """
+
     sys.stdout.write( 'using genome sequence file %s\n' % fas_file)
     sys.stdout.write( 'using genome annotation file %s\n' % gff_name)
 
@@ -47,10 +48,9 @@ def filter_gene_models(gff_name, fas_file, outFile):
     spliced_cand = 0 
     sing_exon_gen = 0
     transcript_cov = 0 
-    transcripts_region = defaultdict(list)
-
     min_orf_length = 400 
 
+    transcripts_region = defaultdict(list)
     for gene_recd in gff_content: ## screening the spliced transcripts
         spliced_transcript = defaultdict(list)
 
@@ -98,8 +98,6 @@ def filter_gene_models(gff_name, fas_file, outFile):
                 if single_exon_len > 900:
                     spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append((ex[0], ex[1]))
 
-
-        
         if spliced_transcript: 
             transcripts_region[gene_recd['chr']].append(spliced_transcript)
     
@@ -117,6 +115,7 @@ def check_splice_site_consensus(fas_file, splice_region):
     """
     splice site consensus check
     """
+
     sys.stdout.write( "splice site sequence consensus check started...\n")
     get_gene_models = defaultdict()
     splice_site_con = 0 
@@ -174,6 +173,7 @@ def write_filter_gene_models(gff_cont, gene_models, outFile):
     """
     writing the filtered gene models to the result file
     """
+
     sys.stdout.write( "writing filtered gene models to %s ...\n" % outFile)
     true_genes = 0 
     true_transcripts = 0 
@@ -195,7 +195,8 @@ def write_filter_gene_models(gff_cont, gene_models, outFile):
             ID = recd['name']
             Name = recd['gene_info']['Name']
             Name = ID if Name != None else Name  
-            out_fh.write('%s\t%s\tgene\t%d\t%d\t.\t%s\t.\tID=%s;Name=%s\n' % (chr_name, source, start, stop, strand, ID, Name))
+            out_fh.write('%s\t%s\tgene\t%d\t%d\t.\t%s\t.\tID=%s;Name=%s\n' \
+                % (chr_name, source, start, stop, strand, ID, Name))
                 
             for idz, tid in enumerate(recd['transcripts']):
                 if idz in trans_indices:
@@ -205,20 +206,25 @@ def write_filter_gene_models(gff_cont, gene_models, outFile):
                     t_stop = recd['exons'][idz][-1][-1]
                     t_type = recd['transcript_type'][idz] 
 
-                    out_fh.write('%s\t%s\t%s\t%d\t%d\t.\t%s\t.\tID=%s;Parent=%s\n' % (chr_name, source, t_type, t_start, t_stop, strand, tid[0], ID))
+                    out_fh.write('%s\t%s\t%s\t%d\t%d\t.\t%s\t.\tID=%s;Parent=%s\n' \
+                        % (chr_name, source, t_type, t_start, t_stop, strand, tid[0], ID))
                     
                     for ex_cod in recd['utr5_exons'][idz]:
-                        out_fh.write('%s\t%s\tfive_prime_UTR\t%d\t%d\t.\t%s\t.\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
+                        out_fh.write('%s\t%s\tfive_prime_UTR\t%d\t%d\t.\t%s\t.\tParent=%s\n' \
+                            % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
                     for ex_cod in recd['cds_exons'][idz]:
-                        out_fh.write('%s\t%s\tCDS\t%d\t%d\t.\t%s\t%d\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, ex_cod[2], tid[0])) 
+                        out_fh.write('%s\t%s\tCDS\t%d\t%d\t.\t%s\t%d\tParent=%s\n' \
+                            % (chr_name, source, ex_cod[0], ex_cod[1], strand, ex_cod[2], tid[0])) 
                     for ex_cod in recd['utr3_exons'][idz]:
-                        out_fh.write('%s\t%s\tthree_prime_UTR\t%d\t%d\t.\t%s\t.\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0]))
+                        out_fh.write('%s\t%s\tthree_prime_UTR\t%d\t%d\t.\t%s\t.\tParent=%s\n' \
+                            % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0]))
                     for ex_cod in recd['exons'][idz]:
-                        out_fh.write('%s\t%s\texon\t%d\t%d\t.\t%s\t.\tParent=%s\n' % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
+                        out_fh.write('%s\t%s\texon\t%d\t%d\t.\t%s\t.\tParent=%s\n' \
+                            % (chr_name, source, ex_cod[0], ex_cod[1], strand, tid[0])) 
     out_fh.close()
-    sys.stdout.write( "...donen\n")
-    sys.stdout.write( "number of genes considered  %d\n" % true_genes)
-    sys.stdout.write( "number of transcripts considered  %d\n" % true_transcripts)
+    sys.stdout.write( "...done\n")
+    sys.stdout.write( "number of genes considered %d\n" % true_genes)
+    sys.stdout.write( "number of transcripts considered %d\n" % true_transcripts)
 
 
 if __name__ == "__main__":
