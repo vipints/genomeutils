@@ -66,7 +66,7 @@ def best_test_perf_with_eval(filename, methods=None, org_names=None):
             best_eval_perf[m_idx, n_idx] = np.mean(tmp_eval)
             best_test_perf[m_idx, n_idx] = np.mean(tmp_test)
  
-        print m, best_eval_perf[m_idx].mean(), best_test_perf[m_idx].mean(),
+        print m, best_eval_perf[m_idx].mean(), best_test_perf[m_idx].mean()
 
     df_eval = pd.DataFrame(best_eval_perf, columns=org_names, index=methods)
     df_test = pd.DataFrame(best_test_perf, columns=org_names, index=methods)
