@@ -66,7 +66,7 @@ def best_test_perf_with_eval(filename, methods=None, org_names=None):
             best_eval_perf[m_idx, n_idx] = np.mean(tmp_eval)
             best_test_perf[m_idx, n_idx] = np.mean(tmp_test)
  
-        print m, best_test_perf[m_idx].mean(), best_eval_perf[m_idx].mean()
+        print m, best_eval_perf[m_idx].mean(), best_test_perf[m_idx].mean(),
 
     df_eval = pd.DataFrame(best_eval_perf, columns=org_names, index=methods)
     df_test = pd.DataFrame(best_test_perf, columns=org_names, index=methods)
@@ -74,6 +74,89 @@ def best_test_perf_with_eval(filename, methods=None, org_names=None):
     return df_eval, df_test
 
 
+def barplot_argmax_each_cv(df_perf, res_file, plot_title="", ylabel="auROC"):
+    """
+    argmax of org specific cv
+    """
+    import pylab 
+    import numpy 
+
+    pylab.figure(figsize=(15, 12.5)) # custom form 
+    #pylab.figure(figsize=(len(labels), (len(labels)/8)*5)) # 40, 10 # for 10 organisms 
+    pylab.rcParams.update({'figure.autolayout': True}) # to fit the figure in canvas 
+
+    width = 0.20
+    separator = 0.10
+    offset = 0
+    #used_colors = ["#88aa33", "#9999ff", "#ff9999", "#34A4A8"]
+    used_colors = ["#7DCEA0", "#85C1E9", "#E74C3C", "#5D6D7E"]
+    xlocations = []
+    min_max = [] 
+    mean_perf = defaultdict(list) 
+    num_methods = 0 
+    labels = [] 
+    
+    #methods = ['individual', 'union', 'mtl', 'mtmkl'] 
+    methods = ['individual', 'union', 'mtl']
+
+    for org, perf in df_perf.iteritems():
+        num_methods = len(perf)
+        offset += separator
+        xlocations.append(offset + (width*(num_methods*1))/3)
+        labels.append(org)
+        rects = [] 
+        
+        for idx, meth in enumerate(methods):
+            min_max.append(perf[meth])
+            mean_perf[meth].append(perf[meth]) 
+
+            rects.append(pylab.bar(offset, perf[meth], width, color=used_colors[idx], edgecolor='white'))
+            offset += width 
+    
+    ## the mean perf bar 
+    rects_avg = [] 
+    offset += separator
+    xlocations.append(offset + (width*(num_methods*1))/3)
+
+    for idx, meth in enumerate(methods):
+        rects_avg.append(pylab.bar(offset, sum(mean_perf[meth])/len(labels), width, color = used_colors[idx], edgecolor='white'))
+        offset += width 
+
+    offset += separator
+    labels.append('Mean')
+
+    ## modifying the image boarders 
+    min_max.sort() 
+    ymax = min_max[-1]*1.1
+    ymin = min_max[0]*0.9
+
+    # set ticks
+    tick_step = 0.05
+    ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
+
+    pylab.yticks(ticks)
+    pylab.xticks(xlocations, labels, rotation="45") 
+
+    fontsize=20
+    ax = pylab.gca()
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label1.set_fontsize(fontsize)
+
+    pylab.xlim(0, offset)
+    pylab.ylim(ymin, ymax)
+    
+    pylab.title(plot_title)
+    pylab.gca().get_xaxis().tick_bottom()
+    pylab.gca().get_yaxis().tick_left()
+
+    pylab.gca().get_yaxis().grid(True)
+    pylab.gca().get_xaxis().grid(False)
+
+    #methods = ['Individual', 'Union', 'MTL', 'MTMKL'] 
+    methods = ['Individual', 'Union', 'MTL']
+    pylab.legend(tuple(rects), tuple(methods))
+    pylab.ylabel(ylabel, fontsize = 15)
+    pylab.savefig(res_file) 
 
 def best_global_param_idx(filename, methods=None, org_names=None):
     """
