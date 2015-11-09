@@ -1,4 +1,7 @@
 #!/usr/bin/env python 
+"""
+function to change the nucleotide from a FASTA file
+"""
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
