@@ -6,6 +6,7 @@ and cufflinks on sequencing read alignment data.
 Requirement: 
     TransriptSkimmer - 
     cufflinks - 
+    stringtie
 
     python libraries: 
     pysam 
