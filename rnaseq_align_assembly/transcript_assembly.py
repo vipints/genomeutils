@@ -43,7 +43,7 @@ def run_stringtie(bam_file, trans_pred_file):
         -c 10 \
         " % (bam_file, trans_pred_file)
 
-    print('\trun stringtie as: %s \n' % strtie_run)
+    print('\trun stringtie as: %s' % strtie_run)
 
     try:
         process = subprocess.Popen(strtie_run, shell=True) 
