@@ -8,6 +8,7 @@ import cPickle
 
 from scipy.signal import argrelextrema
 
+import pylab 
 
 def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"):
     """
@@ -15,8 +16,6 @@ def plot_distance_matrix(distance_csv_file, outfile="similarity_matrix_plot.pdf"
 
     the distance between the organisms are calculated based on the difference in their sequence composition 
     """
-
-    import pylab 
 
     distance = pandas.read_csv(distance_csv_file, header=0)
     C = numpy.tril(distance)
@@ -58,7 +57,6 @@ def bar_chart_auroc(file, fout_name, plot_title="performance"):
         test_perf[idx] = data[method][1][org_code][idx][v_idx]
 
     ## plot settings 
-    import pylab
     pylab.figure(figsize=(5,4))
     pylab.rcParams.update({'figure.autolayout':True})
 
@@ -257,6 +255,4 @@ def max_pred_out_range(file):
 
     fout_name ="max_pred_out_score_pos_examples.pdf"
     plt.savefig(fout_name)
-
-
 
