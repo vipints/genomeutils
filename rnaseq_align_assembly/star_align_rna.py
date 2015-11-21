@@ -2,6 +2,9 @@
 """
 Program to align rnaseq transcriptome reads to the genome using STAR aligner 
 
+This wrapper will be considering organisms specific features while running 
+the STAR program. 
+
 Requirement: 
     STAR - https://github.com/alexdobin/STAR/releases
     pysam - http://code.google.com/p/pysam/ 
