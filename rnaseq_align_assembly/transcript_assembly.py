@@ -1,12 +1,15 @@
 #!/usr/bin/env python 
 """
-wrapper program to run transcriptome assembly using TransriptSkimmer 
-and cufflinks on sequencing read alignment data. 
+wrapper program to run transcriptome assembly using TransriptSkimmer, 
+stringtie, and cufflinks on sequencing read alignment data. 
+
+In advance settings it is good to give the options specific to an 
+organism. 
 
 Requirement: 
     TransriptSkimmer - 
     cufflinks - 
-    stringtie
+    stringtie - 
 
     python libraries: 
     pysam 
