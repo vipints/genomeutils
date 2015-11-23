@@ -13,6 +13,7 @@ import sys
 from Bio import SeqIO 
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from collections import defaultdict 
 
 
 
@@ -54,9 +55,9 @@ def data_processing(training_example_file):
 def write_lifted_example_seq(lifted_coord_file, genome_seq): 
     """
     TSS example sequence writer 
+
     """
     
-    from collections import defaultdict 
 
     ## creating the features db 
     example_db = defaultdict(list) 
