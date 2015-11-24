@@ -22,7 +22,7 @@ import shutil
 import subprocess
 
 
-def run_stringtie(bam_file, trans_pred_file):
+def run_stringtie(bam_file, trans_pred_file="_tmp_strtie_genes.gff"):
     """
     run stringtie program on mapped reads without genome annotation 
     
