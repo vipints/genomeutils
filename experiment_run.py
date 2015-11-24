@@ -376,8 +376,12 @@ def call_transcript_prediction_stringtie(args_list):
     """
 
     from rnaseq_align_assembly import transcript_assembly as tsa
-    org_db = args_list
-    tsa.run_stringtie(org_db)
+    
+    mmr_read_dir, organism_name, trans_pred_out_dir = args_list
+    mmr_read_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (mmr_read_dir, organism_name) 
+
+    os.chdir(trans_pred_out_dir) 
+    tsa.run_stringtie(mmr_read_file) 
     return "done"
 
 
@@ -386,30 +390,31 @@ def transcript_prediction_stringtie(yaml_config):
     transcript prediction using StringTie
     """
 
-    operation_seleted = "4"
+    operation_seleted = "5"
     orgdb = expdb.experiment_db(yaml_config, operation_seleted)
 
     Jobs = []
     for org_name, det in orgdb.items():
         ## arguments to pygrid 
-        arg = [det]
+
+        arg = [[det["read_map_dir"], det["short_name"], det["read_assembly_dir"]]]
 
         job = pg.cBioJob(call_transcript_prediction_stringtie, arg) 
         
         cpus = 1 
         ## native specifications 
-        job.mem="12gb"
-        job.vmem="12gb"
-        job.pmem="12gb"
-        job.pvmem="12gb"
+        job.mem="9gb"
+        job.vmem="9gb"
+        job.pmem="9gb"
+        job.pvmem="9gb"
         job.nodes = 1
         job.ppn = cpus
-        job.walltime = "6:00:00"
+        job.walltime = "3:00:00"
 
         Jobs.append(job)
     print("\nsending transcript assembly stringtie jobs to worker\n")
 
-    local_compute = True ## switching between local multithreading and cluster computing
+    local_compute = False ## switching between local multithreading and cluster computing
     
     processedJobs = pg.process_jobs(Jobs, local=local_compute)
 
