@@ -771,7 +771,10 @@ def call_phytozome_gtf(args_list):
     """
     from fetch_remote_data import download_data as dld
     release_num, organism, genome_path = args_list
-    dld.fetch_phytozome_gff(release_num, organism, genome_path)
+
+    short_name = shorten_org_name(organism) 
+
+    dld.fetch_phytozome_gff(release_num, short_name, genome_path)
     return 'done'
 
 def call_ensembl_gtf(args_list):
@@ -818,7 +821,8 @@ def download_gtf(yaml_config):
     print 
     print "sending gtf download job to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs)
+    local_compute = True 
+    processedJobs = pg.process_jobs(Jobs, local=local_compute)
 
 
 if __name__=="__main__":
