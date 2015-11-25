@@ -403,10 +403,10 @@ def transcript_prediction_stringtie(yaml_config):
         
         cpus = 1 
         ## native specifications 
-        job.mem="9gb"
-        job.vmem="9gb"
-        job.pmem="9gb"
-        job.pvmem="9gb"
+        job.mem="12gb"
+        job.vmem="12gb"
+        job.pmem="12gb"
+        job.pvmem="12gb"
         job.nodes = 1
         job.ppn = cpus
         job.walltime = "3:00:00"
@@ -674,13 +674,29 @@ def call_metazoa_fasta(args_list):
     dld.fetch_ensembl_metazoa_fasta(release_num, organism, genome_path)
     return 'done'
 
+
+def shorten_org_name(org_name):
+    """
+    assume full name and shorten, e.g.:
+    populus_trichocarpa --> Ptrichocarpa
+    """
+
+    tokens = org_name.strip().split("_")
+    left, right = tokens[0], tokens[-1]
+    short_name = left[0].upper() + right.lower()
+
+    return short_name
+
 def call_phytozome_fasta(args_list):
     """
     wrapper for submitting jobs to pygrid
     """
     from fetch_remote_data import download_data as dld
     release_num, organism, genome_path = args_list
-    dld.fetch_phytozome_fasta(release_num, organism, genome_path)
+
+    org_name = shorten_org_name(organism) 
+
+    dld.fetch_phytozome_fasta(release_num, org_name, genome_path)
     return 'done'
 
 def call_ensembl_fasta(args_list):
@@ -727,7 +743,8 @@ def download_fasta(yaml_config):
     print 
     print "sending fasta download job to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs)
+    local_compute = True 
+    processedJobs = pg.process_jobs(Jobs, local=local_compute)
 
 
 def call_fungi_gtf(args_list):
