@@ -135,9 +135,9 @@ def barplot_argmax_each_cv(df_perf, res_file, plot_title="", ylabel="auROC"):
     ticks = [tick_step*i for i in xrange(round(ymax/tick_step)+1)]
 
     pylab.yticks(ticks)
-    pylab.xticks(xlocations, labels, rotation="45") 
+    pylab.xticks(xlocations, labels, rotation="vertical") 
 
-    fontsize=20
+    fontsize=15
     ax = pylab.gca()
     for tick in ax.xaxis.get_major_ticks():
         tick.label1.set_fontsize(fontsize)
