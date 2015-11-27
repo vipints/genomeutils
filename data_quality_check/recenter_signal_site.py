@@ -42,6 +42,8 @@ def write_fasta_rec(seq_list_total, signal):
 def load_examples_from_fasta(signal, org, data_path):
     """
     load examples from fasta file
+
+    signal 
     """
     
     fn_pos = "%s/%s_sig_%s_example.fa" % (data_path, signal, "pos")
@@ -82,19 +84,19 @@ def train_shifted_wdk_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     ## set parameters
     param = {}
     param["cost"] = 1.0
-    param["degree"] = 8
+    param["degree"] = 4 
     param["degree_spectrum"] = 4
     param["center_pos"] = 1200
     param["center_offset"] = 50 
     param["shifts"] = 32
-    param["kernel_cache"] = 8000
+    param["kernel_cache"] = 10000
 
     ## invoke training
     svm = ShogunPredictor(param)
     svm.train(train_examples, train_labels)
 
     ## save the model 
-    fname = "%s_model_%s" % (signal, uuid.uuid1()) 
+    fname = "%s_%s_model_%s" % (org_code, signal, uuid.uuid1()) 
     compressed_pickle.save(fname, svm) 
     print("saving the model in file %s" % fname)
 
@@ -260,8 +262,8 @@ def main():
     org_code = "H_sapiens"
     model_file_name = train_shifted_wdk_svm(org_code)
 
-    model_file_name =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c"
-    manual_pos_shift(model_file_name, org_code)
+    #model_file_name =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c"
+    #manual_pos_shift(model_file_name, org_code)
  
 
 if __name__ == "__main__":
