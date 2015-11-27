@@ -91,12 +91,14 @@ def filter_gene_models(gff_name, fas_file, outFile):
                 #TODO orf length of the single exon gene will be good 
                 # to look, some histone genes are long enough to have 
                 # strong TSS region 
+                """
                 single_exon_len = 0 
                 for idk, ex in enumerate(gene_recd['exons'][idx]):
                     single_exon_len = ex[1]-(ex[0]-1)
 
-                if single_exon_len > 900:
+                if single_exon_len > 1200:
                     spliced_transcript[(gene_recd['name'], sub_rec[0], gene_recd['strand'])].append((ex[0], ex[1]))
+                """
 
         if spliced_transcript: 
             transcripts_region[gene_recd['chr']].append(spliced_transcript)
