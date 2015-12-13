@@ -1,0 +1,17 @@
+
+TO BE IMPLEMENTED SOON 
+
+    a) unit testing 
+ 
+    missing fasta file -p option didn't throw any error message`
+
+R_nor erro
+'NoneType' object has no attribute 'rfind'
+
+    b) data processing script for selecting the best labels of arts program and testing with other source data 
+    
+    c) shipping this codebase part to arts repository 
+
+download the complete sample runs from SRA repo
+    
+    This has to be completed before going to the production mode 
