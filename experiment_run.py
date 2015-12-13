@@ -191,8 +191,7 @@ def fetch_db_signals(yaml_config, data_method):
             out_dir = "%s/jmlr_1K_sm_labels" % det['labels_dir']
         
         if not os.path.isfile(gff_file):## check the file present or not  
-            print "error: genome annotation file missing %s" % gff_file
-            sys.exit(0)
+            exit("error: genome annotation file missing %s" % gff_file)
        
         if not os.path.exists(out_dir): ## create the new label sequence dir 
             os.makedirs(out_dir)
