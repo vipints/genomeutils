@@ -1,57 +1,65 @@
 #!/usr/bin/env python 
 """
+usage of different resources time mem for different methods
 """
 
 import numpy 
 import matplotlib.pyplot as plt 
 import matplotlib.path as mpath 
 
-star = mpath.Path.unit_regular_star(5) 
-circle = mpath.Path.unit_circle()
 
-verts = numpy.concatenate([star.vertices, circle.vertices[::-1, ...]])
-codes = numpy.concatenate([star.codes, circle.codes]) 
+def visualize_memory_usage(out_pdf_file):
+    """
+    memory usage of each method 
+    """
 
-cut_star = mpath.Path(verts, codes) 
+    star = mpath.Path.unit_regular_star(5) 
+    circle = mpath.Path.unit_circle()
 
-## data import 
-ind_mem_taken = numpy.array([715.4726563, 715.6367188, 1413.761719, 1651.101563, 2233, 3333.40625])
-union_mem_taken = numpy.array([718.9804688, 715.5585938, 719.3164063, 2136.8125, 2840.890625, 4212.792969])
-mtl_mem_taken = numpy.array([1232.699219, 1303.710938, 1857.699219, 2365.992188, 3074.230469, 4246.414063])
-mtmkl_mem_taken = numpy.array([2636.988281, 2904.535156, 3258.386719, 3970.226563, 4674.871094, 5847.050781])
+    verts = numpy.concatenate([star.vertices, circle.vertices[::-1, ...]])
+    codes = numpy.concatenate([star.codes, circle.codes]) 
 
-plt.plot(ind_mem_taken, color='#BDB76B', marker=cut_star, markersize=8, linestyle='--')
-plt.plot(union_mem_taken, color='#9370DB', marker=cut_star, markersize=8, linestyle='--')
-plt.plot(mtl_mem_taken, color='#8FBC8B', marker=cut_star, markersize=8, linestyle='--')
-plt.plot(mtmkl_mem_taken, color='#A0522D', marker=cut_star, markersize=8, linestyle='--')
+    cut_star = mpath.Path(verts, codes) 
 
-plt.xticks()
+    ## data import 
+    ind_mem_taken = numpy.array([715.4726563, 715.6367188, 1413.761719, 1651.101563, 2233, 3333.40625])
+    union_mem_taken = numpy.array([718.9804688, 715.5585938, 719.3164063, 2136.8125, 2840.890625, 4212.792969])
+    mtl_mem_taken = numpy.array([1232.699219, 1303.710938, 1857.699219, 2365.992188, 3074.230469, 4246.414063])
+    mtmkl_mem_taken = numpy.array([2636.988281, 2904.535156, 3258.386719, 3970.226563, 4674.871094, 5847.050781])
 
-x_axis = [0, 1, 2, 3, 4, 5]
-labels = [400, 2000, 4000, 8000, 12000, 20000] 
-plt.xticks(x_axis, labels, rotation='vertical') 
+    plt.plot(ind_mem_taken, color='#BDB76B', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(union_mem_taken, color='#9370DB', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(mtl_mem_taken, color='#8FBC8B', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(mtmkl_mem_taken, color='#A0522D', marker=cut_star, markersize=8, linestyle='--')
 
-for tick in plt.gca().xaxis.get_major_ticks():
-    tick.label1.set_fontsize(8)
-for tick in plt.gca().yaxis.get_major_ticks():
-    tick.label1.set_fontsize(8)
+    plt.xticks()
+    x_axis = [0, 1, 2, 3, 4, 5]
+    labels = [400, 2000, 4000, 8000, 12000, 20000] 
+    plt.xticks(x_axis, labels, rotation='vertical') 
 
-plt.gca().get_xaxis().tick_bottom()
-plt.gca().get_yaxis().tick_left()
+    for tick in plt.gca().xaxis.get_major_ticks():
+        tick.label1.set_fontsize(8)
+    for tick in plt.gca().yaxis.get_major_ticks():
+        tick.label1.set_fontsize(8)
 
-plt.gca().get_xaxis().grid(False)
-plt.gca().get_yaxis().grid(True)
+    plt.gca().get_xaxis().tick_bottom()
+    plt.gca().get_yaxis().tick_left()
 
-plt.legend(('individual', 'union', 'mtl', 'mtmkl'), loc='upper left', fontsize=8)
-plt.title("resource requirement for different methods - memory in megabytes", fontsize=8)
-plt.ylabel('memory in megabyte', fontsize=7)
-plt.xlabel('different set of examples used for each method - each dataset splitting as training (60%), validation (20%), and testing (20%)', fontsize=7)
+    plt.gca().get_xaxis().grid(False)
+    plt.gca().get_yaxis().grid(True)
 
-plt.savefig("resource_usage.pdf")
+    plt.legend(('individual', 'union', 'mtl', 'mtmkl'), loc='upper left', fontsize=8)
+    plt.title("resource requirement for different methods - memory in megabytes", fontsize=8)
+    plt.ylabel('memory in megabyte', fontsize=7)
+    plt.xlabel('different set of examples used for each method - each dataset splitting as training (60%), validation (20%), and testing (20%)', fontsize=7)
+
+    plt.savefig(out_pdf_file)
 
 
-"""
-def time_usage_each_method():
+def time_usage_each_method(out_pdf_file):
+    """
+    time usage of each method 
+    """
 
     star = mpath.Path.unit_regular_star(5) 
     circle = mpath.Path.unit_circle()
@@ -94,6 +102,4 @@ def time_usage_each_method():
     plt.ylabel('time in seconds (log base e)', fontsize=7)
     plt.xlabel('different set of examples used for each method - each dataset splitting as training (60%), validation (20%), and testing (20%)', fontsize=7)
 
-    plt.savefig("resource_usage.pdf")
-"""
-
+    plt.savefig(out_pdf_file)
