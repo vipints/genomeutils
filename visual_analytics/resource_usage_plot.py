@@ -21,7 +21,7 @@ def visualize_memory_usage(out_pdf_file):
 
     cut_star = mpath.Path(verts, codes) 
 
-    ## data import 
+    ## data import FIXME read the csv format file with experiment details  
     ind_mem_taken = numpy.array([715.4726563, 715.6367188, 1413.761719, 1651.101563, 2233, 3333.40625])
     union_mem_taken = numpy.array([718.9804688, 715.5585938, 719.3164063, 2136.8125, 2840.890625, 4212.792969])
     mtl_mem_taken = numpy.array([1232.699219, 1303.710938, 1857.699219, 2365.992188, 3074.230469, 4246.414063])
@@ -33,6 +33,7 @@ def visualize_memory_usage(out_pdf_file):
     plt.plot(mtmkl_mem_taken, color='#A0522D', marker=cut_star, markersize=8, linestyle='--')
 
     plt.xticks()
+    #TODO the labeling of x axis with # of experiments 
     x_axis = [0, 1, 2, 3, 4, 5]
     labels = [400, 2000, 4000, 8000, 12000, 20000] 
     plt.xticks(x_axis, labels, rotation='vertical') 
@@ -96,7 +97,8 @@ def time_usage_each_method(out_pdf_file):
 
     plt.gca().get_xaxis().grid(False)
     plt.gca().get_yaxis().grid(True)
-
+    
+    # FIXME the title and labels for axis to be user provided
     plt.legend(('individual', 'union', 'mtl', 'mtmkl'), loc='upper left', fontsize=8)
     plt.title("resource requirement for different methods - time in seconds", fontsize=8)
     plt.ylabel('time in seconds (log base e)', fontsize=7)
