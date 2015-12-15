@@ -43,14 +43,14 @@ def get_feature_seq(faname, gfname, signal='tss', label_cnt=4000, plus_cnt=3000,
     @type gfname: str
     @args signal: different genomic signal types ['splice', 'cdsstop', 'cleave', 'tss', 'tis']
     @type signal: str
-    @args label_cnt: number of random labels to be selected 
-    @type label_cnt: integer
-    @args plus_cnt: plus label count TODO default parameter details 
-    @type plus_cnt: integer
-    @args minus_cnt: minus label count 
-    @type minus_cnt: integer
-    @args flanks: flanking sequence length 
-    @type flanks: integer
+    @args label_cnt: #random examples to be selected (default: 4000) 
+    @type label_cnt: int
+    @args plus_cnt: #pos examples (default: 3000) 
+    @type plus_cnt: int 
+    @args minus_cnt: #neg examples (default: 9000) 
+    @type minus_cnt: int
+    @args flanks: flanking sequence length (default: 1200)  
+    @type flanks: int
     """
     
     ## check the files
