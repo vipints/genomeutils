@@ -27,10 +27,10 @@ def visualize_memory_usage(out_pdf_file):
     mtl_mem_taken = numpy.array([1232.699219, 1303.710938, 1857.699219, 2365.992188, 3074.230469, 4246.414063])
     mtmkl_mem_taken = numpy.array([2636.988281, 2904.535156, 3258.386719, 3970.226563, 4674.871094, 5847.050781])
 
-    plt.plot(ind_mem_taken, color='#BDB76B', marker=cut_star, markersize=8, linestyle='--')
-    plt.plot(union_mem_taken, color='#9370DB', marker=cut_star, markersize=8, linestyle='--')
-    plt.plot(mtl_mem_taken, color='#8FBC8B', marker=cut_star, markersize=8, linestyle='--')
-    plt.plot(mtmkl_mem_taken, color='#A0522D', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(ind_mem_taken, color='#BDB76B', marker=cut_star, markersize=7, linestyle='--')
+    plt.plot(union_mem_taken, color='#9370DB', marker=cut_star, markersize=7, linestyle='--')
+    plt.plot(mtl_mem_taken, color='#8FBC8B', marker=cut_star, markersize=7, linestyle='--')
+    plt.plot(mtmkl_mem_taken, color='#A0522D', marker=cut_star, markersize=7, linestyle='--')
 
     plt.xticks()
     #TODO the labeling of x axis with # of experiments 
@@ -50,9 +50,9 @@ def visualize_memory_usage(out_pdf_file):
     plt.gca().get_yaxis().grid(True)
 
     plt.legend(('individual', 'union', 'mtl', 'mtmkl'), loc='upper left', fontsize=8)
-    plt.title("resource requirement for different methods - memory in megabytes", fontsize=8)
+    plt.title("Resource requirement for different methods - memory in megabytes", fontsize=8)
     plt.ylabel('memory in megabyte', fontsize=7)
-    plt.xlabel('different set of examples used for each method - each dataset splitting as training (60%), validation (20%), and testing (20%)', fontsize=7)
+    plt.xlabel('16 different organisms, each has different set of examples (60% for training the model) used for each method with 1:3 positive, negative combo.', fontsize=7)
 
     plt.savefig(out_pdf_file)
 
@@ -76,10 +76,10 @@ def time_usage_each_method(out_pdf_file):
     mtl_time_taken = numpy.array([124.3881071, 355.7790811, 740.989918, 1197.821371, 1529.896782, 2454.422433])
     mtmkl_time_taken = numpy.array([1196.226963, 2115.524649, 3292.124688, 4480.232922, 5862.847364, 8826.01638])
 
-    plt.plot(numpy.log(ind_time_taken), color='#BDB76B', marker=cut_star, markersize=8, linestyle='--')
-    plt.plot(numpy.log(union_time_taken), color='#9370DB', marker=cut_star, markersize=8, linestyle='--')
-    plt.plot(numpy.log(mtl_time_taken), color='#8FBC8B', marker=cut_star, markersize=8, linestyle='--')
-    plt.plot(numpy.log(mtmkl_time_taken), color='#A0522D', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(numpy.log10(ind_time_taken), color='#BDB76B', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(numpy.log10(union_time_taken), color='#9370DB', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(numpy.log10(mtl_time_taken), color='#8FBC8B', marker=cut_star, markersize=8, linestyle='--')
+    plt.plot(numpy.log10(mtmkl_time_taken), color='#A0522D', marker=cut_star, markersize=8, linestyle='--')
 
     plt.xticks()
 
@@ -100,8 +100,8 @@ def time_usage_each_method(out_pdf_file):
     
     # FIXME the title and labels for axis to be user provided
     plt.legend(('individual', 'union', 'mtl', 'mtmkl'), loc='upper left', fontsize=8)
-    plt.title("resource requirement for different methods - time in seconds", fontsize=8)
-    plt.ylabel('time in seconds (log base e)', fontsize=7)
-    plt.xlabel('different set of examples used for each method - each dataset splitting as training (60%), validation (20%), and testing (20%)', fontsize=7)
+    plt.title("Resource requirement for different methods - time in seconds", fontsize=8)
+    plt.ylabel('time in seconds (log base 10)', fontsize=7)
+    plt.xlabel('16 different organisms, each has different set of examples (60% for training the model) used for each method with 1:3 positive, negative combo.', fontsize=7)
 
     plt.savefig(out_pdf_file)
