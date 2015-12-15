@@ -42,21 +42,27 @@ def write_fasta_rec(seq_list_total, signal):
 def load_examples_from_fasta(signal, org, data_path):
     """
     load examples from fasta file
-
-    signal 
+    
+    @args signal: genomic signal type (default: tss) 
+    @type signal: str 
+    @args org: organism name (ex: A_thaliana) 
+    @type org: str 
+    @args data_path: file path for training data points 
+    @type data_path: str 
     """
     
+    ## defining the data point complete path   
     fn_pos = "%s/%s_sig_%s_example.fa" % (data_path, signal, "pos")
     fn_neg = "%s/%s_sig_%s_example.fa" % (data_path, signal, "neg")
     print "loading: \n %s \n %s" % (fn_pos, fn_neg) 
 
-    # parse file
+    ## parse examples from fasta file
     xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
     xt_neg = [str(rec.seq) for rec in SeqIO.parse(fn_neg, "fasta")]
 
     labels = [+1] * len(xt_pos) + [-1] * len(xt_neg)
     examples = xt_pos + xt_neg
-
+    ## some log information 
     print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
 
     examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
@@ -68,6 +74,13 @@ def load_examples_from_fasta(signal, org, data_path):
 def train_shifted_wdk_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     """
     train SVM based on the examples from different sources 
+
+    @args org_code: organism name (ex: A_thaliana)
+    @type org_code: str 
+    @args signal: genomic signal type (default: tss) 
+    @type signal: str 
+    @args data_path: file path for training data points 
+    @type data_path: str 
     """
 
     import time 
