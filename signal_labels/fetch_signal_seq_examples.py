@@ -1085,7 +1085,7 @@ def minus_tss_seq_fetch(fnam, Label, tss_check, tr_gene_mp, boundary=100, sample
                             rloc = random.randint(loc[2][0]-1000,loc[2][1])
                         elif loc[1]=='-':
                             rloc = random.randint(loc[2][0],loc[2][1]+1000)
-                        else: ## if there is no strand info 
+                        else: ## TODO fix it - if there is no strand info 
                             rloc = random.randint(loc[2][0]-1000,loc[2][1])
 
                         # remove the true signal index from random sampling 
