@@ -69,6 +69,8 @@ def matching_pos_neg_example(in_fas_pos, in_fas_neg):
     
     from collections import defaultdict 
 
+    signal = "tss"
+
     total_record_count = 4200 ## based on the pos examples 
     sub_sample_records = 1000  
     neg_sample_ratio = 3 ## sub sample ratio pos:neg  
@@ -79,7 +81,7 @@ def matching_pos_neg_example(in_fas_pos, in_fas_neg):
         accept_prob = 1
 
     print accept_prob
-    pos_fas_out = open("tss_sig_pos_example.fa", "w") 
+    pos_fas_out = open("%s_sig_pos_example.fa" % signal, "w") 
     
     fasta_rec = 0 
     sample_cnt = 1
@@ -102,7 +104,7 @@ def matching_pos_neg_example(in_fas_pos, in_fas_neg):
     sys.stdout.write('%d number of examples dumped\n' % sample_cnt)
 
     pos_neg_ratio = defaultdict(int) 
-    neg_fas_out = open("tss_sig_neg_example.fa", "w") 
+    neg_fas_out = open("%s_sig_neg_example.fa" % signal, "w") 
     for rec_neg in SeqIO.parse(in_fas_neg, 'fasta'):
         desc_neg = rec_neg.description.split(" ")
 
