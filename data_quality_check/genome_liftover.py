@@ -20,6 +20,7 @@ from collections import defaultdict
 def lift_genome(chrom_bed_file):
     """
     run genome lifting program using a chain file 
+    the chain file can be downloaded from ucsc main site
     """
 
     chain_file = "hg16ToHg19.chain"
@@ -27,7 +28,6 @@ def lift_genome(chrom_bed_file):
     lifted_file = "hg19_examples.bed" 
 
     return lifted_file
-
 
 
 def data_processing(training_example_file):
@@ -55,9 +55,7 @@ def data_processing(training_example_file):
 def write_lifted_example_seq(lifted_coord_file, genome_seq): 
     """
     TSS example sequence writer 
-
     """
-    
 
     ## creating the features db 
     example_db = defaultdict(list) 
