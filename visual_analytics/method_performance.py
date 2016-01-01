@@ -98,7 +98,6 @@ def barplot_argmax_each_cv(df_perf, res_file, plot_title="", ylabel="auROC"):
     
     methods = ['individual', 'union', 'mtl', 'mtmkl'] 
     #methods = ['individual', 'union', 'mtl']
-    methods = ['individual']
 
     for org, perf in df_perf.iteritems():
         num_methods = len(perf)
