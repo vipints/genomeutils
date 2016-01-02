@@ -34,6 +34,10 @@ def run_stringtie(bam_file, trans_pred_file="_tmp_strtie_genes.gff"):
     stringtie H_sapiens_Aligned_mmr_sortbyCoord.bam -o H_sapiens_stringtie_genes.gff -f 0.7 -m 400 -j 10 -c 10         
     """
 
+    #TODO 
+    # create a function which handles the sorting of reads in a bam file according to the coordinates. 
+    #
+
     try:
         subprocess.call(["stringtie"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except:
