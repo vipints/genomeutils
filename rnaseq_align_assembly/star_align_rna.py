@@ -377,6 +377,9 @@ def calculate_insert_size_from_bam(bam_file):
 
     import pysam 
 
+    ## paired end reads in BAM format 
+    ## read the bam file 
+
 
 def calculate_insert_size(org_db):
     """
@@ -385,6 +388,14 @@ def calculate_insert_size(org_db):
 
     import re 
     from glob import glob 
+    
+    ref_genome = org_db["fasta"]
+    reads = org_db["fastq"]
+
+    try:
+        subprocess.call(["bwa"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `bwa` binary is in your $PATH")
 
     #FIXME 
     """
