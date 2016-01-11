@@ -81,6 +81,8 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
         print 'selected %d acc %d don _negative_ %s signal lables' % (acc_cnt, don_cnt, signal)
         label_count = (acc_cnt + don_cnt)/2
     
+        plus_label_cleanup([signal], plus_cnt, label_count_plus)
+        minus_label_cleanup([signal], minus_cnt, label_count)
     elif signal == 'tis':
         label_count_plus = true_tis_seq_fetch(faname, posLabel, flanks)
         print 'selected %d positive %s signal lables' % (label_count_plus, signal) 
@@ -125,7 +127,7 @@ def main(faname, gfname, signal='tss', label_cnt=5000, plus_cnt=1000, minus_cnt=
         print 'selected %d negative %s signal lables' % (label_count, signal)
 
     # remove the extra labels fetched from the previous step 
-    label_id_minus = minus_label_cleanup([signal], minus_cnt, label_count)
+    #label_id_minus = minus_label_cleanup([signal], minus_cnt, label_count)
 
     # signal label processing over 
     print '%s signal done.' % signal
@@ -244,7 +246,7 @@ def minus_label_cleanup(sig_type, minus_label_cnt, feat_count):
         shutil.move('%s_sig_neg_example.bkp' % signal, '%s_sig_neg_example.fa' % signal )
         sys.stdout.write('cleaned %d minus %s signal examples stored in %s_sig_neg_example.fa\n' % (counter, signal, signal))
 
-        return label_seq_ids
+        #return label_seq_ids
 
 
 def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
@@ -300,7 +302,7 @@ def plus_label_cleanup(sig_type, plus_label_cnt, feat_count):
         shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example.fa' % signal)
         sys.stdout.write('cleaned %d plus %s signal examples stored in %s_sig_pos_example.fa\n' % (counter, signal, signal))
 
-        return label_seq_ids
+        #return label_seq_ids
 
 
 def random_pick(signal, plus_minus, non_dup_ent, lb_cnt, apt_prob):
@@ -811,8 +813,8 @@ def false_ss_seq_fetch(fnam, Label, don_acc_check, tr_gene_mp, boundary=100, sam
     @type sample: int  
     """
 
-    don_min_fh = open("don_sig_minus_label.fa", 'w')
-    acc_min_fh = open("acc_sig_minus_label.fa", 'w')
+    don_min_fh = open("don_sig_neg_example.fa", 'w')
+    acc_min_fh = open("acc_sig_neg_example.fa", 'w')
 
     true_label_acc = 0 
     true_label_don = 0 
@@ -1129,8 +1131,8 @@ def true_ss_seq_fetch(fnam, Label, boundary=100):
     @type boundary: integer 
     """
 
-    don_pos_fh = open("don_sig_plus_label.fa", 'w')
-    acc_pos_fh = open("acc_sig_plus_label.fa", 'w')
+    don_pos_fh = open("don_sig_pos_example.fa", 'w')
+    acc_pos_fh = open("acc_sig_pos_example.fa", 'w')
 
     true_label_acc = 0
     true_label_don = 0 
