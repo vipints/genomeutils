@@ -1,6 +1,16 @@
 #!/usr/bin/env python 
+"""
 
+"""
 
+## standard modules 
+import time 
+import uuid
+import numpy
+from Bio import SeqIO
+
+## custom modules
+import helper 
 from utils import compressed_pickle
 from promoter_kernel import ShogunPredictor
 
@@ -49,8 +59,6 @@ def train_wdspeck_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     @args data_path: file path for training data points 
     @type data_path: str 
     """
-
-    import time 
     t0 = time.time()
 
     ## loading data
