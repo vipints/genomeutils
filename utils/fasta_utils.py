@@ -1,9 +1,29 @@
 #!/usr/bin/env python 
 
 from Bio import SeqIO 
+from Bio.SeqRecord import SeqRecord
 from operator import itemgetter
 
 from gfftools import helper 
+
+
+def trim_fasta_rec_seq(infasta, outfasta, left_trim=100, right_trim=-100):
+    """
+    """
+    
+    try: 
+        outfh = open(outfasta, "w")
+    except OSError:
+        exit("error: cannot create file %s " % outfasta)
+    
+    for rec in SeqIO.parse(infasta, "fasta"):
+        trim_seq = rec.seq[left_trim:right_trim]
+
+        trim_seq_rec = SeqRecord(trim_seq, id=rec.id, description=rec.description)
+        outfh.write(trim_seq_rec.format("fasta"))
+ 
+    outfh.close() 
+
 
 
 def split_fasta_records(fas_fname):
