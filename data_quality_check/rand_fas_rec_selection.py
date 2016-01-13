@@ -62,14 +62,12 @@ def fetch_random_example_seq(fasta_in, fa_out, category="+1", total_record_count
     sys.stdout.write('%d number of labels dumped\n\n' % cnt)
 
 
-def matching_pos_neg_example(in_fas_pos, in_fas_neg):
+def matching_pos_neg_example(in_fas_pos, in_fas_neg, signal="tss"):
     """
     fetch random pos examples and corresponding neg example in 1:3 ratio 
     """
     
     from collections import defaultdict 
-
-    signal = "tss"
 
     total_record_count = 4200 ## based on the pos examples 
     sub_sample_records = 1000  
@@ -116,9 +114,6 @@ def matching_pos_neg_example(in_fas_pos, in_fas_neg):
 
             neg_fas_out.write(rec_neg.format("fasta"))
 
-        #import ipdb 
-        #ipdb.set_trace()
-
     neg_fas_out.close() 
 
 
@@ -142,4 +137,3 @@ if __name__=="__main__":
         exit(__doc__)
 
     matching_pos_neg_example(in_fasta_pos, in_fasta_neg)
-
