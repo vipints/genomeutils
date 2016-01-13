@@ -9,6 +9,14 @@ from gfftools import helper
 
 def trim_fasta_rec_seq(infasta, outfasta, left_trim=100, right_trim=-100):
     """
+    @args infasta: input fasta file 
+    @type infasta: str 
+    @args outfasta: fasta result file name 
+    @type outfasta: str 
+    @args left_trim: number of nucleotides to remove from upstream  
+    @type left_trim: int 
+    @args right_trim: number of nucleotides to remove from downstream 
+    @type right_trim: int 
     """
     
     try: 
