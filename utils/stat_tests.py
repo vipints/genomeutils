@@ -50,6 +50,34 @@ def best_test_perf_with_eval(xv_result_file, methods=None, org_names=None):
     return best_test_perf
 
 
+def compute_friedman_test(best_test_score):
+    """
+    """
+   
+    ## test pair combinations 
+    pairs_test = [('individual', 'union', 'mtl'), ('individual', 'union', 'mtmkl'), \
+        ('individual', 'mtl', 'mtmkl'), ('union', 'mtl', 'mtmkl')]
+    org_names = best_test_score.keys()
+
+    ##ttest_p_val = numpy.zeros((len(org_names), len(pairs_test)))
+    ttest_p_val = numpy.zeros((len(pairs_test), len(org_names)))
+
+    for org_idx, org_code in enumerate(org_names):
+        meth_perf = best_test_score[org_code]
+
+        for pair_idx, rel_pair in enumerate(pairs_test):
+            t_stats, p_val = stats.friedmanchisquare(meth_perf[rel_pair[0]], meth_perf[rel_pair[1]], meth_perf[rel_pair[2]])
+            
+            ##ttest_p_val[org_idx, pair_idx] = p_val
+            ttest_p_val[pair_idx, org_idx] = p_val
+        
+    
+    ##df_pval = pandas.DataFrame(ttest_p_val, columns=pairs_test, index=org_names)
+    df_pval = pandas.DataFrame(ttest_p_val, columns=org_names, index=pairs_test)
+    
+    return df_pval 
+
+
 def compute_wilcoxon_test(best_test_score):
     """
     """
