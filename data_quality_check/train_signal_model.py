@@ -94,3 +94,10 @@ def train_wdspeck_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     return fname 
 
 
+def train_combined_wdspeck_svm():
+    """
+    training a model based on the examples from different organisms
+    a global model something like union method 
+    """
+
+    data_path = ""
