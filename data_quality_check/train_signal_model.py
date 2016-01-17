@@ -96,7 +96,7 @@ def train_wdspeck_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
 
 def get_orgdb(fn):
     """
-    organism name
+    retrive organism name from txt file 
     """
 
     org_names = []
@@ -112,12 +112,17 @@ def get_orgdb(fn):
 
 def train_combined_wdspeck_svm(org_list_file, signal="tss", data_path="SRA-seq"):
     """
-    training a model based on the examples from different organisms
-    a global model something like union method 
+    train a global classifier for multiple organisms
+
+    @args org_list_file: organism name in a text file 
+    @type org_list_file: str 
+    @args signal: genomic signal type (default: tss) 
+    @type signal: str 
+    @args data_path: file path for training data points 
+    @type data_path: str 
     """
 
     t0 = time.time()
-
     ORG_LIST = get_orgdb(org_list_file)
 
     train_examples = [] 
@@ -156,4 +161,3 @@ def train_combined_wdspeck_svm(org_list_file, signal="tss", data_path="SRA-seq")
     print("time taken for the experiment: ", time_taken)
 
     return fname 
-
