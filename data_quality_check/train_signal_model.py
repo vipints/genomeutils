@@ -94,10 +94,66 @@ def train_wdspeck_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     return fname 
 
 
-def train_combined_wdspeck_svm():
+def get_orgdb(fn):
+    """
+    organism name
+    """
+
+    org_names = []
+    for line in open(fn):
+        if line.strip() != "" and not line.startswith("#"):
+            org_names.append(line.strip())
+
+    org_names.sort()
+    print org_names
+
+    return org_names
+
+
+def train_combined_wdspeck_svm(org_list_file, signal="tss", data_path="SRA-seq"):
     """
     training a model based on the examples from different organisms
     a global model something like union method 
     """
 
-    data_path = ""
+    t0 = time.time()
+
+    ORG_LIST = get_orgdb(org_list_file)
+
+    train_examples = [] 
+    train_labels = []
+
+    for ORG_NAME in ORG_LIST: 
+        ## loading data
+        local_data_path = "%s/%s/set_1" % (data_path, ORG_NAME) ## FIXME common data path
+        data = load_examples_from_fasta(signal, ORG_NAME, local_data_path)
+        assert(len(data["examples"]) == len(data["labels"]))
+
+        ## split the data 
+        train_examples.extend(data["examples"])
+        train_labels.extend(data["labels"])
+
+    ## set parameters
+    param = {}
+    param["cost"] = 1.0
+    param["degree"] = 4 
+    param["degree_spectrum"] = 4
+    param["center_pos"] = 1200
+    param["center_offset"] = 50 
+    param["shifts"] = 32
+    param["kernel_cache"] = 10000
+
+    ## invoke training
+    svm = ShogunPredictor(param)
+    svm.train(train_examples, train_labels)
+
+    ## save the model 
+    fname = "%s_model_%s" % (signal, uuid.uuid1()) 
+    compressed_pickle.save(fname, svm) 
+    print("saving the model in file %s" % fname)
+
+    time_taken = time.time() - t0
+    print("time taken for the experiment: ", time_taken)
+
+    return fname 
+
