@@ -79,13 +79,15 @@ def split_data_second(signal, in_fas_pos, sub_sample_records, accept_prob, selec
 
 
 
-def split_data_random_non_overlap(signal="tss", total_record_count=2000):
+#def split_data_random_non_overlap(signal="tss", total_record_count=2000):
+def split_data_random_non_overlap(signal="tss", total_record_count=1000):
     """
     """
 
     in_fas_pos = "%s_sig_pos_example.fa" % signal
     #FIXME 
     sub_sample_records = 1000
+    sub_sample_records = 600
 
     try:
         accept_prob = (1.0*sub_sample_records)/total_record_count
@@ -107,7 +109,9 @@ def split_data_random_non_overlap(signal="tss", total_record_count=2000):
     except:
         accept_prob = 1
 
-    """
+
+
+    sub_sample_records = 200
     while True:
         counter, pos_rec_second = split_data_second(signal, in_fas_pos, sub_sample_records, accept_prob, pos_rec_selected)
 
@@ -120,10 +124,12 @@ def split_data_random_non_overlap(signal="tss", total_record_count=2000):
     ## FIXME better way - concatenate two defaultdict 
     for rec_id in pos_rec_second:
         pos_rec_selected[rec_id] = 0 
-    """
+        
+
 
     #FIXME 
     sub_sample_records = 1000
+    sub_sample_records = 200
     split_data_rest(signal, in_fas_pos, sub_sample_records, pos_rec_selected)
 
     shutil.move('%s_sig_pos_example.bkp' % signal, '%s_sig_pos_example_3.fa' % signal)
