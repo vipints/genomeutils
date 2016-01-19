@@ -1,5 +1,6 @@
 #!/usr/bin/env python 
 """
+training a model with single or multiple organisms 
 """
 
 ## standard modules 
@@ -68,7 +69,7 @@ def train_wdspeck_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
     train_examples = data["examples"]
     train_labels = data["labels"]
 
-    ## set parameters
+    ## set parameters TODO 
     param = {}
     param["cost"] = 1.0
     param["degree"] = 4 
@@ -137,7 +138,7 @@ def train_combined_wdspeck_svm(org_list_file, signal="tss", data_path="SRA-seq")
         train_examples.extend(data["examples"])
         train_labels.extend(data["labels"])
 
-    ## set parameters
+    ## set parameters TODO
     param = {}
     param["cost"] = 1.0
     param["degree"] = 4 
