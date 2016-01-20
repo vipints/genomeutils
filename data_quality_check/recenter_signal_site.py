@@ -39,71 +39,6 @@ def write_fasta_rec(seq_list_total, signal):
     out_fh.close() 
 
 
-def load_examples_from_fasta(signal, org, data_path):
-    """
-    load examples from fasta file
-    
-    @args signal: genomic signal type (default: tss) 
-    @type signal: str 
-    @args org: organism name (ex: A_thaliana) 
-    @type org: str 
-    @args data_path: file path for training data points 
-    @type data_path: str 
-    """
-    
-    ## defining the data point complete path   
-    fn_pos = "%s/%s_sig_%s_example.fa" % (data_path, signal, "pos")
-    fn_neg = "%s/%s_sig_%s_example.fa" % (data_path, signal, "neg")
-    print "loading: \n %s \n %s" % (fn_pos, fn_neg) 
-
-    ## parse examples from fasta file
-    xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
-    xt_neg = [str(rec.seq) for rec in SeqIO.parse(fn_neg, "fasta")]
-
-    labels = [+1] * len(xt_pos) + [-1] * len(xt_neg)
-    examples = xt_pos + xt_neg
-    ## some log information 
-    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
-
-    examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
-    ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
-
-    return ret
-
-
-
-def predict_and_recenter(args_list):
-    """
-    fix the position
-    recenter the signal position according to the local max pred out 
-    """
-
-    start_scan, stop_scan, model, data_set = args_list 
-    trimed_seq_list = [] 
-    
-    for datum in data_set:## wrapping multiple sequence 
-
-        tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
-
-        ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
-        for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
-            model.param["center_pos"] = shifted_cen
-            out = model.predict(datum)
-            tss_score[idy] = out[0] 
-
-        max_pred_out = numpy.argmax(tss_score)
-        center_pos = 1200
-        left_offset = center_pos - start_scan
-        
-        if max_pred_out < left_offset: ## center_offset left 
-            rel_cen_pos = (center_pos - left_offset) + max_pred_out ## center_pos 
-        else:
-            rel_cen_pos = center_pos + (max_pred_out-left_offset)
-
-        trimed_seq = datum[0][rel_cen_pos-1100:rel_cen_pos] + datum[0][rel_cen_pos:(rel_cen_pos+1100)] 
-        trimed_seq_list.append(trimed_seq)
-
-    return trimed_seq_list
 
 
 def predict_around_region(args_list):
@@ -144,29 +79,105 @@ def reduce_pred_score(flat_result_list):
     return merged_arr
 
 
-def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
+def load_model(svm_file):
+    """
+    load the model from a pickled file
+    """
+
+    import bz2 
+    import cPickle 
+
+    fh = bz2.BZ2File(svm_file, "rb")
+    svm = cPickle.load(fh) 
+    fh.close() 
+
+    return svm
+
+
+def load_examples_from_fasta(signal, ex_type, org, data_path):
+    """
+    load examples from fasta file
+    
+    @args signal: genomic signal type (default: tss) 
+    @type signal: str 
+    @args ex_type: example type (default: pos) 
+    @type ex_type: str 
+    @args org: organism name (ex: A_thaliana) 
+    @type org: str 
+    @args data_path: file path for training data points 
+    @type data_path: str 
+    """
+    
+    fn_pos = "%s/%s_sig_%s_example.fa" % (data_path, signal, ex_type)
+    print("loading: \n %s" % (fn_pos))
+
+    # parse file
+    xt_pos = [str(rec.seq) for rec in SeqIO.parse(fn_pos, "fasta")]
+    labels =  [+1] * len(xt_pos)
+    examples =  xt_pos
+
+    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos)))
+
+    examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
+    ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
+
+    return ret
+
+
+def predict_and_recenter(args_list):
+    """
+    fix the position
+    recenter the signal position according to the local max pred out 
+    """
+
+    start_scan, stop_scan, model, data_set = args_list 
+    trimed_seq_list = [] 
+    
+    for datum in data_set:## wrapping multiple sequence 
+
+        tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
+
+        ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
+        for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
+            model.param["center_pos"] = shifted_cen
+            out = model.predict(datum)
+            tss_score[idy] = out[0] 
+
+        max_pred_out = numpy.argmax(tss_score)
+        center_pos = 1200
+        left_offset = center_pos - start_scan
+        
+        if max_pred_out < left_offset: ## center_offset left 
+            rel_cen_pos = (center_pos - left_offset) + max_pred_out ## center_pos 
+        else:
+            rel_cen_pos = center_pos + (max_pred_out-left_offset)
+
+        trimed_seq = datum[0][rel_cen_pos-1100:rel_cen_pos] + datum[0][rel_cen_pos:(rel_cen_pos+1100)] 
+        trimed_seq_list.append(trimed_seq)
+
+    return trimed_seq_list
+
+
+
+def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
     """
     manually look at the position around the original position 
     """
 
     ## loading data
-    data = load_examples_from_fasta(signal, org, data_path)
+    data = load_examples_from_fasta(signal, example_type, org, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
 
     ## unpack the model
-    import bz2 
-    import cPickle 
-
-    fh = bz2.BZ2File(svm_file, "rb")
-    model = cPickle.load(fh) 
-    fh.close() 
-    
+    model = load_model(svm_file)
+   
     ## getting the model information 
     center_pos = model.param["center_pos"]
     center_offset = model.param["center_offset"]
     
     print("model - center pos: %i, center reg: %i" % (center_pos, center_offset))
-
+    
+    ## the recentering the center regions 
     start_scan = center_pos-center_offset
     stop_scan = center_pos+center_offset
 
@@ -174,34 +185,29 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
     data_set = [] 
     argument_list = [] 
 
-    label_type = -1 ## label_type will be +1/-1
-
     ## get the individual examples to recenter the signal position manually
     for idx, single_example in enumerate(data["examples"]):  
-
         datum = [single_example]
-        label_info = data['labels'][idx]
-        
-        if label_info != label_type: 
-            cnt += 1
+        cnt += 1
 
-            if cnt % 10 == 0: ## packing 10 seq to one job 
-                data_set.append(datum)
+        if cnt % 10 == 0: ## packing 10 seq to one job 
+            data_set.append(datum)
 
-                arg = [start_scan, stop_scan, model, data_set]
-                argument_list.append(arg)
+            arg = [start_scan, stop_scan, model, data_set]
+            argument_list.append(arg)
 
-                data_set = [] 
-            else:
-                data_set.append(datum)
-                
+            data_set = [] 
+        else:
+            data_set.append(datum)
     
+    ## cluster compute options   
     local = False 
-    cluster_resource = {'pvmem':'4gb', 'pmem':'4gb', 'mem':'4gb', 'vmem':'4gb','ppn':'1', 'nodes':'1', 'walltime':'4:00:00'}
-    task_type = 0 # 1 recenter seq, 0 predict score  
+    cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
+
+    ## job dispatching 
+    intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="8gb") 
 
     if task_type:
-        intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
         print "Done with computation"
 
         fixed_example_seq = reduce_modified_seq(intm_ret) 
@@ -226,11 +232,7 @@ def manual_pos_shift(svm_file, org, signal="tss", data_path="SRA-rnaseq"):
 def main():
 
     org_code = "H_sapiens"
-    model_file_name = train_shifted_wdk_svm(org_code)
 
-    #model_file_name =  "tss_28a9ce8c-528f-11e5-b86a-90e2ba3a745c"
-    #manual_pos_shift(model_file_name, org_code)
- 
 
 if __name__ == "__main__":
     main()
