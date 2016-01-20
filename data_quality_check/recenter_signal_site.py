@@ -71,53 +71,6 @@ def load_examples_from_fasta(signal, org, data_path):
     return ret
 
 
-def train_shifted_wdk_svm(org_code, signal="tss", data_path="SRA-rnaseq"):
-    """
-    train SVM based on the examples from different sources 
-
-    @args org_code: organism name (ex: A_thaliana)
-    @type org_code: str 
-    @args signal: genomic signal type (default: tss) 
-    @type signal: str 
-    @args data_path: file path for training data points 
-    @type data_path: str 
-    """
-
-    import time 
-    t0 = time.time()
-
-    ## loading data
-    data = load_examples_from_fasta(signal, org_code, data_path)
-    assert(len(data["examples"]) == len(data["labels"]))
-
-    ## split the data 
-    train_examples = data["examples"]
-    train_labels = data["labels"]
-
-    ## set parameters
-    param = {}
-    param["cost"] = 1.0
-    param["degree"] = 4 
-    param["degree_spectrum"] = 4
-    param["center_pos"] = 1200
-    param["center_offset"] = 50 
-    param["shifts"] = 32
-    param["kernel_cache"] = 10000
-
-    ## invoke training
-    svm = ShogunPredictor(param)
-    svm.train(train_examples, train_labels)
-
-    ## save the model 
-    fname = "%s_%s_model_%s" % (org_code, signal, uuid.uuid1()) 
-    compressed_pickle.save(fname, svm) 
-    print("saving the model in file %s" % fname)
-
-    time_taken = time.time() - t0
-    print("time taken for the experiment: ", time_taken)
-
-    return fname 
-
 
 def predict_and_recenter(args_list):
     """
