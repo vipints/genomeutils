@@ -123,13 +123,13 @@ def train_combined_wdspeck_svm(org_list_file, signal="tss", data_path="SRA-seq")
     """
 
     t0 = time.time()
+    ## getting multiple oragnisms 
     ORG_LIST = get_orgdb(org_list_file)
 
+    ## loading data
     train_examples = [] 
     train_labels = []
-
     for ORG_NAME in ORG_LIST: 
-        ## loading data
         local_data_path = "%s/%s/set_1" % (data_path, ORG_NAME) ## FIXME common data path
         data = load_examples_from_fasta(signal, ORG_NAME, local_data_path)
         assert(len(data["examples"]) == len(data["labels"]))
