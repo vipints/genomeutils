@@ -15,11 +15,6 @@ from promoter_kernel import ShogunPredictor
 import libpyjobrunner as pg
 
 
-
-
-
-
-
 def load_examples_from_fasta(signal, ex_type, org, data_path):
     """
     load examples from fasta file
@@ -105,64 +100,6 @@ def reduce_pred_score(flat_result_list):
     return merged_arr
 
 
-def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
-    """
-    calculate svm prediction score around the true signal site
-    """
-
-    ## loading data
-    data = load_examples_from_fasta(signal, example_type, org, data_path)
-    assert(len(data["examples"]) == len(data["labels"]))
-
-    ## unpack the model
-    model = load_model(svm_file)
-   
-    ## getting the model information 
-    center_pos = model.param["center_pos"]
-    center_offset = model.param["center_offset"]
-    
-    print("model - center pos: %i, center reg: %i" % (center_pos, center_offset))
-    
-    ## the center regions 
-    start_scan = center_pos-center_offset
-    stop_scan = center_pos+center_offset
-
-    cnt = 0
-    data_set = [] 
-    argument_list = [] 
-
-    ## get the individual examples to get the pred score around region 
-    for idx, single_example in enumerate(data["examples"]):  
-        datum = [single_example]
-        cnt += 1
-
-        if cnt % 10 == 0: ## packing 10 seq to one job 
-            data_set.append(datum)
-
-            arg = [start_scan, stop_scan, model, data_set]
-            argument_list.append(arg)
-
-            data_set = [] 
-        else:
-            data_set.append(datum)
-    
-    local = False ## switch between local and compute cluster 
-    ## cluster compute options   
-    cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
-
-    intm_ret = pg.pg_map(predict_site_region, argument_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
-    print("Done with calculating the score for center region of example sequences")
-
-    pred_out_val = reduce_pred_score(intm_ret) 
-    print("Done with collecting scores from different workers")
-
-    ## save the scores 
-    fname = "%s_%s_ex_pred_score_%s" % (signal, example_type, uuid.uuid1()) 
-    compressed_pickle.save(fname, pred_out_val) 
-
-    print("saving the scores in file %s" % fname)
-
-
 def recenter_examples(args_list):
     """
     According to the local maximum prediction output score, 
@@ -224,9 +161,9 @@ def write_fasta_rec(seq_list_total, signal, ex_type):
     out_fh.close() 
 
 
-def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
+def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs):
     """
-    manually look at the position around the original position 
+    get the input data to do computation
     """
 
     ## loading data
@@ -255,7 +192,7 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
         datum = [single_example]
         cnt += 1
 
-        if cnt % 10 == 0: ## packing 10 seq to one job 
+        if cnt % num_seqs == 0: ## packing 10 seq to one job 
             data_set.append(datum)
 
             arg = [start_scan, stop_scan, model, data_set]
@@ -265,12 +202,23 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
         else:
             data_set.append(datum)
     
+    return argument_list
+
+
+def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
+    """
+    manually look at the position around the original position 
+    """
+
     local = False ## switch between local and compute cluster 
     ## cluster compute options   
     cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
+    num_seq_ex = 10 ## number of sequences are in a single job  
+    args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
+
     ## job dispatching 
-    intm_ret = pg.pg_map(recenter_examples, argument_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
+    intm_ret = pg.pg_map(recenter_examples, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
     print("Done with trimming example sequences")
 
     fixed_example_seq = reduce_modified_seq(intm_ret) 
@@ -280,25 +228,29 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
     print("Done with writing examples in fasta format")
 
 
+def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
+    """
+    calculate svm prediction score around the true signal site
+    """
 
+    local = False ## switch between local and compute cluster 
+    ## cluster compute options   
+    cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
+    num_seq_ex = 10 ## number of sequences are in single job 
+    args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
-    if task_type:
+    intm_ret = pg.pg_map(predict_site_region, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
+    print("Done with calculating the score for center region of example sequences")
 
-        write_fasta_rec(fixed_example_seq, signal) 
+    pred_out_val = reduce_pred_score(intm_ret) 
+    print("Done with collecting scores from different workers")
 
-    else:
-        intm_ret = pg.pg_map(predict_around_region, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="4gb") 
-        print "Done with computation"
+    ## save the scores 
+    fname = "%s_%s_ex_pred_score_%s" % (signal, example_type, uuid.uuid1()) 
+    compressed_pickle.save(fname, pred_out_val) 
 
-        pred_out_val = reduce_pred_score(intm_ret) 
-        print "Done reducing the results"
-    
-        ## save the scores 
-        fname = "%s_pred_score_%s" % (signal, uuid.uuid1()) 
-        compressed_pickle.save(fname, pred_out_val) 
-
-        print( "saving the score in file %s" % fname )
+    print("saving the scores in file %s" % fname)
 
 
 def main():
@@ -308,4 +260,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
