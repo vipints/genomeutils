@@ -236,6 +236,7 @@ def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_p
     local = False ## switch between local and compute cluster 
     ## cluster compute options   
     cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
+    #cluster_resource = {'mem':'6000', 'nodes':'1', 'walltime':'08:00'}
 
     num_seq_ex = 10 ## number of sequences are in single job 
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
