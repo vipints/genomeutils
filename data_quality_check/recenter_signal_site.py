@@ -124,35 +124,37 @@ def load_examples_from_fasta(signal, ex_type, org, data_path):
     return ret
 
 
-def predict_and_recenter(args_list):
+def recenter_examples(args_list):
     """
-    fix the position
-    recenter the signal position according to the local max pred out 
+    According to the local maximum prediction output score, 
+    manually fix each example sequence signal site position.
     """
 
     start_scan, stop_scan, model, data_set = args_list 
+
     trimed_seq_list = [] 
-    
+    cen_flank_region = stop_scan - start_scan
+    site_position = model.param["center_pos"]
+
     for datum in data_set:## wrapping multiple sequence 
+        tss_score = numpy.zeros(cen_flank_region) 
 
-        tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
-
-        ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
+        ## predicting the near regions of the signal - center site flanking region 
         for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
             model.param["center_pos"] = shifted_cen
             out = model.predict(datum)
             tss_score[idy] = out[0] 
 
         max_pred_out = numpy.argmax(tss_score)
-        center_pos = 1200
-        left_offset = center_pos - start_scan
+        left_offset = site_position - start_scan
         
         if max_pred_out < left_offset: ## center_offset left 
-            rel_cen_pos = (center_pos - left_offset) + max_pred_out ## center_pos 
+            rel_cen_pos = (site_position - left_offset) + max_pred_out ## center_pos 
         else:
-            rel_cen_pos = center_pos + (max_pred_out-left_offset)
-
-        trimed_seq = datum[0][rel_cen_pos-1100:rel_cen_pos] + datum[0][rel_cen_pos:(rel_cen_pos+1100)] 
+            rel_cen_pos = site_position + (max_pred_out-left_offset)
+        
+        trim_reg_site = site_position - cen_flank_region ## 1200 - 100 = 1100
+        trimed_seq = datum[0][rel_cen_pos-trim_reg_site:rel_cen_pos+trim_reg_site] 
         trimed_seq_list.append(trimed_seq)
 
     return trimed_seq_list
@@ -200,12 +202,12 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
         else:
             data_set.append(datum)
     
+    local = False ## switch between local and compute cluster 
     ## cluster compute options   
-    local = False 
     cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
     ## job dispatching 
-    intm_ret = pg.pg_map(predict_and_recenter, argument_list, param=cluster_resource, local=local, maxNumThreads=2, mem="8gb") 
+    intm_ret = pg.pg_map(recenter_examples, argument_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
 
     if task_type:
         print "Done with computation"
