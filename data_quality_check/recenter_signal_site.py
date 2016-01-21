@@ -161,7 +161,7 @@ def write_fasta_rec(seq_list_total, signal, ex_type):
     out_fh.close() 
 
 
-def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs):
+def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs, center_offset):
     """
     get the input data to do computation
     """
@@ -175,8 +175,6 @@ def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs)
    
     ## getting the model information 
     center_pos = model.param["center_pos"]
-    center_offset = model.param["center_offset"]
-    
     print("model - center pos: %i, center reg: %i" % (center_pos, center_offset))
     
     ## the recentering the center regions 
@@ -215,6 +213,7 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
     cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
     num_seq_ex = 10 ## number of sequences are in a single job  
+    center_offset = 50 ## nearby regions 
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     ## job dispatching 
@@ -239,6 +238,7 @@ def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_p
     #cluster_resource = {'mem':'6000', 'nodes':'1', 'walltime':'08:00'}
 
     num_seq_ex = 10 ## number of sequences are in single job 
+    center_offset = 500 ## nearby regions  
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     intm_ret = pg.pg_map(predict_site_region, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
