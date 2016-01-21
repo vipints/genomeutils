@@ -16,58 +16,8 @@ import libpyjobrunner as pg
 
 
 
-def predict_around_region(args_list):
-    """
-    predict around the center offset region of the signal
-    """
-
-    start_scan, stop_scan, model, data_set = args_list 
-    trimed_seq_list = [] 
-
-    for datum in data_set:
-        tss_score = numpy.zeros(100) ## predefined flanking region of 100 nts 
-
-        ## predicting the near regions of the signal, here it is -/+ 50 nucleotides
-        for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
-            model.param["center_pos"] = shifted_cen
-            out = model.predict(datum)
-            tss_score[idy] = out[0] 
-
-        trimed_seq_list.append(tss_score)
-    
-    return trimed_seq_list
 
 
-def reduce_pred_score(flat_result_list):
-    """
-    collect the results from different worker
-    """
-    
-    idx = 0 
-    merged_arr = numpy.zeros((100, 100))
-
-    for flat_result in flat_result_list:
-        for element in flat_result:
-            merged_arr[idx] = element
-            idx += 1 
-
-    return merged_arr
-
-
-
-def load_model(svm_file):
-    """
-    load the model from a pickled file
-    """
-
-    import bz2 
-    import cPickle 
-
-    fh = bz2.BZ2File(svm_file, "rb")
-    svm = cPickle.load(fh) 
-    fh.close() 
-
-    return svm
 
 
 def load_examples_from_fasta(signal, ex_type, org, data_path):
@@ -98,6 +48,119 @@ def load_examples_from_fasta(signal, ex_type, org, data_path):
     ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
 
     return ret
+
+
+def load_model(svm_file):
+    """
+    load the model from a pickled file
+    """
+
+    import bz2 
+    import cPickle 
+
+    fh = bz2.BZ2File(svm_file, "rb")
+    svm = cPickle.load(fh) 
+    fh.close() 
+
+    return svm
+
+
+def predict_site_region(args_list):
+    """
+    nucleotide level prediction around the signal center region
+    """
+
+    start_scan, stop_scan, model, data_set = args_list 
+
+    ex_seq_list = [] 
+    cen_flank_region = stop_scan - start_scan
+
+    for datum in data_set:
+        tss_score = numpy.zeros(cen_flank_region) ## center flanking region 
+
+        ## predicting the near regions of the signal, 
+        for idy, shifted_cen in enumerate(xrange(start_scan, stop_scan)):
+            model.param["center_pos"] = shifted_cen
+            out = model.predict(datum)
+            tss_score[idy] = out[0] 
+
+        ex_seq_list.append(tss_score)
+    
+    return ex_seq_list
+
+
+def reduce_pred_score(flat_result_list):
+    """
+    collect the scores from different worker
+    """
+    
+    idx = 0 
+    merged_arr = numpy.zeros((len(flat_result_list), len(flat_result_list[0])))
+
+    for flat_result in flat_result_list:
+        for element in flat_result:
+            merged_arr[idx] = element
+            idx += 1 
+
+    return merged_arr
+
+
+def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
+    """
+    calculate svm prediction score around the true signal site
+    """
+
+    ## loading data
+    data = load_examples_from_fasta(signal, example_type, org, data_path)
+    assert(len(data["examples"]) == len(data["labels"]))
+
+    ## unpack the model
+    model = load_model(svm_file)
+   
+    ## getting the model information 
+    center_pos = model.param["center_pos"]
+    center_offset = model.param["center_offset"]
+    
+    print("model - center pos: %i, center reg: %i" % (center_pos, center_offset))
+    
+    ## the center regions 
+    start_scan = center_pos-center_offset
+    stop_scan = center_pos+center_offset
+
+    cnt = 0
+    data_set = [] 
+    argument_list = [] 
+
+    ## get the individual examples to get the pred score around region 
+    for idx, single_example in enumerate(data["examples"]):  
+        datum = [single_example]
+        cnt += 1
+
+        if cnt % 10 == 0: ## packing 10 seq to one job 
+            data_set.append(datum)
+
+            arg = [start_scan, stop_scan, model, data_set]
+            argument_list.append(arg)
+
+            data_set = [] 
+        else:
+            data_set.append(datum)
+    
+    local = False ## switch between local and compute cluster 
+    ## cluster compute options   
+    cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
+
+    intm_ret = pg.pg_map(predict_site_region, argument_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
+    print("Done with calculating the score for center region of example sequences")
+
+    pred_out_val = reduce_pred_score(intm_ret) 
+    print("Done with collecting scores from different workers")
+
+    ## save the scores 
+    fname = "%s_%s_ex_pred_score_%s" % (signal, example_type, uuid.uuid1()) 
+    compressed_pickle.save(fname, pred_out_val) 
+
+    print("saving the scores in file %s" % fname)
 
 
 def recenter_examples(args_list):
