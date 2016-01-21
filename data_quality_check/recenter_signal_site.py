@@ -15,31 +15,6 @@ from promoter_kernel import ShogunPredictor
 import libpyjobrunner as pg
 
 
-def reduce_modified_seq(flat_result):
-    """ return the result 
-    """
-    
-    return flat_result
-
-
-def write_fasta_rec(seq_list_total, signal):
-    """ write fasta file from the seq records 
-    """
-    seq_type = "+1" 
-    fname = "trimmed_%s_pos_examples.fa" % signal
-
-    from Bio.Seq import Seq
-    from Bio.SeqRecord import SeqRecord
-
-    out_fh = open(fname, "w")
-    for seq_list in seq_list_total: 
-        for seq_rec in seq_list:
-            faseq_out = SeqRecord(Seq(seq_rec), id="example_%s" % uuid.uuid1(), description=seq_type)
-            out_fh.write(faseq_out.format('fasta'))
-    out_fh.close() 
-
-
-
 
 def predict_around_region(args_list):
     """
@@ -77,6 +52,7 @@ def reduce_pred_score(flat_result_list):
             idx += 1 
 
     return merged_arr
+
 
 
 def load_model(svm_file):
@@ -160,6 +136,30 @@ def recenter_examples(args_list):
     return trimed_seq_list
 
 
+def reduce_modified_seq(flat_result):
+    """ return the result 
+    """
+    
+    return flat_result
+    
+    
+def write_fasta_rec(seq_list_total, signal, ex_type):
+    """ write fasta file from the seq records 
+    """
+
+    seq_type = {"pos":"+1", "neg":"-1"}
+    fname = "%s_sig_%s_ex.fa" % (signal, ex_type) ## trimmed sequence 
+
+    from Bio.Seq import Seq
+    from Bio.SeqRecord import SeqRecord
+
+    out_fh = open(fname, "w") ## write examples in fasta format 
+    for seq_list in seq_list_total: 
+        for seq_rec in seq_list:
+            faseq_out = SeqRecord(Seq(seq_rec), id="%s_ex_%s" % (signal, uuid.uuid1()), description=seq_type[ex_type])
+            out_fh.write(faseq_out.format('fasta'))
+    out_fh.close() 
+
 
 def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_path="SRA-rnaseq"):
     """
@@ -208,12 +208,19 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
 
     ## job dispatching 
     intm_ret = pg.pg_map(recenter_examples, argument_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
+    print("Done with trimming example sequences")
+
+    fixed_example_seq = reduce_modified_seq(intm_ret) 
+    print("Done with collecting the trimmed examples")
+        
+    write_fasta_rec(fixed_example_seq, signal, example_type) 
+    print("Done with writing examples in fasta format")
+
+
+
+
 
     if task_type:
-        print "Done with computation"
-
-        fixed_example_seq = reduce_modified_seq(intm_ret) 
-        print "Done reducing the results"
 
         write_fasta_rec(fixed_example_seq, signal) 
 
