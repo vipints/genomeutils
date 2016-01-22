@@ -68,41 +68,40 @@ def run_cufflinks(org_db, num_cpus=4):
     """
     run cufflinks program on mapped reads 
     """
-     
-    org_name = org_db['short_name'] 
-    print "preparing for cufflinks run for organism %s" % org_name
 
+    try:
+        subprocess.call(["cufflinks"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `Cufflinks` binary is in your $PATH")
+    
+    org_name = org_db['short_name'] 
+    print("preparing for cufflinks run for organism %s" % org_name)
+
+    min_intron_length = 20
     min_isoform_frac = 0.25
     max_intron_length = org_db['max_intron_len']
-    min_intron_length = 20
-
     result_dir = org_db['read_assembly_dir']
 
     bam_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (org_db['read_map_dir'], org_name)
     if not os.path.isfile(bam_file):
-        print "failed to fetch sorted mmr BAM file for organism: %s, trying to get the mmr file..." % org_name
-        
+        sys.stdout.write("failed to fetch sorted mmr BAM file for organism: %s, trying to get the mmr file...\n" % org_name)
         bam_file = "%s/%s_Aligned_mmr.bam" % (org_db['read_map_dir'], org_name)
         if not os.path.isfile(bam_file):
-            print "error: failed to fetch mmr BAM file for organism %s" % org_name
-            sys.exit(-1)
+            exit("error: failed to fetch mmr BAM file for organism %s" % org_name)
         
         ## sorting, indexing the bam file 
         file_prefix, ext = os.path.splitext(bam_file)
         sorted_bam = "%s_sortbyCoord" % file_prefix
 
-        print "trying to sort based by the coordinates with output prefix as: %s" % sorted_bam
+        sys.stdout.write("trying to sort based by the coordinates with output prefix as: %s\n" % sorted_bam)
         if not os.path.isfile("%s.bam" % sorted_bam):
-            print 'sorting...'
             pysam.sort(bam_file, sorted_bam)
             
         bam_file = "%s.bam" % sorted_bam
 
-    print 'using bam file from %s' % bam_file
+    print('using bam file from %s' % bam_file)
     if not os.path.exists(bam_file + ".bai"):
-        sys.stdout.write('indexing... ')
         pysam.index(bam_file) 
-        sys.stdout.write(' ...done\n')
 
     ## always use quiet mode to avoid problems with storing log output.
     cli_cuff = "cufflinks -q --no-update-check \
@@ -115,7 +114,6 @@ def run_cufflinks(org_db, num_cpus=4):
         %s" % (min_isoform_frac, max_intron_length, min_intron_length, num_cpus, result_dir, bam_file)
   
     sys.stdout.write('\trun cufflinks as: %s \n' % cli_cuff)
-    
     try:
         os.chdir(result_dir)
         process = subprocess.Popen(cli_cuff, shell=True) 
