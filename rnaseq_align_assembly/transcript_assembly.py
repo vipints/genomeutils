@@ -128,20 +128,24 @@ def run_cufflinks(org_db, num_cpus=4):
         print 'Error running cufflinks.\n%s' %  str( e )
         
 
-def run_trsk(org_db, out_gff_file="tmp_trsk_genes.gff"):
+def run_trsk(org_db, out_gff_file="_tmp_trsk_genes.gff"):
     """
     run TransriptSkimmer with mapped reads and genome sequence
     """
 
+    try:
+        subprocess.call(["infer_genes"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `TranscriptSkimmer` binary is in your $PATH")
+
     org_name = org_db['short_name'] 
     sys.stdout.write("preparing for TransriptSkimmer run for organism %s\n" % org_name)
-
     genome_seq_file = org_db['fasta']
     if not os.path.isfile(genome_seq_file):
         exit('error: failed to fetch genome sequence file %s for organism %s' % (genome_seq_file, org_name))
     sys.stdout.write("using genome sequence file %s\n" % genome_seq_file)
 
-    ## expect the mmr result file in below format ex: A_thaliana/read_mapping/A_thaliana_Aligned_mmr_sortbyCoord.bam 
+    ## expect the mmr result file in ex: A_thaliana/read_mapping/A_thaliana_Aligned_mmr_sortbyCoord.bam 
     bam_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (org_db['read_map_dir'], org_name)
     if not os.path.isfile(bam_file):
         sys.stdout.write("warning: failed to fetch sorted mmr BAM file for organism: %s, trying to get the unsorted mmr file\n" % org_name)
@@ -157,15 +161,15 @@ def run_trsk(org_db, out_gff_file="tmp_trsk_genes.gff"):
             pysam.sort(bam_file, sorted_bam)
         bam_file = "%s.bam" % sorted_bam
         
-    sys.stdout.write("using bam file from %s\n" % bam_file)
+    sys.stdout.write("using bam file %s\n" % bam_file)
     if not os.path.exists(bam_file + ".bai"):
         pysam.index(bam_file) 
 
-    max_intron_length = org_db['max_intron_len']
-    max_exon_length = org_db['max_exon_len'] 
-    ##FIXME to be included in the genome database  
+    ##FIXME to be included 
     max_intergenic_region = 10000 
+    max_exon_length = org_db['max_exon_len'] 
     result_dir = org_db['read_assembly_dir']
+    max_intron_length = org_db['max_intron_len']
     gio_path_temp = os.path.join(result_dir, "temp_gio")
     make_gio(genome_seq_file, gio_path_temp)
     gio_file = "%s/genome.config" % gio_path_temp 
