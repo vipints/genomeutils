@@ -37,7 +37,7 @@ def load_examples_from_fasta(signal, ex_type, org, data_path):
     labels =  [+1] * len(xt_pos)
     examples =  xt_pos
 
-    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos)))
+    print("organism: %s, signal %s,\t num_labels: %i,\t num_examples: %i" %  (org, signal, len(labels), len(examples)))
 
     examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
     ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
