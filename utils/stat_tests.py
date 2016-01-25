@@ -8,15 +8,36 @@ import pandas
 from scipy import stats 
 from collections import defaultdict
 
-from utils import compressed_pickle
+def load(filename):
+    """
+    load a compressed pickled file in bz2 format
 
+    @args filename: name of the file to load 
+    @type filename: str
+    """
+    
+    import bz2 
+    import sys 
+    import cPickle
+    try:
+        fh = bz2.BZ2File(filename, 'rb') 
+    except IOError, details:
+        sys.stderr.write('File %s cannot be read\n' % filename)
+        sys.stderr.write(details) 
+        return 
+
+    myObj = cPickle.load(fh) 
+    fh.close() 
+
+    return myObj
+        
 
 def best_test_perf_with_eval(xv_result_file, methods=None, org_names=None):
     """
     better test performance value vased on the model validation performance for each XV.
     """
     
-    data = compressed_pickle.load(xv_result_file) 
+    data = load(xv_result_file) 
 
     if methods is None:
         methods = data.keys()
@@ -132,3 +153,23 @@ def compute_paired_ttest(best_test_score):
     #df_pval = pandas.DataFrame(ttest_p_val, columns=org_names, index=pairs_test)
     
     return df_pval 
+
+
+def heatmap_plotting(PValData):
+    """
+    """
+
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    import pandas 
+    import numpy 
+
+    sns.set()
+    fig, ax = plt.subplots(figsize=(14,9))
+
+    #ax = sns.heatmap(PValData, linewidths=0.0, annot=True, fmt="d") 
+    ax = sns.heatmap(PValData, linewidths=0.0) 
+    
+    fig.savefig("test.pdf")
+
+
