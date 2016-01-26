@@ -103,13 +103,16 @@ def compute_wilcoxon_test(best_test_score):
     """
     """
     
+    df_col_name = ['ind_vs_union', 'ind_vs_mtl', \
+        'ind_vs_mtmkl', 'union_vs_mtl', 'union_vs_mtmkl', \
+        'mtl_vs_mtmkl']
     pairs_test = [('individual', 'union'), ('individual', 'mtl'), \
         ('individual', 'mtmkl'), ('union', 'mtl'), ('union', 'mtmkl'), \
         ('mtl', 'mtmkl')]
     org_names = best_test_score.keys()
 
-    ##ttest_p_val = numpy.zeros((len(org_names), len(pairs_test)))
-    ttest_p_val = numpy.zeros((len(pairs_test), len(org_names)))
+    ttest_p_val = numpy.zeros((len(org_names), len(pairs_test)))
+    #ttest_p_val = numpy.zeros((len(pairs_test), len(org_names)))
 
     for org_idx, org_code in enumerate(org_names):
         meth_perf = best_test_score[org_code]
@@ -117,12 +120,12 @@ def compute_wilcoxon_test(best_test_score):
         for pair_idx, rel_pair in enumerate(pairs_test):
             t_stats, p_val = stats.wilcoxon(meth_perf[rel_pair[0]], meth_perf[rel_pair[1]])
             
-            ##ttest_p_val[org_idx, pair_idx] = p_val
-            ttest_p_val[pair_idx, org_idx] = p_val
+            ttest_p_val[org_idx, pair_idx] = p_val
+            #ttest_p_val[pair_idx, org_idx] = p_val
         
     
-    ##df_pval = pandas.DataFrame(ttest_p_val, columns=pairs_test, index=org_names)
-    df_pval = pandas.DataFrame(ttest_p_val, columns=org_names, index=pairs_test)
+    df_pval = pandas.DataFrame(ttest_p_val, columns=df_col_name, index=org_names)
+    #df_pval = pandas.DataFrame(ttest_p_val, columns=org_names, index=pairs_test)
     
     return df_pval 
 
@@ -131,6 +134,9 @@ def compute_paired_ttest(best_test_score):
     """
     """
     
+    df_col_name = ['ind_vs_union', 'ind_vs_mtl', \
+        'ind_vs_mtmkl', 'union_vs_mtl', 'union_vs_mtmkl', \
+        'mtl_vs_mtmkl']
     pairs_test = [('individual', 'union'), ('individual', 'mtl'), \
         ('individual', 'mtmkl'), ('union', 'mtl'), ('union', 'mtmkl'), \
         ('mtl', 'mtmkl')]
@@ -149,27 +155,22 @@ def compute_paired_ttest(best_test_score):
             #ttest_p_val[pair_idx, org_idx] = p_val
         
     
-    df_pval = pandas.DataFrame(ttest_p_val, columns=pairs_test, index=org_names)
+    df_pval = pandas.DataFrame(ttest_p_val, columns=df_col_name, index=org_names)
     #df_pval = pandas.DataFrame(ttest_p_val, columns=org_names, index=pairs_test)
     
     return df_pval 
 
 
-def heatmap_plotting(PValData):
+def pairplot(PValData, image_pdffile):
     """
     """
 
     import seaborn as sns
     import matplotlib.pyplot as plt
-    import pandas 
-    import numpy 
 
     sns.set()
-    fig, ax = plt.subplots(figsize=(14,9))
+    fig, ax = plt.subplots(figsize=(10,6)) ## set the canvas size 
 
-    #ax = sns.heatmap(PValData, linewidths=0.0, annot=True, fmt="d") 
-    ax = sns.heatmap(PValData, linewidths=0.0) 
-    
-    fig.savefig("test.pdf")
-
+    ax = sns.heatmap(PValData, linewidths=0.5, annot=True, fmt="f") 
+    fig.savefig(image_pdffile)
 
