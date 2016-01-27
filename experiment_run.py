@@ -365,7 +365,7 @@ def transcript_prediction_trsk(yaml_config):
     print "sending transcript assembly trsk jobs to worker"
     print 
 
-    local = False  ## cluster compute switch 
+    local = True  ## cluster compute switch 
     processedJobs = pg.process_jobs(Jobs, local=local)
 
 
