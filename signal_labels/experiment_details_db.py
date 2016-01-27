@@ -42,7 +42,7 @@ def experiment_db(config_file, opt_action):
     A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.fas' % data_path,
     M_mulatta       = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.fas" % data_path,
     O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.fas" % data_path,
-    M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.fas.bz2" % data_path, 
+    M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.fas" % data_path, 
     B_anthracis     = '%s/B_anthracis/' % data_path,
     C_familiaris    = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.fas' % data_path,
     D_melanogaster  = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.fas' % data_path,
