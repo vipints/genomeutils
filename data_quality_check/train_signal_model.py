@@ -1,6 +1,6 @@
 #!/usr/bin/env python 
 """
-training a model with single or multiple organisms 
+training a model with single or multiple organisms using shifts in the signal region 
 """
 
 ## standard modules 
@@ -10,9 +10,33 @@ import numpy
 from Bio import SeqIO
 
 ## custom modules
-import helper 
 from utils import compressed_pickle
 from promoter_kernel import ShogunPredictor
+
+
+def coshuffle(*args):
+    """
+    will shuffle target_list and apply
+    same permutation to other lists
+
+    >>> coshuffle([2, 1, 3], [4, 2, 8], [6, 3, 12])
+    ([5, 3, 2, 1, 4], [5, 3, 2, 1, 4], [5, 3, 2, 1, 4])
+    """ 
+
+    assert len(args) > 0, "need at least one list"
+    num_elements = len(args[0])
+
+    for arg in args:
+        assert len(arg) == num_elements, "length mismatch"
+
+    idx = range(num_elements)
+    random.shuffle(idx)
+    new_lists = []
+
+    for arg in args:
+        new_lists.append([arg[i] for i in idx])
+
+    return tuple(new_lists)
 
 
 def load_examples_from_fasta(signal, org, data_path):
@@ -42,7 +66,7 @@ def load_examples_from_fasta(signal, org, data_path):
     ## some log information 
     print("organism: %s, signal %s,\t num_labels: %i,\t num_examples %i,\t num_positives: %i,\t num_negatives: %i" %  (org, signal, len(labels), len(examples), len(xt_pos), len(xt_neg)))
 
-    examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
+    examples_shuffled, labels_shuffled = coshuffle(examples, labels)
     ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
 
     return ret
