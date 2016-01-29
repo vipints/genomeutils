@@ -22,11 +22,11 @@ def distribute_model_train(args_list):
     wrapper function to distribure model training for number of organisms 
     """
    
-    from data_quality_check import train_signal_model as tsm
+    import train_signal_model as tsm
 
     organism, work_path, data_path = args_list
     
-    os.chdir(work_dir) 
+    os.chdir(work_path) 
     
     tsm.train_wdspeck_svm(organism, "tss", data_path) #FIXME the signal type 
     return "done"
@@ -40,7 +40,6 @@ def main(yaml_config):
     exp_path_pfx = config_map['experiment_data_path']['dir']
     
     org_db = defaultdict()
-
     for ent in config_map['experiment']:
         species_name = ent['organism_name']
 
@@ -48,7 +47,7 @@ def main(yaml_config):
         short_name = "%s_%s" % (genus[0].upper(), species)
 
         org_db[short_name] = dict(short_name = short_name)  
-        org_db[short_name]['work_dir'] = "%s/%s" % (exp_path_pfx, short_name) 
+        org_db[short_name]['work_dir'] = "%s/%s/set_union_refix" % (exp_path_pfx, short_name) 
         org_db[short_name]['data_dir'] = "%s/%s/set_2" % (exp_path_pfx, short_name) 
     
     ## prepare jobs 
@@ -68,8 +67,9 @@ def main(yaml_config):
 
         Jobs.append(job)
     
+    compute_local = True
     print "sending jobs to worker" 
-    processedJobs = pg.process_jobs(Jobs) 
+    processedJobs = pg.process_jobs(Jobs, local=compute_local) 
 
 
 if __name__ == "__main__":
