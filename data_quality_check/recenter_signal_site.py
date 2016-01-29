@@ -257,6 +257,7 @@ def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_p
 def main():
 
     org_code = "H_sapiens"
+    svm_file_name = "tss_model_file"
 
 
 if __name__ == "__main__":
