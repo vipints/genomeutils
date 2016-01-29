@@ -1,18 +1,43 @@
 #!/usr/bin/env python
 """
-module to recenter the labels based on the manual shifting of tss signal region.
+module to recenter the genomic signal sequence based on the manual shifting.
 """
-
+## standard modules 
 import uuid
 import numpy
 from Bio import SeqIO
 
-from data_processing import helper
+## custom modules
 from utils import compressed_pickle
-
 from promoter_kernel import ShogunPredictor
 
+## distributed computing 
 import libpyjobrunner as pg
+
+
+def coshuffle(*args):
+    """
+    will shuffle target_list and apply
+    same permutation to other lists
+
+    >>> coshuffle([2, 1, 3], [4, 2, 8], [6, 3, 12])
+    ([5, 3, 2, 1, 4], [5, 3, 2, 1, 4], [5, 3, 2, 1, 4])
+    """ 
+
+    assert len(args) > 0, "need at least one list"
+    num_elements = len(args[0])
+
+    for arg in args:
+        assert len(arg) == num_elements, "length mismatch"
+
+    idx = range(num_elements)
+    random.shuffle(idx)
+    new_lists = []
+
+    for arg in args:
+        new_lists.append([arg[i] for i in idx])
+
+    return tuple(new_lists)
 
 
 def load_examples_from_fasta(signal, ex_type, org, data_path):
