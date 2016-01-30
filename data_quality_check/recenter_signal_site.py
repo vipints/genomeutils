@@ -5,6 +5,7 @@ module to recenter the genomic signal sequence based on the manual shifting.
 ## standard modules 
 import uuid
 import numpy
+import random 
 from Bio import SeqIO
 
 ## custom modules
@@ -64,7 +65,7 @@ def load_examples_from_fasta(signal, ex_type, org, data_path):
 
     print("organism: %s, signal %s,\t num_labels: %i,\t num_examples: %i" %  (org, signal, len(labels), len(examples)))
 
-    examples_shuffled, labels_shuffled = helper.coshuffle(examples, labels)
+    examples_shuffled, labels_shuffled = coshuffle(examples, labels)
     ret = {"examples": numpy.array(examples_shuffled), "labels": numpy.array(labels_shuffled)}
 
     return ret
@@ -222,6 +223,8 @@ def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs,
             argument_list.append(arg)
 
             data_set = [] 
+            if cnt == 2:
+                break 
         else:
             data_set.append(datum)
     
@@ -235,14 +238,14 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
 
     local = False ## switch between local and compute cluster 
     ## cluster compute options   
-    cluster_resource = {'pvmem':'8gb', 'pmem':'8gb', 'mem':'8gb', 'vmem':'8gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
+    cluster_resource = {'pvmem':'5gb', 'pmem':'5gb', 'mem':'5gb', 'vmem':'5gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
-    num_seq_ex = 10 ## number of sequences are in a single job  
+    num_seq_ex = 2 ## number of sequences are in a single job  
     center_offset = 50 ## nearby regions 
-    args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
+    args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex, center_offset)
 
     ## job dispatching 
-    intm_ret = pg.pg_map(recenter_examples, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
+    intm_ret = pg.pg_map(recenter_examples, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="5gb") 
     print("Done with trimming example sequences")
 
     fixed_example_seq = reduce_modified_seq(intm_ret) 
@@ -281,8 +284,19 @@ def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_p
 
 def main():
 
-    org_code = "H_sapiens"
-    svm_file_name = "tss_model_file"
+    import sys 
+
+    try:
+        org_code = sys.argv[1]
+        svm_file_name = sys.argv[2]
+        data_location = sys.argv[3]
+    except:
+        exit(__doc__)
+
+    signal = "tss"
+    example_type = "pos"
+
+    shift_signal_position(svm_file_name, org_code, example_type, signal, data_location)
 
 
 if __name__ == "__main__":
