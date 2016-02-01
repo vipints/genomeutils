@@ -132,11 +132,22 @@ def recenter_examples(args_list):
     manually fix each example sequence signal site position.
     """
 
-    start_scan, stop_scan, model, data_set = args_list 
+    model_file, data_set = args_list 
+
+    ## unpack the model
+    model = load_model(model_file)
+   
+    ## getting the model information this can be passed to this function  
+    site_position = model.param["center_pos"]
+    center_offset = model.param["center_offset"]
+    print("model - center pos: %i, center reg: %i" % (site_position, center_offset))
+    
+    ## the recentering the center regions 
+    start_scan = site_position-center_offset
+    stop_scan = site_position+center_offset
 
     trimed_seq_list = [] 
     cen_flank_region = stop_scan - start_scan
-    site_position = model.param["center_pos"]
 
     for datum in data_set:## wrapping multiple sequence 
         tss_score = numpy.zeros(cen_flank_region) 
@@ -187,7 +198,7 @@ def write_fasta_rec(seq_list_total, signal, ex_type):
     out_fh.close() 
 
 
-def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs, center_offset):
+def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs):
     """
     get the input data to do computation
     """
@@ -195,17 +206,6 @@ def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs,
     ## loading data
     data = load_examples_from_fasta(signal, example_type, org, data_path)
     assert(len(data["examples"]) == len(data["labels"]))
-
-    ## unpack the model
-    model = load_model(svm_file)
-   
-    ## getting the model information 
-    center_pos = model.param["center_pos"]
-    print("model - center pos: %i, center reg: %i" % (center_pos, center_offset))
-    
-    ## the recentering the center regions 
-    start_scan = center_pos-center_offset
-    stop_scan = center_pos+center_offset
 
     cnt = 0
     data_set = [] 
@@ -219,12 +219,12 @@ def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs,
         if cnt % num_seqs == 0: ## packing 10 seq to one job 
             data_set.append(datum)
 
-            arg = [start_scan, stop_scan, model, data_set]
+            arg = [svm_file, data_set]
             argument_list.append(arg)
 
             data_set = [] 
-            if cnt == 2:
-                break 
+            #if cnt == 2:
+            #    break 
         else:
             data_set.append(datum)
     
@@ -241,8 +241,7 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
     cluster_resource = {'pvmem':'5gb', 'pmem':'5gb', 'mem':'5gb', 'vmem':'5gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
     num_seq_ex = 2 ## number of sequences are in a single job  
-    center_offset = 50 ## nearby regions 
-    args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex, center_offset)
+    args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     ## job dispatching 
     intm_ret = pg.pg_map(recenter_examples, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="5gb") 
