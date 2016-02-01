@@ -1,12 +1,26 @@
 #!/usr/bin/env python 
 """
 statistical test for determining the performance of learning algorithms
+
+Usage: 
+
+    from utils import stats_test as st 
+    file = "17org_20xval_test_tss.pickle"
+
+    test_score = st.best_test_perf_with_eval(file) 
+    PVal_xval = st.compute_paired_ttest(test_score) 
+
+    st.pairplot(PVal_xval, outfile="pairedttest.pdf")
+
+    PVal_xval = st.compute_wilcoxon_test(test_score) 
+    st.pairplot(PVal_xval, outfile="wilcoxontest.pdf")
 """
 
 import numpy
 import pandas 
 from scipy import stats 
 from collections import defaultdict
+
 
 def load(filename):
     """
