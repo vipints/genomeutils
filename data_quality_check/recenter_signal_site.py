@@ -91,7 +91,19 @@ def predict_site_region(args_list):
     nucleotide level prediction around the signal center region
     """
 
-    start_scan, stop_scan, model, data_set = args_list 
+    model_file, data_set = args_list 
+
+    ## unpack the model
+    model = load_model(model_file)
+   
+    ## getting the model information this can be passed to this function  
+    site_position = model.param["center_pos"]
+    center_offset = model.param["center_offset"]
+    print("model - center pos: %i, center reg: %i" % (site_position, center_offset))
+    
+    ## the recentering the center regions 
+    start_scan = site_position-center_offset
+    stop_scan = site_position+center_offset
 
     ex_seq_list = [] 
     cen_flank_region = stop_scan - start_scan
@@ -265,7 +277,7 @@ def calculate_pred_score(svm_file, org, example_type="pos", signal="tss", data_p
     #cluster_resource = {'mem':'6000', 'nodes':'1', 'walltime':'08:00'}
 
     num_seq_ex = 10 ## number of sequences are in single job 
-    center_offset = 500 ## nearby regions  
+    center_offset = 500 ## nearby regions FIXME  
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     intm_ret = pg.pg_map(predict_site_region, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="8gb") 
