@@ -35,7 +35,6 @@ def split_data(signal, in_fas_pos, sub_sample_records, accept_prob):
 def split_data_rest(signal, in_fas_pos, sub_sample_records, selected_rec):
     """
     """
-
     out_fas_pos = "%s_sig_pos_example.bkp" % signal
     pos_fas_out = open(out_fas_pos, "w") 
 
@@ -78,8 +77,6 @@ def split_data_second(signal, in_fas_pos, sub_sample_records, accept_prob, selec
     return sample_cnt, pos_fas_rec
 
 
-
-#def split_data_random_non_overlap(signal="tss", total_record_count=2000):
 def split_data_random_non_overlap(signal="tss", total_record_count=1000):
     """
     """
@@ -110,7 +107,6 @@ def split_data_random_non_overlap(signal="tss", total_record_count=1000):
         accept_prob = 1
 
 
-
     sub_sample_records = 200
     while True:
         counter, pos_rec_second = split_data_second(signal, in_fas_pos, sub_sample_records, accept_prob, pos_rec_selected)
@@ -125,7 +121,6 @@ def split_data_random_non_overlap(signal="tss", total_record_count=1000):
     for rec_id in pos_rec_second:
         pos_rec_selected[rec_id] = 0 
         
-
 
     #FIXME 
     sub_sample_records = 1000
