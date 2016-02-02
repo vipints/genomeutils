@@ -1,67 +1,65 @@
-
 experiment_data_path:
     dir: /sra_rnaseq_data/
 experiment:
-  - organism_name: 
-ailuropoda_melanoleuca
-anolis_carolinensis
-bos_taurus
-caenorhabditis_elegans
-callithrix_jacchus
-canis_familiaris
-cavia_porcellus
-choloepus_hoffmanni
-ciona_intestinalis
-ciona_savignyi
-danio_rerio
-dasypus_novemcinctus
-dipodomys_ordii
-drosophila_melanogaster
-echinops_telfairi
-equus_caballus
-erinaceus_europaeus
-felis_catus
-gadus_morhua
-gallus_gallus
-gasterosteus_aculeatus
-gorilla_gorilla
-homo_sapiens
-ictidomys_tridecemlineatus
-latimeria_chalumnae
-loxodonta_africana
-macaca_mulatta
-macropus_eugenii
-meleagris_gallopavo
-microcebus_murinus
-monodelphis_domestica
-mus_musculus
-mustela_putorius_furo
-myotis_lucifugus
-nomascus_leucogenys
-ochotona_princeps
-oreochromis_niloticus
-ornithorhynchus_anatinus
-oryctolagus_cuniculus
-oryzias_latipes
-otolemur_garnettii
-pan_troglodytes
-pelodiscus_sinensis
-petromyzon_marinus
-pongo_abelii
-procavia_capensis
-pteropus_vampyrus
-rattus_norvegicus
-saccharomyces_cerevisiae
-sarcophilus_harrisii
-sorex_araneus
-sus_scrofa
-taeniopygia_guttata
-takifugu_rubripes
-tarsius_syrichta
-tetraodon_nigroviridis
-thalassiosira_pseudonana
-tupaia_belangeri
-tursiops_truncatus
-vicugna_pacos
-xenopus_tropicalis
-xiphophorus_maculatus
+  - organism_name: ailuropoda_melanoleuca
+  - organism_name: anolis_carolinensis
+  - organism_name: bos_taurus
+  - organism_name: caenorhabditis_elegans
+  - organism_name: callithrix_jacchus
+  - organism_name: canis_familiaris
+  - organism_name: cavia_porcellus
+  - organism_name: choloepus_hoffmanni
+  - organism_name: ciona_intestinalis
+  - organism_name: ciona_savignyi
+  - organism_name: danio_rerio
+  - organism_name: dasypus_novemcinctus
+  - organism_name: dipodomys_ordii
+  - organism_name: drosophila_melanogaster
+  - organism_name: echinops_telfairi
+  - organism_name: equus_caballus
+  - organism_name: erinaceus_europaeus
+  - organism_name: felis_catus
+  - organism_name: gadus_morhua
+  - organism_name: gallus_gallus
+  - organism_name: gasterosteus_aculeatus
+  - organism_name: gorilla_gorilla
+  - organism_name: homo_sapiens
+  - organism_name: ictidomys_tridecemlineatus
+  - organism_name: latimeria_chalumnae
+  - organism_name: loxodonta_africana
+  - organism_name: macaca_mulatta
+  - organism_name: macropus_eugenii
+  - organism_name: meleagris_gallopavo
+  - organism_name: microcebus_murinus
+  - organism_name: monodelphis_domestica
+  - organism_name: mus_musculus
+  - organism_name: mustela_putorius_furo
+  - organism_name: myotis_lucifugus
+  - organism_name: nomascus_leucogenys
+  - organism_name: ochotona_princeps
+  - organism_name: oreochromis_niloticus
+  - organism_name: ornithorhynchus_anatinus
+  - organism_name: oryctolagus_cuniculus
+  - organism_name: oryzias_latipes
+  - organism_name: otolemur_garnettii
+  - organism_name: pan_troglodytes
+  - organism_name: pelodiscus_sinensis
+  - organism_name: petromyzon_marinus
+  - organism_name: pongo_abelii
+  - organism_name: procavia_capensis
+  - organism_name: pteropus_vampyrus
+  - organism_name: rattus_norvegicus
+  - organism_name: saccharomyces_cerevisiae
+  - organism_name: sarcophilus_harrisii
+  - organism_name: sorex_araneus
+  - organism_name: sus_scrofa
+  - organism_name: taeniopygia_guttata
+  - organism_name: takifugu_rubripes
+  - organism_name: tarsius_syrichta
+  - organism_name: tetraodon_nigroviridis
+  - organism_name: thalassiosira_pseudonana
+  - organism_name: tupaia_belangeri
+  - organism_name: tursiops_truncatus
+  - organism_name: vicugna_pacos
+  - organism_name: xenopus_tropicalis
+  - organism_name: xiphophorus_maculatus
