@@ -794,7 +794,7 @@ def get_label_regions(gtf_content, signal):
                                 feature['strand'], 
                                 (int(feature['start']), int(feature['stop']))
                                 )
-                    #break  ## considering only one transcript from a region 
+                    break  ## considering only one transcript from a region 
         elif signal == 'tis':
             for xp, ftid in enumerate(feature['transcripts']):
                 if feature['cds_exons'][xp].any():
