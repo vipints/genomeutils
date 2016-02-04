@@ -235,7 +235,7 @@ def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs)
             argument_list.append(arg)
 
             data_set = [] 
-            #if cnt == 2:
+            #if cnt == 6:
             #    break 
         else:
             data_set.append(datum)
@@ -250,9 +250,9 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
 
     local = False ## switch between local and compute cluster 
     ## cluster compute options   
-    cluster_resource = {'pvmem':'5gb', 'pmem':'5gb', 'mem':'5gb', 'vmem':'5gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
+    cluster_resource = {'pvmem':'5gb', 'pmem':'5gb', 'mem':'5gb', 'vmem':'5gb','ppn':'1', 'nodes':'1', 'walltime':'12:00:00'}
 
-    num_seq_ex = 2 ## number of sequences are in a single job  
+    num_seq_ex = 50 ## number of sequences are in a single job  
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     ## job dispatching 
@@ -305,7 +305,7 @@ def main():
         exit(__doc__)
 
     signal = "tss"
-    example_type = "pos"
+    example_type = "neg"
 
     shift_signal_position(svm_file_name, org_code, example_type, signal, data_location)
 
