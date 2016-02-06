@@ -2,9 +2,6 @@
 
 from Bio import SeqIO 
 from Bio.SeqRecord import SeqRecord
-from operator import itemgetter
-
-from gfftools import helper 
 
 
 def trim_fasta_rec_seq(infasta, outfasta, left_trim=100, right_trim=-100):
@@ -68,6 +65,8 @@ def fasta_seq_length(fa_name):
     """
     general information about contigs lengths in a FASTA file
     """
+    from operator import itemgetter
+    from gfftools import helper 
 
     seq_info = dict()
     fah = helper.open_file(fa_name)
