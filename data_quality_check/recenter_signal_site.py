@@ -250,13 +250,13 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
 
     local = False ## switch between local and compute cluster 
     ## cluster compute options   
-    cluster_resource = {'pvmem':'5gb', 'pmem':'5gb', 'mem':'5gb', 'vmem':'5gb','ppn':'1', 'nodes':'1', 'walltime':'12:00:00'}
+    cluster_resource = {'pvmem':'4gb', 'pmem':'4gb', 'mem':'4gb', 'vmem':'4gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
     num_seq_ex = 50 ## number of sequences are in a single job  
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     ## job dispatching 
-    intm_ret = pg.pg_map(recenter_examples, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="5gb") 
+    intm_ret = pg.pg_map(recenter_examples, args_req_list, param=cluster_resource, local=local, maxNumThreads=1, mem="4gb") 
     print("Done with trimming example sequences")
 
     fixed_example_seq = reduce_modified_seq(intm_ret) 
