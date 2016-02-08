@@ -235,8 +235,8 @@ def data_process_depot(svm_file, org, example_type, signal, data_path, num_seqs)
             argument_list.append(arg)
 
             data_set = [] 
-            #if cnt == 6:
-            #    break 
+            if cnt == 6:
+                break 
         else:
             data_set.append(datum)
     
@@ -252,7 +252,7 @@ def shift_signal_position(svm_file, org, example_type="pos", signal="tss", data_
     ## cluster compute options   
     cluster_resource = {'pvmem':'4gb', 'pmem':'4gb', 'mem':'4gb', 'vmem':'4gb','ppn':'1', 'nodes':'1', 'walltime':'24:00:00'}
 
-    num_seq_ex = 50 ## number of sequences are in a single job  
+    num_seq_ex = 2 ## number of sequences are in a single job  
     args_req_list = data_process_depot(svm_file, org, example_type, signal, data_path, num_seq_ex)
 
     ## job dispatching 
