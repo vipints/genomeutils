@@ -97,7 +97,7 @@ def barplot_argmax_each_cv(df_perf, res_file, plot_title="", ylabel="auROC"):
     labels = [] 
     
     methods = ['individual', 'union', 'mtl', 'mtmkl'] 
-    #methods = ['individual', 'union', 'mtl']
+    methods = ['individual', 'union', 'mtl']
 
     for org, perf in df_perf.iteritems():
         num_methods = len(perf)
@@ -153,7 +153,7 @@ def barplot_argmax_each_cv(df_perf, res_file, plot_title="", ylabel="auROC"):
     pylab.gca().get_xaxis().grid(False)
 
     methods = ['Individual', 'Union', 'MTL', 'MTMKL'] 
-    #methods = ['Individual', 'Union', 'MTL']
+    methods = ['Individual', 'Union', 'MTL']
     pylab.legend(tuple(rects), tuple(methods))
     pylab.ylabel(ylabel, fontsize = 15)
     pylab.savefig(res_file) 
