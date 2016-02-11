@@ -33,13 +33,9 @@ def distribute_model_train(args_list):
     """
     wrapper function to distribure model training for number of organisms 
     """
-   
     import train_signal_model as tsm
-
     organism, work_path, data_path = args_list
-    
     os.chdir(work_path) 
-    
     tsm.train_wdspeck_svm(organism, "tss", data_path) #FIXME the signal type 
     return "done"
 
