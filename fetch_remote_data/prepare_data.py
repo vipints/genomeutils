@@ -326,6 +326,102 @@ def create_star_genome_index(fasta_file, out_dir, genome_anno=None, num_workers=
     except Exception, e:
         exit('Error running STAR.\n%s' %  str( e ))
 
+def parse_list(line, nb_elts):
+    """
+    specific to BWA-MEM stderr format
+    """
+    return map(lambda x: int(float(x)), ' '.join(line.strip().replace(',','').split()[-nb_elts:])[1:-1].split())
+
+
+def calculate_insert_size_fastq(ref_genome, fastq_dir, fq_files):
+    """
+    calculate the library insert size from raw read files and reference genome sequence
+
+    @args ref_genome: genome sequence file 
+    @type ref_genome: str
+    @args fastq_dir: fastq directory for the experiment 
+    @type fastq_dir: str 
+    @args fq_files: fastq file names in python list
+    @type fq_files: list 
+    """
+    
+    try:
+        subprocess.call(["bwa"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except:
+        exit("Please make sure that the `bwa` binary is in your $PATH")
+    
+    ## check for the bwa index  
+    if not os.path.isfile("%s.sa" % ref_genome):
+        try:
+            cmd_idx = "bwa index %s" % ref_genome 
+            sys.stdout.write("bwa indexing starting...\n")
+            process = subprocess.Popen(cmd_idx, shell=True) 
+            returncode = process.wait()
+
+            if returncode !=0:
+                raise Exception, "Exit status return code = %i" % returncode
+            sys.stdout.write("bwa indexing finished\n")
+
+        except Exception, e:
+            exit('Error running bwa index.\n%s' %  str( e ))
+
+    ##adapted from: 
+    ##Quickly estimates insert sizes of read datasets, given some sequence(s) they can be mapped to.
+    ##Author: Rayan Chikhi         
+    ##example: 
+    ##     estimate-insert-sizes contigs.fa readsA_1.fq readsA_2.fq readsB_1.fq readsB_2.fq
+    if len(fq_files) > 1:
+        nb_cpu = 1 
+        zip_type = {".gz" : "gzip -c", ".bz2" : "bzip2 -d -c"} 
+        file_prefx, ext = os.path.splitext(fq_files[0])
+
+        stats = dict()
+        read1 = "%s/%s" % (fastq_dir, fq_files[0])
+        read2 = "%s/%s" % (fastq_dir, fq_files[1])
+        print("processing : \n %s \n %s " % (read1, read2))
+
+        cmd = ["bwa", "mem"] + ["-t %d" % nb_cpu, ref_genome] + ["<(%s %s)" % (zip_type[ext], read1)] \
+            +["<(%s %s)" % ( zip_type[ext], read2)]
+        DEVNULL = open(os.devnull, 'wb')
+        process = subprocess.Popen(cmd, stdout=DEVNULL, stderr=subprocess.PIPE)
+        seen_candidate_line = False
+
+        while True:
+            line = process.stderr.readline()
+            if line == '' and process.poll() != None:
+                break
+            if "worker" in line:
+                break
+            if "pestat" not in line:
+                continue
+            if "candidate unique pairs for" in line:
+                if seen_candidate_line:
+                    break
+                seen_candidate_line = True
+                nb_pairs = parse_list(line,4)
+                for i in xrange(4):
+                    stats[['FF', 'FR', 'RF', 'RR'][i]] = { 'nb_pairs' : nb_pairs[i] }
+            if "orientation" in line:
+                orientation = line.strip().split()[-1].replace('.','')
+            if "mem_pestat] mean and std.dev:" in line:
+                mean, stdev = parse_list(line,2)
+                stats[orientation]['mean'] = mean
+                stats[orientation]['stdev'] = stdev
+                if orientation == 'RR':
+                    # stats are complete
+                    break
+            sys.stdout.write(line)
+            sys.stdout.flush()
+        if process.poll() is None:
+            process.terminate()
+   
+        results = sorted(stats.items(), key = lambda x: x[1]['nb_pairs'], reverse=True)
+        most_likely = results[0]
+        mean = most_likely[1]['mean']
+        stdev = most_likely[1]['stdev']
+        print "Orientation", most_likely[0], "mean", mean, "stdev", stdev
+
+
 
 if __name__=="__main__":
     print __doc__
