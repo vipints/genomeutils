@@ -96,6 +96,11 @@ def experiment_db(config_file, opt_action):
     A_aegypti       = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.fas' % data_path,
     C_hircus        = '%s/C_hircus/ncbi_genome/ncbi_genome.fas' % data_path,
     F_catus         = '%s/F_catus/ensembl_release_79/ensembl_release_79.fas' % data_path,
+    D_discoideum    = '%s/D_discoideum/ensembl_release_29/ensembl_release_29.fas' % data_path,
+    P_falciparum7g8 = '%s/P_falciparum7g8/ensembl_release_28/ensembl_release_28.fas' % data_path,
+    P_falciparum    = '%s/P_falciparum/ensembl_release_29/ensembl_release_29.fas' % data_path,
+    L_major         = '%s/L_major/ensembl_release_29/ensembl_release_29.fas' % data_path,
+    T_pseudonana    = '%s/T_pseudonana/ensembl_release_29/ensembl_release_29.fas' % data_path,
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
     #C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.fas' % data_path,
@@ -103,6 +108,7 @@ def experiment_db(config_file, opt_action):
     org_gtf_file = dict( 
     A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_mulatta       = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
+    P_falciparum    = '%s/P_falciparum/ensembl_release_29/ensembl_release_29.gtf' % data_path,
     O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
     M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf" % data_path, 
     B_anthracis     = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis' % data_path,
@@ -136,12 +142,10 @@ def experiment_db(config_file, opt_action):
     Z_mays          = '%s/Z_mays/phytozome_v9.0/Zmays_181_gene.gff3' % data_path,
     A_thaliana      = '%s/A_thaliana/arabidopsis_tair10/annotations/TAIR10_GFF3_genes.gff' % data_path,
     C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    D_discoideum    = '%s/D_discoideum/' % data_path,
     D_yakuba        = '%s/D_yakuba/ensembl_release-22/.gff3' % data_path,
     O_latipes       = '%s/O_latipes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     R_norvegicus    = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/.gff3' % data_path,
-    T_pseudonana    = '%s/T_pseudonana/Thaps3/.gff' % data_path,
     G_gorilla       = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     C_porcellus     = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     O_anatinus      = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
@@ -160,14 +164,20 @@ def experiment_db(config_file, opt_action):
     F_catus         = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     A_aegypti       = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
     C_hircus        = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
+    D_discoideum    = '%s/D_discoideum/ensembl_release_29/ensembl_release_29.gtf' % data_path,
+    P_falciparum7g8 = '%s/P_falciparum7g8/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    L_major         = '%s/L_major/ensembl_release_29/ensembl_release_29.gtf' % data_path,
+    T_pseudonana    = '%s/T_pseudonana/ensembl_release_29/ensembl_release_29.gtf' % data_path,
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.gtf' % data_path
     )
 
     ## TODO algorithms details 
     #A_aegypti = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    #F_catus = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    #F_catuyys = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     #C_hircus = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
     #H_glaber = '%s/H_glaber/naked_mole_rat_db/naked_mole_rat_db.gtf' % data_path,
+
+
 
     ## experiment details  
     org_db = defaultdict()
