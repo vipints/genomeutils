@@ -66,7 +66,6 @@ def experiment_db(config_file, opt_action):
     C_sativus       = '%s/C_sativus/phytozome_v9.0/Csativus_122_filtered.fa' % data_path,
     D_simulans      = '%s/D_simulans/ensembl_release_28/ensembl_release_28.fas' % data_path,
     H_sapiens       = '%s/H_sapiens/ensembl_release_79/STARgenome/hg19_chrOnly.fa' % data_path,
-    N_vitripennis   = '%s/N_vitripennis/ensembl_release_22/N_vitripennis_dna_sm.fa' % data_path,
     P_troglodytes   = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.fas' % data_path,
     S_tuberosum     = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206.fa' % data_path,
     Z_mays          = '%s/Z_mays/phytozome_v9.0/Zmays_181.fa' % data_path,
@@ -100,6 +99,7 @@ def experiment_db(config_file, opt_action):
     P_falciparum7g8 = '%s/P_falciparum7g8/ensembl_release_28/ensembl_release_28.fas' % data_path,
     P_falciparum    = '%s/P_falciparum/ensembl_release_29/ensembl_release_29.fas' % data_path,
     L_major         = '%s/L_major/ensembl_release_29/ensembl_release_29.fas' % data_path,
+    N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.fas' % data_path,
     T_pseudonana    = '%s/T_pseudonana/ensembl_release_29/ensembl_release_29.fas' % data_path,
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
@@ -108,6 +108,7 @@ def experiment_db(config_file, opt_action):
     org_gtf_file = dict( 
     A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_mulatta       = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
+    N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.gtf' % data_path,
     P_falciparum    = '%s/P_falciparum/ensembl_release_29/ensembl_release_29.gtf' % data_path,
     O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
     M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf" % data_path, 
@@ -128,7 +129,6 @@ def experiment_db(config_file, opt_action):
     C_rubella       = '%s/C_rubella/phytozome_v9.0/Crubella_183.gff3' % data_path,
     D_rerio         = '%s/D_rerio/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     G_max           = '%s/G_max/phytozome_v9.0/Gmax_189_gene.gff3' % data_path,
-    N_vitripennis   = '%s/N_vitripennis/ensembl_release_22/N_vitripennis.gtf' % data_path,
     O_aries         = '%s/O_aries/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_truncatula    = '%s/M_truncatula/' % data_path,
     P_pacificus     = '%s/P_pacificus/ensembl_release-22/.gtf' % data_path,
@@ -214,7 +214,7 @@ def experiment_db(config_file, opt_action):
                     sra_files.append(sra_file) 
         else:
             print "warning: missing sequencing read trace file %s/%s/source_data" % (exp_path, short_name) 
-                
+
         org_db[short_name]['fastq_path'] = "%s/%s/source_data" % (exp_path, short_name)
         org_db[short_name]['fastq'] = sra_files
 
