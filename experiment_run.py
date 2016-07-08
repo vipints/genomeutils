@@ -408,7 +408,7 @@ def transcript_prediction_stringtie(yaml_config):
         job.pvmem="12gb"
         job.nodes = 1
         job.ppn = cpus
-        job.walltime = "3:00:00"
+        job.walltime = "24:00:00"
 
         Jobs.append(job)
     print("\nsending transcript assembly stringtie jobs to worker\n")
@@ -496,14 +496,14 @@ def align_rnaseq_reads(yaml_config):
 
         ## library insert size 
         lib_insert_size = 100000
-        num_cpu = 4
+        num_cpu = 3
 
         arg = [[det, lib_type, lib_insert_size, num_cpu]]
 
         job = pg.cBioJob(call_align_reads, arg) 
     
-        job.mem="150gb"
-        job.vmem="150gb"
+        job.mem="90gb"
+        job.vmem="90gb"
         job.pmem="30gb"
         job.pvmem="30gb"
         job.nodes = 1
@@ -514,7 +514,7 @@ def align_rnaseq_reads(yaml_config):
     print 
     print "sending read alignment with STAR jobs to worker"
     print 
-    processedJobs = pg.process_jobs(Jobs, local=True)
+    processedJobs = pg.process_jobs(Jobs, local=False)
 
 
 def calculate_insert_size(yaml_config):
@@ -655,6 +655,15 @@ def decompose_sra_file(yaml_config):
     print 
     processedJobs = pg.process_jobs(Jobs)
 
+def call_protists_fasta(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_protists_fasta(release_num, organism, genome_path)
+    return 'done'
+ 
 def call_fungi_fasta(args_list):
     """
     wrapper for submitting jobs to pygrid
@@ -727,6 +736,8 @@ def download_fasta(yaml_config):
             job = pg.cBioJob(call_ensembl_fasta, arg) 
         elif det['release_db'] == 'ensembl_fungi_genome':
             job = pg.cBioJob(call_fungi_fasta, arg) 
+        elif det['release_db'] == 'ensembl_protists_genome':
+            job = pg.cBioJob(call_protists_fasta, arg) 
         else:
             exit("error: download fasta plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db'])
 
@@ -762,6 +773,15 @@ def call_metazoa_gtf(args_list):
     from fetch_remote_data import download_data as dld
     release_num, organism, genome_path = args_list
     dld.fetch_ensembl_metazoa_gtf(release_num, organism, genome_path)
+    return 'done'
+
+def call_protists_gtf(args_list):
+    """
+    wrapper for submitting jobs to pygrid
+    """
+    from fetch_remote_data import download_data as dld
+    release_num, organism, genome_path = args_list
+    dld.fetch_ensembl_protists_gtf(release_num, organism, genome_path)
     return 'done'
 
 def call_phytozome_gtf(args_list):
@@ -805,6 +825,8 @@ def download_gtf(yaml_config):
             job = pg.cBioJob(call_ensembl_gtf, arg) 
         elif det['release_db'] == 'ensembl_fungi_genome':
             job = pg.cBioJob(call_fungi_gtf, arg) 
+        elif det['release_db'] == 'ensembl_protists_genome':
+            job = pg.cBioJob(call_protists_gtf, arg) 
         else:
             exit("error: download gtf plugin for %s not available, module works with ensembl_genome, ensembl_metazoa_genome and phytozome_genome servers." % det['release_db'])
 
