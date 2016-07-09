@@ -22,7 +22,7 @@ import shutil
 import subprocess
 
 
-def run_stringtie(bam_file, trans_pred_file="_tmp_strtie_genes.gff"):
+def run_stringtie(org_name, read_map_dir, result_dir, trans_pred_file="_tmp_strtie_genes.gff"):
     """
     run stringtie program on mapped reads without genome annotation 
     
@@ -43,6 +43,29 @@ def run_stringtie(bam_file, trans_pred_file="_tmp_strtie_genes.gff"):
     except:
         exit("Please make sure that the `stringtie` binary is in your $PATH")
 
+    print("preparing stringtie run for organism %s" % org_name)
+    bam_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (read_map_dir, org_name)
+
+    if not os.path.isfile(bam_file):
+        sys.stdout.write("failed to fetch sorted mmr BAM file for organism: %s, trying to get the mmr file...\n" % org_name)
+        bam_file = "%s/%s_Aligned_mmr.bam" % (read_map_dir, org_name)
+        if not os.path.isfile(bam_file):
+            exit("error: failed to fetch mmr BAM file for organism %s" % org_name)
+        
+        ## sorting, indexing the bam file 
+        file_prefix, ext = os.path.splitext(bam_file)
+        sorted_bam = "%s_sortbyCoord" % file_prefix
+
+        sys.stdout.write("trying to sort based by the coordinates with output prefix as: %s\n" % sorted_bam)
+        if not os.path.isfile("%s.bam" % sorted_bam):
+            pysam.sort(bam_file, sorted_bam)
+            
+        bam_file = "%s.bam" % sorted_bam
+
+    print('using bam file from %s' % bam_file)
+    if not os.path.exists(bam_file + ".bai"):
+        pysam.index(bam_file) 
+
     strtie_run="stringtie %s \
         -o %s \
         -f 0.7 \
@@ -54,6 +77,7 @@ def run_stringtie(bam_file, trans_pred_file="_tmp_strtie_genes.gff"):
     print('\trun stringtie as: %s' % strtie_run)
 
     try:
+        os.chdir(result_dir)
         process = subprocess.Popen(strtie_run, shell=True) 
         returncode = process.wait()
 
