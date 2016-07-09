@@ -375,12 +375,8 @@ def call_transcript_prediction_stringtie(args_list):
     """
 
     from rnaseq_align_assembly import transcript_assembly as tsa
-    
     mmr_read_dir, organism_name, trans_pred_out_dir = args_list
-    mmr_read_file = "%s/%s_Aligned_mmr_sortbyCoord.bam" % (mmr_read_dir, organism_name) 
-
-    os.chdir(trans_pred_out_dir) 
-    tsa.run_stringtie(mmr_read_file) 
+    tsa.run_stringtie(organism_name, mmr_read_dir, trans_pred_out_dir)
     return "done"
 
 
@@ -449,17 +445,17 @@ def alignment_filter(yaml_config):
     Jobs = []
     for org_name, det in orgdb.items():
 
-        num_cpus = 4
+        num_cpus = 5
         ## arguments to pygrid 
         arg = [[det['short_name'], det['read_map_dir'], num_cpus]]
 
         job = pg.cBioJob(call_alignment_filter, arg) 
 
         ## native specifications 
-        job.pmem="30gb"
-        job.pvmem="30gb"
-        job.mem="120gb"
-        job.vmem="120gb"
+        job.pmem="90gb"
+        job.pvmem="90gb"
+        job.mem="90gb"
+        job.vmem="90gb"
         job.nodes = 1
         job.ppn = num_cpus
         job.walltime = "48:00:00"
