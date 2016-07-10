@@ -101,14 +101,23 @@ def experiment_db(config_file, opt_action):
     L_major         = '%s/L_major/ensembl_release_29/ensembl_release_29.fas' % data_path,
     N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.fas' % data_path,
     T_pseudonana    = '%s/T_pseudonana/ensembl_release_29/ensembl_release_29.fas' % data_path,
+    P_vulgaris       = '%s/P_vulgaris/phytozome_v9.0/Pvulgaris_218.fa' % data_path,
+    M_esculenta     = '%s/M_esculenta/phytozome_v9.0/phytosome_147.fa' % data_path,
+    S_bicolor       = '%s/S_bicolor/phytozome_v9.0/Sbicolor_79.fa' % data_path,
+    P_patens       = '%s/P_patens/phytozome_v9.0/Ppatens_152.fa' % data_path,
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
     #C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.fas' % data_path,
 
+
     org_gtf_file = dict( 
     A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_mulatta       = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
+    P_patens       = '%s/P_patens/phytozome_v9.0/Ppatens_152.gtf' % data_path,
+    P_vulgaris       = '%s/P_vulgaris/phytozome_v9.0/Pvulgaris_218.gtf' % data_path,
+    S_bicolor       = '%s/S_bicolor/phytozome_v9.0/Sbicolor_79.gtf' % data_path,
     N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.gtf' % data_path,
+    M_esculenta     = '%s/M_esculenta/phytozome_v9.0/phytosome_147.gtf' % data_path,
     P_falciparum    = '%s/P_falciparum/ensembl_release_29/ensembl_release_29.gtf' % data_path,
     O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
     M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf" % data_path, 
