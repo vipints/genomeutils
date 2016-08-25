@@ -149,6 +149,40 @@ def clean_genome_file(chr_names, fas_file, fas_out):
     outfh.close()
 
 
+def genome_file_rec_extract(chr_pattn, fas_file, fas_out):
+    """
+    get all contings based on a matiching string in the record identifier
+
+    @args chr_pattn: pattern to be searched in contig names 
+    @type chr_pattn: str
+    @args fas_file: genome sequence in fasta file  
+    @type fas_file: str 
+    @args fas_out: new genome sequence file in fasta format 
+    @type fas_out: str 
+    """
+
+    # get the filehandler from input file
+    try:
+        fh = helper.open_file(fas_file)
+    except Exception, errmsg:
+        stop_err('error in reading file '+ errmsg) 
+
+    # check the out filehandler
+    try:
+        outfh = open(fas_out, "w")
+    except Exception, errmsg:
+        stop_err('error in writing file '+ errmsg) 
+
+    # writing stable contig genome sequence in FASTA format 
+    for rec in SeqIO.parse(fh, "fasta"):
+        if re.search(chr_pattn, rec.id):
+            outfh.write(rec.format("fasta"))
+            print "writing the contig %s details" % rec.id  
+
+    fh.close()
+    outfh.close()
+
+
 def make_anno_db(gff_file): 
     """
     extract the features from a gtf/gff file and store efficiently to query 
