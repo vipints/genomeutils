@@ -130,6 +130,9 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
 
     ## genomic feature information 
     max_lenth_intron = org_db['max_intron_len']
+    
+    ##sjdbOverhang 
+    mate_len = org_db['mate_length']
 
     ## according to the file type 
     if gtf_db == None:
@@ -141,14 +144,14 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --runThreadN %d \
         --outFilterMultimapScoreRange 2 \
         --outFilterMultimapNmax 30 \
-        --outFilterMismatchNmax 4 \
+        --outFilterMismatchNmax 3 \
         --sjdbScore 1 \
-        --sjdbOverhang 5 \
+        --sjdbOverhang %d \
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
-            zip_type[ext], out_prefix, num_cpus)
+            zip_type[ext], out_prefix, num_cpus, mate_len)
     elif ftype:
         make_star_run = "STAR \
         --genomeDir %s \
@@ -158,17 +161,17 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --runThreadN %d \
         --outFilterMultimapScoreRange 2 \
         --outFilterMultimapNmax 30 \
-        --outFilterMismatchNmax 4 \
+        --outFilterMismatchNmax 3 \
         --alignIntronMax %d \
         --sjdbGTFfile %s \
         --sjdbGTFtagExonParentTranscript Parent \
         --sjdbScore 1 \
-        --sjdbOverhang 5 \
+        --sjdbOverhang %d \
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
-            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db)
+            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, mate_len)
     else:
         make_star_run = "STAR \
         --genomeDir %s \
@@ -178,17 +181,17 @@ def run_star_alignment(org_db, read_type='PE', max_mates_gap_length=100000, num_
         --runThreadN %d \
         --outFilterMultimapScoreRange 2 \
         --outFilterMultimapNmax 30 \
-        --outFilterMismatchNmax 4 \
+        --outFilterMismatchNmax 3 \
         --alignIntronMax %d \
         --sjdbGTFfile %s \
         --sjdbGTFfeatureExon exon \
         --sjdbScore 1 \
-        --sjdbOverhang 5 \
+        --sjdbOverhang %d \
         --outSAMstrandField intronMotif \
         --outFilterIntronMotifs RemoveNoncanonical \
         --outSAMtype BAM Unsorted \
         --genomeLoad LoadAndRemove" % (genome_dir, read_file, 
-            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db)
+            zip_type[ext], out_prefix, num_cpus, max_lenth_intron, gtf_db, mate_len)
 
     sys.stdout.write('\trunning STAR program as: %s \n' % make_star_run)
     try:
