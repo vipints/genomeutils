@@ -102,28 +102,28 @@ def experiment_db(config_file, opt_action):
     N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.fas' % data_path,
     T_pseudonana    = '%s/T_pseudonana/ensembl_release_29/ensembl_release_29.fas' % data_path,
     P_vulgaris       = '%s/P_vulgaris/phytozome_v9.0/Pvulgaris_218.fa' % data_path,
-    M_esculenta     = '%s/M_esculenta/phytozome_v9.0/phytosome_147.fa' % data_path,
+    M_esculenta     = '%s/M_esculenta/phytozome_v9.0/phytozome_release_9.fas' % data_path,
     S_bicolor       = '%s/S_bicolor/phytozome_v9.0/Sbicolor_79.fa' % data_path,
-    P_patens       = '%s/P_patens/phytozome_v9.0/Ppatens_152.fa' % data_path,
+    P_patens       = '%s/P_patens/phytozome_v9.0/phytozome_release_9.fas' % data_path,
     T_nigroviridis  = '%s/T_nigroviridis/ensembl_release_79/ensembl_release_79.fas' % data_path
     )
     #C_elegans       = '%s/C_elegans/ensembl_release_79/ensembl_release_79.fas' % data_path,
 
 
     org_gtf_file = dict( 
-    A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    A_carolinensis  = '%s/A_carolinensis/ensembl_release_79/ensembl_release_79.gff' % data_path,
     M_mulatta       = "%s/M_mulatta/ensembl_release_79/ensembl_release_79.gtf" % data_path,
-    P_patens       = '%s/P_patens/phytozome_v9.0/Ppatens_152.gtf' % data_path,
+    P_patens       = '%s/P_patens/phytozome_v9.0/phytozome_release_9.gff' % data_path,
     P_vulgaris       = '%s/P_vulgaris/phytozome_v9.0/Pvulgaris_218.gtf' % data_path,
     S_bicolor       = '%s/S_bicolor/phytozome_v9.0/Sbicolor_79.gtf' % data_path,
-    N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.gtf' % data_path,
-    M_esculenta     = '%s/M_esculenta/phytozome_v9.0/phytosome_147.gtf' % data_path,
+    N_vitripennis   = '%s/N_vitripennis/ensembl_release_31/ensembl_release_31.gff' % data_path,
+    M_esculenta     = '%s/M_esculenta/phytozome_v9.0/phytozome_release_9.gff' % data_path,
     P_falciparum    = '%s/P_falciparum/ensembl_release_29/ensembl_release_29.gtf' % data_path,
-    O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gtf" % data_path,
-    M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gtf" % data_path, 
+    O_cuniculus     = "%s/O_cuniculus/ensembl_release_79/ensembl_release_79.gff" % data_path,
+    M_gallopavo     = "%s/M_gallopavo/ensembl_release_79/ensembl_release_79.gff" % data_path, 
     B_anthracis     = '%s/B_anthracis/ensembl_release-21/Bacillus_anthracis' % data_path,
     C_familiaris    = '%s/C_familiaris/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    D_melanogaster  = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    D_melanogaster  = '%s/D_melanogaster/ensembl_release_79/ensembl_release_79.gff' % data_path,
     E_caballus      = '%s/E_caballus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_domestica     = '%s/M_domestica/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     O_sativa        = '%s/O_sativa/phytozome_v9.0/Osativa_204_gene.gff3' % data_path,
@@ -141,10 +141,10 @@ def experiment_db(config_file, opt_action):
     O_aries         = '%s/O_aries/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     M_truncatula    = '%s/M_truncatula/' % data_path,
     P_pacificus     = '%s/P_pacificus/ensembl_release-22/.gtf' % data_path,
-    S_scrofa        = '%s/S_scrofa/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    S_scrofa        = '%s/S_scrofa/ensembl_release_79/ensembl_release_79.gff' % data_path,
     X_tropicalis    = '%s/X_tropicalis/JGIv4-1/JGIv4-1.gff' % data_path,
     C_sativus       = '%s/C_sativus/phytozome_v9.0/Csativus_122_gene.gff3' % data_path,
-    D_simulans      = '%s/D_simulans/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    D_simulans      = '%s/D_simulans/ensembl_release_28/ensembl_release_28.gff' % data_path,
     H_sapiens       = '%s/H_sapiens/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     P_troglodytes   = '%s/P_troglodytes/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     S_tuberosum     = '%s/S_tuberosum/phytozome_v9.0/Stuberosum_206_gene.gff3' % data_path,
@@ -156,23 +156,24 @@ def experiment_db(config_file, opt_action):
     R_norvegicus    = '%s/R_norvegicus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     D_pseudoobscura = '%s/D_pseudoobscura/ensembl_release-22/.gff3' % data_path,
     G_gorilla       = '%s/G_gorilla/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_porcellus     = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    O_anatinus      = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    A_platyrhynchos = '%s/A_platyrhynchos/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    O_niloticus     = '%s/O_niloticus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    L_chalumnae     = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    C_porcellus     = '%s/C_porcellus/ensembl_release_79/ensembl_release_79.gff' % data_path,
+    O_anatinus      = '%s/O_anatinus/ensembl_release_79/ensembl_release_79.gff' % data_path,
+    A_platyrhynchos = '%s/A_platyrhynchos/ensembl_release_79/ensembl_release_79.gff' % data_path,
+    O_niloticus     = '%s/O_niloticus/ensembl_release_79/ensembl_release_79.gff' % data_path,
+    L_chalumnae     = '%s/L_chalumnae/ensembl_release_79/ensembl_release_79.gff' % data_path,
     C_briggsae      = '%s/C_briggsae/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    M_eugenii       = '%s/M_eugenii/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_remanei       = '%s/C_remanei/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    C_brenneri      = '%s/C_brenneri/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    C_intestinalis  = '%s/C_intestinalis/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    M_eugenii       = '%s/M_eugenii/ensembl_release_79/ensembl_release_79.gff' % data_path,
+    C_remanei       = '%s/C_remanei/ensembl_release_28/ensembl_release_28.gff' % data_path,
+    C_brenneri      = '%s/C_brenneri/ensembl_release_28/ensembl_release_28.gff' % data_path,
+    C_intestinalis  = '%s/C_intestinalis/ensembl_release_79/ensembl_release_79.gff' % data_path,
     S_pombe         = '%s/S_pombe/ensembl_release_28/ensembl_release_28.gtf' % data_path,
-    P_marinus       = '%s/P_marinus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
+    P_marinus       = '%s/P_marinus/ensembl_release_79/ensembl_release_79.gff' % data_path,
     S_cerevisiae    = '%s/S_cerevisiae/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    C_japonica      = '%s/C_japonica/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    C_japonica      = '%s/C_japonica/ensembl_release_28/ensembl_release_28.gff' % data_path,
     F_catus         = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
-    A_aegypti       = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
+    A_aegypti       = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gff' % data_path,
     C_hircus        = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
+    H_glaber        = '%s/H_glaber/naked_mole_rat_db/naked_mole_rat_db.gff' % data_path,
     D_discoideum    = '%s/D_discoideum/ensembl_release_29/ensembl_release_29.gtf' % data_path,
     P_falciparum7g8 = '%s/P_falciparum7g8/ensembl_release_28/ensembl_release_28.gtf' % data_path,
     L_major         = '%s/L_major/ensembl_release_29/ensembl_release_29.gtf' % data_path,
@@ -184,7 +185,6 @@ def experiment_db(config_file, opt_action):
     #A_aegypti = '%s/A_aegypti/ensembl_release_28/ensembl_release_28.gtf' % data_path,
     #F_catuyys = '%s/F_catus/ensembl_release_79/ensembl_release_79.gtf' % data_path,
     #C_hircus = '%s/C_hircus/ncbi_genome/ncbi_genome.gff' % data_path,
-    #H_glaber = '%s/H_glaber/naked_mole_rat_db/naked_mole_rat_db.gtf' % data_path,
 
 
 
@@ -245,14 +245,18 @@ def experiment_db(config_file, opt_action):
         readlength = 0 
         if opt_action in ["2", "3"]: ## perform this action only for selected options 
             if sra_files:
-                fqfile = os.path.join(org_db[short_name]['fastq_path'], sra_files[0])
-                print 'using sequencing read file %s to determine readLength' % fqfile
-                fh = helper.open_file(fqfile)
-                for rec in SeqIO.parse(fh, "fastq"):
-                    readlength = len(rec.seq)
-                    break
-                fh.close() 
+                mate_length = 0 
+                for fqs in sra_files:
+                    fqfile = os.path.join(org_db[short_name]['fastq_path'], fqs)
+                    print 'using sequencing read file %s to determine readLength' % fqfile
+                    fh = helper.open_file(fqfile)
+                    for rec in SeqIO.parse(fh, "fastq"):
+                        readlength = len(rec.seq)
+                        mate_length += readlength
+                        break
+                    fh.close() 
         org_db[short_name]['read_length'] = readlength
+        org_db[short_name]['mate_length'] = mate_length - 1 
 
         ## check for the genome sequence file 
         if short_name in org_fasta_file:
